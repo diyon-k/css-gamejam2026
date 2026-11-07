@@ -1,6 +1,8 @@
 // Story dressing for the House scene: framed family photos on the walls and notes lying around that
 // hint at what happened here and how you got here, without spelling it out. Menu: BLINK > Place Story Props.
 // Re-running replaces the "Story" group. Also gives the Player an Interactor so the props can be read.
+// Spots are (x, z, floor) from the HouseBlockout map; raycasts find the real wall or surface, so the props
+// follow the house if it's rebuilt. A spot that finds nothing is skipped with a warning.
 // Story bible: docs/STORY_PLAN.md.
 using Blink.Interaction;
 using Blink.Player;
@@ -14,37 +16,40 @@ public static class StoryProps
     const string Mats = "Assets/Art/Story/Materials/";
 
     [MenuItem("BLINK/Place Story Props")]
-    static void Place()
+    public static void Place() // also callable from HouseBlockout.Build
     {
         var old = GameObject.Find("Story");
         if (old != null) Undo.DestroyObjectImmediate(old);
+        Physics.SyncTransforms();
         var root = new GameObject("Story").transform;
         Undo.RegisterCreatedObjectUndo(root.gameObject, "Place Story Props");
 
-        // ---- Framed photos. Position is the wall surface point, facing = direction out of the wall.
-        Frame(root, "photo_wedding", "Wedding photo", new Vector3(0.12f, 4.6f, 6.0f), Vector3.right,
+        const float Second = 6.4f, Ground = 0f, Basement = -3.2f;
+
+        // ---- Framed photos: from (x, z) at eye height, hung on the first wall in that direction.
+        Frame(root, "photo_wedding", "Wedding photo", 2.0f, 8.0f, Second, Vector3.left, // StartBedroom, west wall
             "On the back, in neat ink: 'A. & E., June 1934. Forever is a promise I intend to keep.'");
-        Frame(root, "photo_children_decayed", "Photo of two children", new Vector3(8.0f, 4.5f, 9.88f), Vector3.back,
+        Frame(root, "photo_children_decayed", "Photo of two children", 12f, 20f, Second, Vector3.forward, // Old Nursery
             "On the back, in a child's hand: 'Tom and me. Summer.'\nThe faces have run, as if the picture got wet. It isn't damp.");
-        Frame(root, "photo_family_decayed", "Family portrait", new Vector3(11.0f, 4.3f, 4.88f), Vector3.back,
+        Frame(root, "photo_family_decayed", "Family portrait", 14.5f, 11.2f, Second, Vector3.forward, // Corridor_Second
             "The Hales, in the front hall. Someone has scratched out every face, slowly, many times over.", 1.6f);
-        Frame(root, "photo_staff", "Staff photograph", new Vector3(5.0f, 1.6f, 0.12f), Vector3.forward,
+        Frame(root, "photo_staff", "Staff photograph", 22f, 20f, Second, Vector3.forward, // ServantsDorm
             "'Household staff, 1945.'\nThe boy on the end in the leather apron has been circled in ink, pressed hard enough to tear the paper.");
 
-        // ---- Notes. Position is where the paper lies (on a floor or top surface).
-        Note(root, "Delivery docket", new Vector3(0.45f, 3.605f, 6.2f), 20f,
+        // ---- Notes: dropped onto whatever is at (x, z), floor or furniture top.
+        Note(root, "Delivery docket", 0.3f, 1.88f, Second, 20f, // StartBedroom nightstand
             "RAVEN & SONS COURIERS\nConsignment 0447\n\nCollect: estate of S. Kerr, Lot 14\nDeliver to: Hale House, end of Blackwood Lane. No road past the gate.\nContents: 1 x pocket watch, brass, antique\n\nSignature on receipt: ______________\n\nDriver's note: customer wants it there before midnight. Paid triple. Didn't ask why.");
-        Note(root, "Note in shaky handwriting", new Vector3(2.9f, 3.005f, 6.6f), -35f,
+        Note(root, "Note in shaky handwriting", 6.0f, 6.0f, Second, -35f, // floor, just in front of the bed
             "I am sorry about your head.\nYou would not have stayed otherwise, and you have brought back what was taken from me.\n\nKeep your eyes open for as long as you can bear it. They are only ever still while someone is watching.\n\n— A.");
-        Note(root, "Child's drawing", new Vector3(9.2f, 3.005f, 8.0f), 70f,
+        Note(root, "Child's drawing", 12f, 18f, Second, 70f, // Old Nursery
             "Papa says if we are very very still the sickness cant find us. Tom says thats babyish.\nI am being the stillest. Mama is too.\n\n(Below it, in crayon: four stick people holding hands, and a tall man with a clock where his face should be.)");
-        Note(root, "Torn diary page", new Vector3(3.2f, 0.005f, 1.5f), 10f,
+        Note(root, "Torn diary page", 12f, 11.0f, Second, 10f, // Corridor_Second
             "...nine days now without sleep. The clocks in this house have begun to disagree with one another. This morning the hall clock struck thirteen, and he only smiled and said, 'Not yet, my love. Not yet.'\n\nI am frightened of whatever he is building in the tower.\n— E.");
-        Note(root, "Kitchen list", new Vector3(2.6f, 0.005f, 4.2f), -50f,
+        Note(root, "Kitchen list", 4f, 16f, Ground, -50f, // Kitchen
             "Flour. Lard. Tea. Candles.\n\nThe bread has not gone stale since March. The milk won't turn. The kettle has been on the boil all morning and will not whistle.\nMr Hale says not to worry.\nI have stopped asking anyone the date.\n— Mrs Pell");
-        Note(root, "Workshop scrap", new Vector3(3.2f, -1.795f, 0.8f), 5f,
+        Note(root, "Workshop scrap", 20f, 17f, Basement, 5f, // Workshop
             "The heart is gone. S. took it, the boy I trusted with my tools.\nWithout it the hands will not turn, forward or back. Everything stays as it is.\nWe will all stay as we are.\n\nSomeone will bring it home. Someone always brings things home.");
-        Note(root, "Newspaper clipping", new Vector3(0.8f, -2.995f, 3.0f), 30f,
+        Note(root, "Newspaper clipping", 38.5f, 4f, Basement, 30f, // GeneratorRoom, by the exit gate
             "AUCTION NOTICE\nThe effects of the late Mr Samuel Kerr (98), once apprenticed to a clockmaker.\n\nLot 14: brass pocket watch, maker's mark 'A. Hale'. The family say it has never once stopped ticking, though it holds no spring.\n\nSold to an anonymous buyer.");
 
         // The props need an Interactor on the player to be readable.
@@ -56,8 +61,26 @@ public static class StoryProps
         Debug.Log("[StoryProps] Placed photos and notes under 'Story'.");
     }
 
-    static void Frame(Transform root, string photo, string title, Vector3 wallPoint, Vector3 facing, string caption, float size = 1f)
+    const int NotPlayer = ~(1 << 9); // the Player capsule's layer
+
+    static void Frame(Transform root, string photo, string title, float x, float z, float floor, Vector3 dir, string caption, float size = 1f)
     {
+        // Slide along the wall (0, +0.5, -0.5, +1 ... 3 m) past windows and doorways until a ray hits wall.
+        var side = Vector3.Cross(dir, Vector3.up);
+        RaycastHit hit = default;
+        bool found = false;
+        for (int i = 0; i <= 12 && !found; i++)
+        {
+            float off = (i + 1) / 2 * 0.5f * (i % 2 == 0 ? -1f : 1f);
+            found = Physics.Raycast(new Vector3(x, floor + 1.6f, z) + side * off, dir, out hit, 6f, NotPlayer, QueryTriggerInteraction.Ignore)
+                    && Vector3.Dot(hit.normal, dir) < -0.9f; // a wall facing us, not furniture side-on
+        }
+        if (!found)
+        {
+            Debug.LogWarning($"[StoryProps] No wall for {photo} from ({x}, {z}) towards {dir}; skipped.");
+            return;
+        }
+        Vector3 wallPoint = hit.point, facing = hit.normal;
         var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(Photos + photo + ".png");
         float w = 0.5f * size, h = tex != null ? w * tex.height / tex.width : w * 0.75f;
 
@@ -83,8 +106,15 @@ public static class StoryProps
         go.AddComponent<Readable>().Setup("Look at", title, caption, tex);
     }
 
-    static void Note(Transform root, string title, Vector3 pos, float yaw, string text)
+    static void Note(Transform root, string title, float x, float z, float floor, float yaw, string text)
     {
+        // Start 1.3 m up: above tables and nightstands, below bed canopies.
+        if (!Physics.Raycast(new Vector3(x, floor + 1.3f, z), Vector3.down, out var hit, 2f, NotPlayer, QueryTriggerInteraction.Ignore))
+        {
+            Debug.LogWarning($"[StoryProps] Nothing to put '{title}' on at ({x}, {z}); skipped.");
+            return;
+        }
+        var pos = hit.point;
         var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
         go.name = "Note_" + title.Replace(' ', '_');
         go.transform.SetParent(root, false);

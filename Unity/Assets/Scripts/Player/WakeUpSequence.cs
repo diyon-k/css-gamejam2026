@@ -24,8 +24,8 @@ namespace Blink.Player
         [SerializeField] float lyingPitch = -70f;
         [Tooltip("Camera roll while lying down, head tipped on the pillow.")]
         [SerializeField] float lyingRoll = 12f;
-        [Tooltip("Metres the camera is lowered while lying down.")]
-        [SerializeField] float lyingDrop = 0.9f;
+        [Tooltip("Camera offset while lying down, in the player's local space (e.g. down and sideways onto the mattress).")]
+        [SerializeField] Vector3 lyingOffset = new(0f, -0.9f, 0f);
         [SerializeField] string prompt = "BLINK to begin";
 
         BlinkEyelids _eyelids;
@@ -87,7 +87,7 @@ namespace Blink.Player
         void Pose(float up)
         {
             if (_cam == null) return;
-            _cam.localPosition = _camPos + Vector3.down * (lyingDrop * (1f - up));
+            _cam.localPosition = _camPos + lyingOffset * (1f - up);
             _cam.localRotation = _camRot * Quaternion.Euler(lyingPitch * (1f - up), 0f, lyingRoll * (1f - up));
         }
 
