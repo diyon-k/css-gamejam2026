@@ -15,6 +15,11 @@ namespace Blink.Player
         [SerializeField] bool startOn = true;
         [Tooltip("Real seconds the switch-on stutter lasts. 0 = instant.")]
         [SerializeField, Min(0f)] float switchOnSeconds = 0.14f;
+        [Tooltip("Renderers under this are the viewmodel (hands, weapons): the torch skips them. Empty = the parent (the camera).")]
+        [SerializeField] Transform viewmodelRoot;
+        [Tooltip("Intensity of the dim fill that lights only the viewmodel. Torch 14 on a wall at 2.5 m ≈ 2.2; hands at 0.4 m need 2.2 × 0.4² ≈ 0.36.")]
+        [SerializeField, Min(0f)] float viewmodelFillIntensity = 0.4f;
+        [SerializeField, Min(0.1f)] float viewmodelFillRange = 2f;
 
         /// <summary>Raised with the new state whenever the torch is switched.</summary>
         public event Action<bool> Toggled;
@@ -24,7 +29,7 @@ namespace Blink.Player
         /// <summary>The toggle action (keyboard F, gamepad d-pad up), for prompts and glyphs.</summary>
         public InputAction ToggleInput => _toggle;
 
-        Light _light;
+        Light _light, _fill;
         float _intensity, _switchedAt = float.NegativeInfinity;
         InputAction _toggle;
 
@@ -36,7 +41,34 @@ namespace Blink.Player
             _toggle = new InputAction("Flashlight", InputActionType.Button);
             _toggle.AddBinding("<Keyboard>/f");
             _toggle.AddBinding("<Gamepad>/dpad/up");
+            SetUpViewmodel();
             Apply();
+        }
+
+        void Start()
+        {
+            // Every light that is not baked-only keeps lighting the hands (the baked ones do not touch dynamic objects anyway).
+            foreach (var l in FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (l != _light && l != _fill && l.bakingOutput.lightmapBakeType != LightmapBakeType.Baked) ViewmodelLighting.AddToLight(l);
+        }
+
+        /// <summary>Hands off the torch (Viewmodel layer only), and a dim short-range fill that lights only them.</summary>
+        void SetUpViewmodel()
+        {
+            var root = viewmodelRoot != null ? viewmodelRoot : transform.parent;
+            if (root != null) ViewmodelLighting.SetHeld(root.gameObject, true);
+            ViewmodelLighting.RemoveFromLight(_light);
+
+            var go = new GameObject("ViewmodelFill");
+            go.transform.SetParent(transform, false);
+            _fill = go.AddComponent<Light>();
+            _fill.type = LightType.Spot;
+            _fill.color = _light.color;
+            _fill.spotAngle = _light.spotAngle;
+            _fill.innerSpotAngle = _light.innerSpotAngle;
+            _fill.range = viewmodelFillRange;
+            _fill.shadows = LightShadows.None;
+            ViewmodelLighting.SetViewmodelOnly(_fill);
         }
 
         void OnEnable() => _toggle?.Enable();
@@ -63,6 +95,9 @@ namespace Blink.Player
             float level = FlashlightMath.Level(IsOn, Time.unscaledTime - _switchedAt, switchOnSeconds);
             _light.intensity = _intensity * level;
             _light.enabled = level > 0f;
+            if (_fill == null) return;
+            _fill.intensity = viewmodelFillIntensity * level;
+            _fill.enabled = level > 0f;
         }
     }
 
