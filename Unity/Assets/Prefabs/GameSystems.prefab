@@ -398,25 +398,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe6de6b95e5f9ff4d9f57697d744e0b7, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Blink.Runtime::Blink.DayNight.DayNightCycle
-  clock: {fileID: 0}
+  m_EditorClassIdentifier: Blink.Runtime::Blink.DayNight.NightSky
   celestialLight: {fileID: 0}
   skyMaterial: {fileID: 2100000, guid: eabcbbfb5a28a3947a4d4a15cb41e444, type: 2}
-  maxElevation: 55
-  sunColor: {r: 0.95, g: 0.92, b: 0.85, a: 1}
-  sunIntensity: 1.1
-  dayAmbient: {r: 0.36, g: 0.37, b: 0.39, a: 1}
-  dayFog: {r: 0.44, g: 0.46, b: 0.48, a: 1}
-  dayFogDensity: 0.02
-  dayZenith: {r: 0.34, g: 0.39, b: 0.46, a: 1}
-  dayHorizon: {r: 0.55, g: 0.57, b: 0.59, a: 1}
-  duskSun: {r: 1, g: 0.5, b: 0.25, a: 1}
-  duskAmbient: {r: 0.3, g: 0.2, b: 0.16, a: 1}
-  duskFog: {r: 0.35, g: 0.22, b: 0.16, a: 1}
-  duskHorizon: {r: 0.75, g: 0.36, b: 0.16, a: 1}
   nightZenith: {r: 0.008, g: 0.012, b: 0.03, a: 1}
   nightHorizon: {r: 0.045, g: 0.06, b: 0.095, a: 1}
   moonDiscColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+  stars: 1
 --- !u!114 &7462373453109785836
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -5,8 +5,12 @@ namespace Blink.DayNight
 {
     /// <summary>
     /// Clock in the top-right corner, in the <see cref="BlinkTheme"/> style: "HH:MM" in serif numerals (the colon
-    /// breathes on real time) over "day N" in small caps. A blink skip brightens the digits and shows "+15 min" fading
+    /// breathes on real time) over "day N" in small caps. A blink skip brightens the digits and shows "+1 min" fading
     /// out. IMGUI; all animation is on unscaled time.
+    ///
+    /// Display only: the shown time is its own <see cref="GameTime"/>, seeded from the <see cref="GameClock"/> at start,
+    /// that runs at a real-time pace and jumps <see cref="minutesPerBlink"/> per blink skip. The GameClock that drives
+    /// the sky, lights and puzzles is not touched, so the two drift apart over play.
     /// </summary>
     public sealed class ClockHud : MonoBehaviour
     {
@@ -20,13 +24,22 @@ namespace Blink.DayNight
         [SerializeField] Color nightColor = new(0.7f, 0.82f, 1f, 0.95f);
         [SerializeField] Color jumpColor = new(1f, 0.85f, 0.4f, 1f);
         [SerializeField, Min(0.1f)] float jumpSeconds = 1.5f;
+        [Tooltip("Shown minutes per world second. 1/60 = real time; eyes-shut fast-forward speeds it up with the world.")]
+        [SerializeField, Min(0f)] float minutesPerSecond = 1f / 60f;
+        [Tooltip("Shown minutes added on every blink skip.")]
+        [SerializeField, Min(0f)] float minutesPerBlink = 1f;
 
+        GameTime _shown;
         float _jumpAt = -100f, _jumpMinutes;
 
         void Start()
         {
             if (clock == null) clock = GameClock.Instance;
-            if (clock != null) clock.Jumped += OnJumped;
+            if (clock != null)
+            {
+                _shown = new GameTime(clock.HourOfDay, clock.SunriseHour, clock.SunsetHour);
+                clock.Jumped += OnJumped;
+            }
             else Debug.LogWarning("[ClockHud] No GameClock found.");
         }
 
@@ -35,8 +48,13 @@ namespace Blink.DayNight
             if (clock != null) clock.Jumped -= OnJumped;
         }
 
-        void OnJumped(float minutes)
+        void Update() => _shown?.Advance(Time.deltaTime * minutesPerSecond);
+
+        // The GameClock's own jump size is ignored: the corner shows a fixed step per blink.
+        void OnJumped(float _)
         {
+            float minutes = minutesPerBlink;
+            _shown?.Advance(minutes);
             // Blinks in quick succession add up into one "+N min".
             bool stillShowing = Time.unscaledTime - _jumpAt < jumpSeconds;
             _jumpMinutes = stillShowing ? _jumpMinutes + minutes : minutes;
@@ -45,7 +63,7 @@ namespace Blink.DayNight
 
         void OnGUI()
         {
-            if (clock == null || Event.current.type != EventType.Repaint) return;
+            if (_shown == null || Event.current.type != EventType.Repaint) return;
 
             float since = Time.unscaledTime - _jumpAt;
             float flash = 1f - BlinkTheme.EaseOut(since / 0.5f);
@@ -54,14 +72,14 @@ namespace Blink.DayNight
             {
                 var bone = BlinkTheme.Bone;
                 // Night cools the bone a touch; a skip lifts it toward paper-white for a moment, never pure white.
-                var baseTime = clock.IsNight ? Color.Lerp(bone, new Color(0.72f, 0.77f, 0.84f, 1f), 0.45f) : bone;
+                var baseTime = _shown.IsNight ? Color.Lerp(bone, new Color(0.72f, 0.77f, 0.84f, 1f), 0.45f) : bone;
                 timeColor = BlinkTheme.Fade(Color.Lerp(baseTime, new Color(0.97f, 0.95f, 0.9f, 1f), flash), 0.88f);
                 dayLabel = BlinkTheme.Fade(BlinkTheme.Muted, 0.95f);
                 jumpBase = bone;
             }
             else
             {
-                var baseColor = clock.IsNight ? nightColor : dayColor;
+                var baseColor = _shown.IsNight ? nightColor : dayColor;
                 timeColor = Color.Lerp(baseColor, jumpColor, flash);
                 dayLabel = baseColor;
                 jumpBase = jumpColor;
@@ -70,7 +88,7 @@ namespace Blink.DayNight
             float colon = 0.35f + 0.65f * (0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * Mathf.PI * 2f));
             string jump = since < jumpSeconds ? $"+{Mathf.RoundToInt(_jumpMinutes)} min" : null;
             var jumpColorNow = BlinkTheme.Fade(jumpBase, 1f - BlinkTheme.EaseIn(since / jumpSeconds));
-            BlinkWidgets.Clock($"{clock.Hour:00}", $"{clock.Minute:00}", colon, $"Day {clock.Day}",
+            BlinkWidgets.Clock($"{_shown.Hour:00}", $"{_shown.Minute:00}", colon, $"Day {_shown.Day}",
                 timeColor, dayLabel, jump, jumpColorNow, font);
         }
     }
