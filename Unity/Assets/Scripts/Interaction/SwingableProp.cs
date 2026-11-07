@@ -7,8 +7,8 @@ namespace Blink.Interaction
     /// <summary>
     /// A melee weapon lying in the world (golf club, plank, candlestick, or the axe once dropped). Interact puts it
     /// in the melee slot in place of the axe model: it hangs off the axe view model's grip and swings with the axe's
-    /// animation (<see cref="MeleeWeapon"/>). One melee item at a time: while one is in hand the prompt says to drop it
-    /// first (<see cref="PlayerWeapons"/>' Drop key), and dropping lets it fall from the hands as a physics prop.
+    /// animation (<see cref="MeleeWeapon"/>). One melee item at a time: picking one up swaps it for the one in the slot,
+    /// which falls from the hands as a physics prop (as with <see cref="PlayerWeapons"/>' Drop key).
     ///
     /// A blunt item (<see cref="KnocksDown"/>) barely hurts: it knocks a zombie flying as a ragdoll and stuns it
     /// (<see cref="Mobs.MobController.KnockDown"/>). The axe isn't blunt and keeps its own damage.
@@ -35,11 +35,11 @@ namespace Blink.Interaction
         [Tooltip("Barely hurts: these knock zombies away rather than kill them.")]
         [SerializeField, Min(0f)] float damage = 8f;
         [Tooltip("Speed (m/s) a hit gives every limb, flat along your view.")]
-        [SerializeField, Min(0f)] float launchSpeed = 10f;
+        [SerializeField, Min(0f)] float launchSpeed = 2.5f;
         [Tooltip("Upward speed (m/s) on top, so it flies instead of sliding.")]
-        [SerializeField, Min(0f)] float launchLift = 4.5f;
+        [SerializeField, Min(0f)] float launchLift = 1.125f;
         [Tooltip("Sideways speed (m/s) along the swing (the chop sweeps right to left).")]
-        [SerializeField] float launchSideways = 2.5f;
+        [SerializeField] float launchSideways = 0.625f;
         [Tooltip("World seconds a zombie lies stunned before getting back up (longer if it's still tumbling).")]
         [SerializeField, Min(0f)] float stunSeconds = 2.5f;
 
@@ -72,11 +72,11 @@ namespace Blink.Interaction
         public string Prompt(Interactor who)
         {
             var inHand = Weapons(who) is { Axe: { } melee } ? melee.Equipped : null;
-            return inHand != null ? $"Drop the {inHand.DisplayName} first ({PlayerWeapons.DropKeyName})" : "Pick up " + displayName;
+            return inHand != null ? $"Swap {inHand.DisplayName} for {displayName}" : "Pick up " + displayName;
         }
 
         public bool CanInteract(Interactor who) =>
-            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: { Equipped: null } };
+            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: not null };
 
         public void Interact(Interactor who) => Weapons(who).EquipMelee(this);
 

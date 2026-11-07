@@ -223,10 +223,11 @@ namespace Blink.Combat
             return false;
         }
 
-        /// <summary>Puts a picked-up melee item in the melee slot and brings it out. The slot must be empty.</summary>
+        /// <summary>Puts a picked-up melee item in the melee slot and brings it out, dropping whatever was in it.</summary>
         public void EquipMelee(Interaction.SwingableProp item)
         {
-            if (axe == null || axe.Equipped != null) return;
+            if (axe == null || item == null || item.IsHeld) return;
+            axe.Drop(GetComponent<Collider>()); // swap: the old item falls from the hands, as with G
             axe.Equip(item);
             Select(WeaponKind.Axe);
         }

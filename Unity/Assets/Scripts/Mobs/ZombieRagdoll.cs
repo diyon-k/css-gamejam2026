@@ -42,7 +42,7 @@ namespace Blink.Mobs
 
         [Header("Hits")]
         [Tooltip("Impulse (N·s) the killing shot gives the body part it hit. The whole body weighs ~60 kg.")]
-        [SerializeField, Min(0f)] float hitImpulse = 10f;
+        [SerializeField, Min(0f)] float hitImpulse = 2.5f;
         [Tooltip("Speed (m/s) the killing shot adds to the whole body, flat along the shot, so it falls away from " +
                  "the shooter. The hit impulse alone mostly just flicks the limb it hits.")]
         [SerializeField, Min(0f)] float knockbackSpeed = 0.375f;
