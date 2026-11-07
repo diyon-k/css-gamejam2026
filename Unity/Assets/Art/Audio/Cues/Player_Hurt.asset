@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Player_Hurt
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: b025e572ae20aab41b011de9004477f9, type: 3}
+  - {fileID: 8300000, guid: 5289ca7389fc57348a71f5ac4513fdc0, type: 3}
+  - {fileID: 8300000, guid: dea76d7f4ff66a34ab2e93a8e8879193, type: 3}
+  order: 1
+  volume: {x: 0.9, y: 1}
+  pitch: {x: 0.95, y: 1.05}
+  spatialBlend: 0
+  minDistance: 1
+  maxDistance: 30
+  output: {fileID: -5740928097967852656, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 20
+  cooldown: 0.3

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Zombie_Attack
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: ce5d460f2a3d7d94993e061e6d3478c1, type: 3}
+  - {fileID: 8300000, guid: 0de0c6058c2b07040bd9a742b2a0d3ca, type: 3}
+  - {fileID: 8300000, guid: 08a82ce9004a4b54d854cfe1d5e8dda4, type: 3}
+  - {fileID: 8300000, guid: d7763ec6a199b354190d4352ac57efe3, type: 3}
+  order: 1
+  volume: {x: 0.9, y: 1}
+  pitch: {x: 0.9, y: 1.1}
+  spatialBlend: 1
+  minDistance: 2
+  maxDistance: 20
+  output: {fileID: 9084193506014024576, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 50
+  cooldown: 0

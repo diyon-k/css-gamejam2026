@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Player_HitThud
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 803631a54ba0a344cbf9e5943dfbb201, type: 3}
+  - {fileID: 8300000, guid: 173eaa9e4bed15444965b6bef0220732, type: 3}
+  - {fileID: 8300000, guid: 54682e44b94ad784b8ad8c161fe817fe, type: 3}
+  - {fileID: 8300000, guid: 87b02be36a87ef44d92314ae64763986, type: 3}
+  - {fileID: 8300000, guid: 0b57e02c86eca914593a2c52b506dd86, type: 3}
+  order: 1
+  volume: {x: 0.7, y: 0.85}
+  pitch: {x: 0.9, y: 1.05}
+  spatialBlend: 0
+  minDistance: 1
+  maxDistance: 30
+  output: {fileID: -5740928097967852656, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 25
+  cooldown: 0.1

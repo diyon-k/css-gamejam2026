@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Zombie_Step
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 81437c184ac44684e9ba791ecf2c62a1, type: 3}
+  - {fileID: 8300000, guid: 729ca4f1b5cbc6c47a9f56f2ab401b70, type: 3}
+  - {fileID: 8300000, guid: 58e70ca4600e5534d9b39618e2593f61, type: 3}
+  - {fileID: 8300000, guid: ec67dbb97b18d9f40936778307332879, type: 3}
+  - {fileID: 8300000, guid: 94d60b31d1b6d514596908327b3b8bec, type: 3}
+  - {fileID: 8300000, guid: 174d2323623b6ce40990c729bf056612, type: 3}
+  order: 1
+  volume: {x: 0.45, y: 0.6}
+  pitch: {x: 0.85, y: 1}
+  spatialBlend: 1
+  minDistance: 1.5
+  maxDistance: 18
+  output: {fileID: 9084193506014024576, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 160
+  cooldown: 0
