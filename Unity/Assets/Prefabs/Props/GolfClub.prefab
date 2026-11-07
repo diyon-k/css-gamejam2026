@@ -57,9 +57,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.035
-  m_Height: 1.08
+  m_Height: 0.8
   m_Direction: 1
-  m_Center: {x: 0.01, y: 0.02, z: 0}
+  m_Center: {x: 0.01, y: 0.01, z: 0}
 --- !u!54 &78272480859687897
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.SwingableProp
   displayName: golf club
-  grip: {x: 0, y: -0.42, z: 0}
+  grip: {x: 0, y: -0.3, z: 0}
   lengthAxis: {x: 0, y: 1, z: 0}
   knocksDown: 1
   damage: 6
@@ -138,7 +138,7 @@ Transform:
   m_GameObject: {fileID: 2786334779553908750}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.04, y: 0.51, z: 0}
+  m_LocalPosition: {x: 0.04, y: 0.37, z: 0}
   m_LocalScale: {x: 0.11, y: 0.045, z: 0.035}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -229,7 +229,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.022, y: 0.5, z: 0.022}
+  m_LocalScale: {x: 0.022, y: 0.36, z: 0.022}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 17019257203225942}
@@ -318,7 +318,7 @@ Transform:
   m_GameObject: {fileID: 6791776441016222535}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.4, z: 0}
+  m_LocalPosition: {x: 0, y: -0.29, z: 0}
   m_LocalScale: {x: 0.032, y: 0.1, z: 0.032}
   m_ConstrainProportionsScale: 0
   m_Children: []

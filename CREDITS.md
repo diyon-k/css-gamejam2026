@@ -32,6 +32,7 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Zombie moans](https://opengameart.org/content/zombie-moans-01-by-emopreben) | EmoPreben | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie idle groans |
 | [Zombie noises and moans](https://opengameart.org/content/zombie-noises-and-moans) | ianzazz | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie groans and an alert growl |
 | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | Kenney | kenney.nl | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Player footsteps (wood), hit thuds, bullet-on-wall hits, door burst |
+| [Pipe Wrench](https://polyhaven.com/a/pipe_wrench), [Adjustable Wrench](https://polyhaven.com/a/adjustable_wrench), [Cross Pein Hammer](https://polyhaven.com/a/cross_pein_hammer), [Crowbar 01](https://polyhaven.com/a/crowbar_01), [Baseball Bat](https://polyhaven.com/a/baseball_bat), [Brass Pan 01](https://polyhaven.com/a/brass_pan_01), [Brass Candleholders](https://polyhaven.com/a/brass_candleholders) | Poly Haven | polyhaven.com | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Melee props you can pick up and swing |
 
 ## Licence notes
 
