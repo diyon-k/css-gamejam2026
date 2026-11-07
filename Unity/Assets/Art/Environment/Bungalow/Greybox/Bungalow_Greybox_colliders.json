@@ -435,7 +435,7 @@
    "tris": 36
   },
   {
-   "name": "DC1",
+   "name": "D6",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -447,7 +447,7 @@
    "tris": 36
   },
   {
-   "name": "DC2",
+   "name": "D7",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -459,7 +459,7 @@
    "tris": 36
   },
   {
-   "name": "DC3",
+   "name": "D8",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -471,7 +471,7 @@
    "tris": 36
   },
   {
-   "name": "DC4",
+   "name": "D9",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,

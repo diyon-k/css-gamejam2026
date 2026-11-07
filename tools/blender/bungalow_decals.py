@@ -247,7 +247,7 @@ scatter("Living", 14, ["paper_scraps", "paper_scraps", "plaster_crumbs"], ((12.0
 # Kitchen: stained, debris-strewn lino; rust and leaks under the windows; mould at the ceiling line
 wall("Kitchen", "N", 12.6, 1.6, 0.9, 2.2, "leak_streaks")
 wall("Kitchen", "N", 16.6, 1.4, 0.7, 1.4, "rust_streaks")
-wall("Kitchen", "N", 17.4, 2.5, 0.9, 0.6, "mould_bloom")   # rev 3: off DC4
+wall("Kitchen", "N", 17.4, 2.5, 0.9, 0.6, "mould_bloom")   # rev 3: off D9
 wall("Kitchen", "E", 8.0, 1.5, 0.9, 2.0, "leak_streaks")
 wall("Kitchen", "E", 14.2, 2.45, 0.9, 0.6, "mould_bloom")
 wall("Kitchen", "W", 12.4, 1.6, 0.8, 1.8, "leak_streaks")
