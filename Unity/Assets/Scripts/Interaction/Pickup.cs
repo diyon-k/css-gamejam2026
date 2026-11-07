@@ -28,8 +28,12 @@ namespace Blink.Interaction
         Quaternion _homeRot;
 
         public bool Taken => _taken;
-        public string Prompt(Interactor who) => "Pick up " + displayName;
-        public bool CanInteract(Interactor who) => !_taken && who.Inventory != null;
+        public string Prompt(Interactor who) => AmmoFull ? "Ammo full" : "Pick up " + displayName;
+        public bool CanInteract(Interactor who) => !_taken && who.Inventory != null && !AmmoFull;
+
+        // A pure ammo box is left on the floor while the reserve is full.
+        bool AmmoFull => string.IsNullOrEmpty(itemId) && !givesPistol && pistolRounds > 0
+            && Combat.PlayerWeapons.Instance is { Pistol: { ReserveFull: true } };
 
         public void Interact(Interactor who)
         {

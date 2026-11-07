@@ -43,6 +43,8 @@ namespace Blink.Combat
         [SerializeField] WeaponKind startWeapon = WeaponKind.Pistol;
         [Tooltip("Off: the pistol slot stays locked until a Pickup with 'Gives Pistol' is found.")]
         [SerializeField] bool startsWithPistol = true;
+        [Tooltip("Set: the axe starts lying here instead of in the hands (pick it up like any melee prop).")]
+        [SerializeField] Transform axeStartsAt;
 
         [Header("Switching (unscaled seconds)")]
         [Tooltip("Parent of every slot. Lowered and tilted out of view during a switch. Must not be animated.")]
@@ -127,6 +129,14 @@ namespace Blink.Combat
             if (holster != null) holster.GetLocalPositionAndRotation(out _holsterPosition, out _holsterRotation);
             if (pistol != null) pistol.ReadsInput = false; // driven from here
             if (axe != null) axe.Init(); // its slot may start inactive, but it must know what it's holding
+            if (axe != null && axeStartsAt != null && axe.Drop(null) is { } dropped)
+            {
+                dropped.transform.SetPositionAndRotation(axeStartsAt.position, axeStartsAt.rotation);
+                var body = dropped.GetComponent<Rigidbody>(); // interpolated: move the body too, or it snaps back
+                body.position = axeStartsAt.position;
+                body.rotation = axeStartsAt.rotation;
+                body.linearVelocity = body.angularVelocity = Vector3.zero;
+            }
 
             _hasPistol = startsWithPistol;
             BuildSlots();
