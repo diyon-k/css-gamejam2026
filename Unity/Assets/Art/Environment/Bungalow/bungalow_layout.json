@@ -860,6 +860,44 @@
   "openYaw": 0.0,
   "closedYaw": -90.0
  },
+ "doors": [
+  {
+   "id": "D1",
+   "locked": true,
+   "keys": 3,
+   "key": "key_front",
+   "open": false
+  },
+  {
+   "id": "D2",
+   "locked": true,
+   "keys": 1,
+   "key": "key_bedroom",
+   "open": false
+  },
+  {
+   "id": "D3",
+   "locked": false,
+   "keys": 0,
+   "key": "key_front",
+   "open": false
+  },
+  {
+   "id": "D4",
+   "locked": true,
+   "keys": 0,
+   "key": "key_front",
+   "open": false
+  },
+  {
+   "id": "D5",
+   "locked": false,
+   "keys": 0,
+   "key": "key_front",
+   "open": true
+  }
+ ],
+ "keyItem": "key_front",
  "surfaceTiles": [
   {
    "material": "M_FloorPlank",
