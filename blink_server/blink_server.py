@@ -73,6 +73,7 @@ def main() -> None:
     eyes = EyeHysteresis(args.close, args.open)
     start = time.monotonic()
     last_ts = -1
+    blinks = 0
 
     with vision.FaceLandmarker.create_from_options(options) as landmarker, \
             socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
@@ -88,7 +89,11 @@ def main() -> None:
 
             score = blink_score(result)
             present = score is not None
+            was_closed = eyes.closed
             closed = eyes.update(score) if present else False
+            if was_closed and not closed:
+                blinks += 1
+                print(f"BLINK #{blinks}", flush=True)
             packet = {"t": int(time.time() * 1000), "present": present, "closed": closed}
             sock.sendto(json.dumps(packet).encode("utf-8"), (HOST, PORT))
 
@@ -96,6 +101,7 @@ def main() -> None:
                 label = "NO FACE" if not present else f"{'CLOSED' if closed else 'open'}  {score:.2f}"
                 colour = (0, 0, 255) if closed or not present else (0, 200, 0)
                 cv2.putText(frame, label, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.1, colour, 2)
+                cv2.putText(frame, f"blinks: {blinks}", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
                 cv2.imshow("blink_server", frame)
                 if cv2.waitKey(1) in (ord("q"), 27):
                     break
