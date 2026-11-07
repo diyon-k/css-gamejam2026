@@ -29,7 +29,7 @@ public static class StoryProps
         // ---- Framed photos: from (x, z) at eye height, hung on the first wall in that direction.
         Frame(root, "photo_wedding", "Wedding photo", 2.0f, 8.0f, Second, Vector3.left, // StartBedroom, west wall
             "On the back, in neat ink: 'A. & E., June 1934. Forever is a promise I intend to keep.'");
-        Frame(root, "photo_children_decayed", "Photo of two children", 12f, 20f, Second, Vector3.forward, // Old Nursery
+        Frame(root, "photo_children_decayed", "Photo of two children", 9.3f, 20f, Second, Vector3.forward, // Old Nursery
             "On the back, in a child's hand: 'Tom and me. Summer.'\nThe faces have run, as if the picture got wet. It isn't damp.");
         Frame(root, "photo_family_decayed", "Family portrait", 14.5f, 11.2f, Second, Vector3.forward, // Corridor_Second
             "The Hales, in the front hall. Someone has scratched out every face, slowly, many times over.", 1.6f);
