@@ -107,10 +107,10 @@ namespace Blink.Combat
         IDamageable _owner;
         Vector3 _holsterPosition;
         Quaternion _holsterRotation = Quaternion.identity;
-        float _nextScrollTime;
+        float _nextScrollTime, _grabDown;
         WeaponKind? _beforeGrab;
         float _restoreAt = float.PositiveInfinity;
-        bool _subscribed;
+        bool _subscribed, _brokeFree;
 
         InputAction _fire, _reload, _next, _previous, _scroll, _drop;
         InputAction[] _slotKeys = Array.Empty<InputAction>();
@@ -183,7 +183,13 @@ namespace Blink.Combat
                 _beforeGrab = null;
             }
 
-            AdvanceSwitch(Mathf.Min(Time.unscaledDeltaTime, 0.1f));
+            // Grabbed: the holster stays out of view through the struggle (no arms, just its face); the hands come up
+            // on the last press for the break-free shove. Dead: stays down.
+            float dt = Mathf.Min(Time.unscaledDeltaTime, 0.1f);
+            bool down = (GrabQte.Active && !_brokeFree) || !alive;
+            _grabDown = Mathf.MoveTowards(_grabDown, down ? 1f : 0f, dt / Mathf.Max(0.01f, down ? lowerSeconds : raiseSeconds));
+
+            AdvanceSwitch(dt);
 
             if (!inputFree || _switch.IsSwitching || _slots.Count == 0) return;
             if (Interaction.Carryable.Held != null) return; // hands are full: Attack throws the prop instead
@@ -321,7 +327,7 @@ namespace Blink.Combat
         void ApplyHolsterPose()
         {
             if (holster == null) return;
-            float t = Mathf.SmoothStep(0f, 1f, _switch.Lowered01);
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Max(_switch.Lowered01, _grabDown));
             holster.SetLocalPositionAndRotation(
                 _holsterPosition + Vector3.down * (lowerDrop * t),
                 _holsterRotation * Quaternion.Euler(lowerPitchRoll.x * t, 0f, lowerPitchRoll.y * t));
@@ -382,6 +388,7 @@ namespace Blink.Combat
             _subscribed = true;
             GrabQte.Began += OnGrabBegan;
             GrabQte.Resolved += OnGrabResolved;
+            GrabQte.BrokeFree += OnGrabBrokeFree;
             if (pistol != null)
             {
                 pistol.Fired += OnPistolFired;
@@ -402,6 +409,7 @@ namespace Blink.Combat
             _subscribed = false;
             GrabQte.Began -= OnGrabBegan;
             GrabQte.Resolved -= OnGrabResolved;
+            GrabQte.BrokeFree -= OnGrabBrokeFree;
             if (pistol != null)
             {
                 pistol.Fired -= OnPistolFired;
@@ -424,14 +432,18 @@ namespace Blink.Combat
             ShotFired?.Invoke(WeaponKind.Pistol);
         }
 
-        // Hands out to push the zombie off. Selecting during the QTE works: the switch runs on unscaled time.
+        // Hands in, out of view, ready to push the zombie off. Selecting during the QTE works: the switch runs on unscaled time.
         void OnGrabBegan()
         {
+            _brokeFree = false;
             if (!Has(WeaponKind.Hands)) return;
             _restoreAt = float.PositiveInfinity;
             _beforeGrab ??= _slots[_switch.Target].Kind;
             Select(WeaponKind.Hands);
         }
+
+        // Up for the shove: the raise lands about as the shove reaches the zombie (GrabShovePose.ContactSeconds).
+        void OnGrabBrokeFree() => _brokeFree = true;
 
         void OnGrabResolved(bool passed)
         {
