@@ -35,5 +35,16 @@ namespace Blink.Mobs
             // The small slack stops float noise (0.5 / 0.02 = 25.0000004) adding a step.
             return Mathf.CeilToInt(simulated / fixedDeltaTime - 1e-4f);
         }
+
+        /// <summary>
+        /// How much of a push a limb at height <paramref name="y"/> gets, for a body spanning
+        /// <paramref name="minY"/>..<paramref name="maxY"/>: <paramref name="feetShare"/> at the bottom, all of it at
+        /// the top, linear between (clamped). A flat body gets all of it.
+        /// </summary>
+        public static float HeightShare(float y, float minY, float maxY, float feetShare)
+        {
+            if (maxY - minY < 1e-4f) return 1f;
+            return Mathf.Lerp(feetShare, 1f, Mathf.InverseLerp(minY, maxY, y));
+        }
     }
 }

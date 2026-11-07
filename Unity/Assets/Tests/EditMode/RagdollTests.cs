@@ -89,5 +89,21 @@ namespace Blink.Tests
             Assert.IsTrue(clock.Advance(0.01f, 0f));
             Assert.IsTrue(clock.Advance(0.01f, 9f));   // stays settled
         }
+
+        [Test]
+        public void HeightShare_FeetGetTheirShare_HeadGetsAll_InBetweenIsLinear()
+        {
+            Assert.AreEqual(0.25f, RagdollMath.HeightShare(0f, 0f, 2f, 0.25f), 1e-5f);
+            Assert.AreEqual(1f, RagdollMath.HeightShare(2f, 0f, 2f, 0.25f), 1e-5f);
+            Assert.AreEqual(0.625f, RagdollMath.HeightShare(1f, 0f, 2f, 0.25f), 1e-5f);
+            Assert.AreEqual(0.25f, RagdollMath.HeightShare(-1f, 0f, 2f, 0.25f), 1e-5f); // clamped
+            Assert.AreEqual(1f, RagdollMath.HeightShare(5f, 0f, 2f, 0.25f), 1e-5f);
+        }
+
+        [Test]
+        public void HeightShare_FlatBody_GetsAllOfIt()
+        {
+            Assert.AreEqual(1f, RagdollMath.HeightShare(1f, 1f, 1f, 0.25f), 1e-5f);
+        }
     }
 }

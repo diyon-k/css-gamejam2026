@@ -15,7 +15,7 @@ namespace Blink.Mobs
     ///
     /// Knockdown: a blunt melee prop (<see cref="Interaction.SwingableProp"/>) calls <see cref="Launch"/> on a living
     /// zombie: it goes limp and flies, and <see cref="GetUp"/> later hands the bones back to the Animator, blending
-    /// out of the pose it landed in.
+    /// out of the pose it landed in. The grab QTE's shove uses <see cref="Shove"/> instead: pushed over backwards, no spin.
     ///
     /// Layers: bone colliders sit on a layer that collides with nothing while alive (the gun still
     /// raycasts them) and move to <see cref="corpseLayer"/> while limp, which collides with the level and
@@ -225,19 +225,7 @@ namespace Blink.Mobs
         public void Launch(Vector3 velocity, Vector3 point)
         {
             if (_bodies.Length == 0) return;
-            if (!IsActive)
-            {
-                GoLimp(Vector3.zero);
-                IsKnockedDown = true;
-            }
-            else if (IsFrozen)
-            {
-                IsFrozen = false;
-                ActiveCount++;
-                _settle = new RagdollSettleClock(settleSeconds, restSpeed, restSeconds);
-                foreach (var body in _bodies)
-                    if (body != null) body.isKinematic = false;
-            }
+            LimpForKnockdown();
 
             foreach (var body in _bodies)
             {
@@ -252,6 +240,53 @@ namespace Blink.Mobs
             foreach (var body in _bodies) _bodyPositions.Add(body.worldCenterOfMass);
             int nearest = RagdollMath.NearestIndex(_bodyPositions, point);
             if (nearest >= 0) _bodies[nearest].AddForceAtPosition(velocity.normalized * knockdownSpin, point, ForceMode.Impulse);
+        }
+
+        /// <summary>
+        /// Pushed over (the grab QTE's two-handed shove): goes limp like <see cref="Launch"/>, but with no spin, and
+        /// each limb gets <paramref name="velocity"/> scaled by how high it is, <paramref name="feetShare"/> of it at
+        /// the lowest limb up to all of it at the highest. The chest goes back faster than the feet, so it topples
+        /// over backwards instead of tumbling through the air.
+        /// </summary>
+        public void Shove(Vector3 velocity, float feetShare)
+        {
+            if (_bodies.Length == 0) return;
+            LimpForKnockdown();
+
+            float low = float.PositiveInfinity, high = float.NegativeInfinity;
+            foreach (var body in _bodies)
+            {
+                if (body == null) continue;
+                float y = body.worldCenterOfMass.y;
+                low = Mathf.Min(low, y);
+                high = Mathf.Max(high, y);
+            }
+            foreach (var body in _bodies)
+            {
+                if (body == null) continue;
+                body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+                body.angularVelocity = Vector3.zero;
+                body.AddForce(velocity * RagdollMath.HeightShare(body.worldCenterOfMass.y, low, high, feetShare), ForceMode.VelocityChange);
+                body.WakeUp();
+            }
+        }
+
+        // Limp for a knockdown: a living body goes limp and will get up later; a frozen corpse wakes up.
+        void LimpForKnockdown()
+        {
+            if (!IsActive)
+            {
+                GoLimp(Vector3.zero);
+                IsKnockedDown = true;
+            }
+            else if (IsFrozen)
+            {
+                IsFrozen = false;
+                ActiveCount++;
+                _settle = new RagdollSettleClock(settleSeconds, restSpeed, restSeconds);
+                foreach (var body in _bodies)
+                    if (body != null) body.isKinematic = false;
+            }
         }
 
         /// <summary>

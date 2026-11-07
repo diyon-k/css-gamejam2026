@@ -17,7 +17,8 @@ namespace Blink.Combat
     ///
     /// On top of the sway, three procedural poses: a reach forward when the player interacts (picks something up,
     /// opens a door), and while a zombie has us (<see cref="GrabQte"/>) a raised, trembling brace against its
-    /// chest, a shove on every correct press and a big shove when we break free.
+    /// chest, a shove on every correct press and, when we break free, a two-handed push (<see cref="GrabShovePose"/>):
+    /// pull in, drive out to nearly straight arms as the zombie is pushed over, hold, sink back.
     ///
     /// On a <see cref="Ladder"/> the hands go up onto the rails and climb hand over hand: each hand's IK target is
     /// moved on its own, one reaching up a rung while the other pulls down, following <see cref="Ladder.Rungs"/>;
@@ -50,7 +51,7 @@ namespace Blink.Combat
         [Tooltip("Tremble while braced: metres and degrees.")]
         [SerializeField] float trembleDistance = 0.008f;
         [SerializeField] float trembleAngle = 2f;
-        [Tooltip("Push on each correct press (metres forward); breaking free shoves twice as far.")]
+        [Tooltip("Push on each correct press (metres forward). Breaking free plays GrabShovePose instead.")]
         [SerializeField] float shoveDistance = 0.12f;
         [SerializeField, Min(0.01f)] float shoveSeconds = 0.3f;
 
@@ -73,7 +74,8 @@ namespace Blink.Combat
         bool _initialised;
         float _time;
         Interactor _interactor;
-        float _reachAt = float.NegativeInfinity, _shoveAt = float.NegativeInfinity, _shoveStrength, _brace, _climb;
+        float _reachAt = float.NegativeInfinity, _shoveAt = float.NegativeInfinity, _breakFreeAt = float.NegativeInfinity;
+        float _shoveStrength, _brace, _climb;
         Vector3 _leftRest, _rightRest;
 
         void Awake()
@@ -96,7 +98,7 @@ namespace Blink.Combat
             if (_interactor != null) _interactor.Interacted -= Reach;
             GrabQte.Beat -= OnBeat;
             GrabQte.BrokeFree -= OnBrokeFree;
-            _reachAt = _shoveAt = float.NegativeInfinity;
+            _reachAt = _shoveAt = _breakFreeAt = float.NegativeInfinity;
             if (!_initialised) return;
             if (swayPivot != null) swayPivot.SetLocalPositionAndRotation(_restPosition, _restRotation);
             if (leftHand != null) leftHand.localPosition = _leftRest;
@@ -114,7 +116,7 @@ namespace Blink.Combat
         }
 
         void OnBeat() => Shove();
-        void OnBrokeFree() => Shove(2f); // the shove that flings it off
+        void OnBrokeFree() => _breakFreeAt = _time; // the two-handed shove that pushes it off (GrabShovePose)
 
         void Update() => Step(Time.unscaledDeltaTime);
 
@@ -141,9 +143,12 @@ namespace Blink.Combat
             _brace = Mathf.MoveTowards(_brace, GrabQte.Active ? 1f : 0f, Mathf.Max(0f, seconds) * 6f);
             float brace = Mathf.SmoothStep(0f, 1f, _brace);
             float shove = Pulse(_time - _shoveAt, shoveSeconds * 0.25f, shoveSeconds * 0.75f) * _shoveStrength;
-            var tremble = new Vector3(Noise(0f), Noise(10f), Noise(20f)) * brace;
-            position += bracePosition * brace + tremble * trembleDistance + new Vector3(0f, 0.02f, shoveDistance) * shove;
-            pitch += bracePitch * brace - 8f * shove;
+            // Breaking free: pull in, drive out, hold, sink back; the straining tremble stops once it's going.
+            GrabShovePose.Sample(_time - _breakFreeAt, out var breakFree, out float breakFreePitch, out float together);
+            float shoving = _time - _breakFreeAt < GrabShovePose.EndSeconds ? 1f : 0f;
+            var tremble = new Vector3(Noise(0f), Noise(10f), Noise(20f)) * (brace * (1f - shoving));
+            position += bracePosition * brace + tremble * trembleDistance + new Vector3(0f, 0.02f, shoveDistance) * shove + breakFree;
+            pitch += bracePitch * brace - 8f * shove + breakFreePitch;
             // Ladder: both hands up on the rails, alternating; over the top, the reach pose pushes down on the edge.
             _climb = Mathf.MoveTowards(_climb, Ladder.Climbing ? 1f : 0f, Mathf.Max(0f, seconds) / climbBlendSeconds);
             float climb = Mathf.SmoothStep(0f, 1f, _climb);
@@ -151,8 +156,8 @@ namespace Blink.Combat
             position += climbPosition * (climb * (1f - mantle)) + reachPosition * mantle;
             pitch += climbPitch * climb * (1f - mantle) + reachPitch * mantle;
             float rungs = Ladder.Rungs;
-            if (leftHand != null) leftHand.localPosition = _leftRest + ClimbHandOffset(rungs, 0) * climb;
-            if (rightHand != null) rightHand.localPosition = _rightRest + ClimbHandOffset(rungs, 1) * climb;
+            if (leftHand != null) leftHand.localPosition = _leftRest + ClimbHandOffset(rungs, 0) * climb + Vector3.right * together;
+            if (rightHand != null) rightHand.localPosition = _rightRest + ClimbHandOffset(rungs, 1) * climb + Vector3.left * together;
 
             rotation *= Quaternion.Euler(pitch + tremble.x * trembleAngle, tremble.y * trembleAngle, tremble.z * trembleAngle);
 

@@ -87,10 +87,13 @@ namespace Blink.Mobs
         [SerializeField] float biteLunge = 0.22f;
         [Tooltip("Metres a good press shoves it back for a moment.")]
         [SerializeField] float shoveDistance = 0.3f;
-        [Tooltip("Speed (m/s) it's flung back, away from you, when you break free. 3 (with 1.5 lift) lands it about 3 m from you.")]
-        [SerializeField, Min(0f)] float grabEscapeThrow = 3f;
-        [Tooltip("Upward speed (m/s) added to that throw, so it leaves its feet.")]
-        [SerializeField, Min(0f)] float grabEscapeLift = 1.5f;
+        [Tooltip("Speed (m/s) its head and shoulders are shoved back, away from you, when you break free. Lower limbs get " +
+                 "less (down to grabEscapeFeetShare at the feet), so it topples over backwards.")]
+        [SerializeField, Min(0f)] float grabEscapeThrow = 3.5f;
+        [Tooltip("Upward speed (m/s) added to that shove (scaled the same way), so its feet come off the floor.")]
+        [SerializeField, Min(0f)] float grabEscapeLift = 1f;
+        [Tooltip("Share of the shove the lowest limbs get (0 = feet stay planted, 1 = the whole body flies as one).")]
+        [SerializeField, Range(0f, 1f)] float grabEscapeFeetShare = 0.3f;
         [Tooltip("World seconds it lies stunned after being flung off, before getting back up.")]
         [SerializeField, Min(0f)] float grabEscapeStun = 3f;
         [Tooltip("Metres above the head bone the camera looks at, for rigs without eye bones (with them it looks between the eyes).")]
@@ -120,7 +123,7 @@ namespace Blink.Mobs
         static readonly int AttackStateShort = Animator.StringToHash("Attack");
 
         // Grab hold: GrabQte has frozen the world; this zombie is moved by hand on real time.
-        bool _grabbing, _finalShove;
+        bool _grabbing;
         float _grabClock, _biteAt, _shoveAt;
         Vector3 _grabFrom, _grabAnchor;
         Quaternion _grabFromRotation, _grabRotation;
@@ -499,22 +502,16 @@ namespace Blink.Mobs
             else if (_hasAttackParam) animator.SetTrigger(AttackParam);
         }
 
-        void IGrabber.GrabShoved(bool final)
-        {
-            _shoveAt = _grabClock;
-            _finalShove = final;
-        }
+        void IGrabber.GrabShoved() => _shoveAt = _grabClock;
 
-        // Flung off as a ragdoll from the chest, so it tips over backwards; KnockDown gets it back up after the stun.
+        // Pushed over backwards as a ragdoll (the chest harder than the feet, no spin); it gets up after the stun.
         void IGrabber.GrabThrown(Vector3 away)
         {
             EndGrabHold();
-            if (CurrentState == State.Dead) return;
+            if (CurrentState == State.Dead || !GoDown(grabEscapeStun)) return;
             Vector3 back = Vector3.ProjectOnPlane(away, Vector3.up);
             back = back.sqrMagnitude > 1e-4f ? back.normalized : _grabRotation * Vector3.back;
-            Vector3 chest = _head != null ? Vector3.Lerp(transform.position, _head.position, 0.75f)
-                : transform.position + Vector3.up * (eyeHeight * 0.75f);
-            KnockDown(back * grabEscapeThrow + Vector3.up * grabEscapeLift, chest, grabEscapeStun);
+            ragdoll.Shove(back * grabEscapeThrow + Vector3.up * grabEscapeLift, grabEscapeFeetShare);
         }
 
         void IGrabber.GrabResolved(bool escaped)
@@ -530,7 +527,13 @@ namespace Blink.Mobs
         /// </summary>
         public void KnockDown(Vector3 velocity, Vector3 point, float stunSeconds)
         {
-            if (ragdoll == null) return;
+            if (GoDown(stunSeconds)) ragdoll.Launch(velocity, point);
+        }
+
+        /// <summary>Into <see cref="State.Down"/> (if alive) for at least <paramref name="stunSeconds"/>. False without a ragdoll.</summary>
+        bool GoDown(float stunSeconds)
+        {
+            if (ragdoll == null) return false;
             if (CurrentState is not (State.Dead or State.Down))
             {
                 _downFrom = transform.position;
@@ -540,7 +543,7 @@ namespace Blink.Mobs
                 SetState(State.Down);
             }
             if (CurrentState == State.Down) _downTimer = Mathf.Max(_downTimer, stunSeconds);
-            ragdoll.Launch(velocity, point);
+            return true;
         }
 
         void TickDown(float dt)
@@ -573,7 +576,6 @@ namespace Blink.Mobs
         void StartGrabHold()
         {
             _grabbing = true;
-            _finalShove = false;
             _grabClock = 0f;
             _biteAt = _shoveAt = float.NegativeInfinity;
 
@@ -605,7 +607,7 @@ namespace Blink.Mobs
             _grabClock += dt;
             float slam = Smooth01(_grabClock / grabSlamSeconds);
             float lunge = BiteCurve(_grabClock - _biteAt);
-            float shove = _finalShove && _grabClock >= _shoveAt ? Smooth01((_grabClock - _shoveAt) / 0.06f) : ShoveCurve(_grabClock - _shoveAt);
+            float shove = ShoveCurve(_grabClock - _shoveAt);
 
             Vector3 toPlayer = _grabRotation * Vector3.forward;
             Vector3 position = Vector3.LerpUnclamped(_grabFrom, _grabAnchor, slam)

@@ -17,12 +17,12 @@ namespace Blink.Player
         /// <summary>Lunge in and bite. On a steady beat from the moment it grabs you; <paramref name="hurts"/> when you missed a ring, and it should damage you.</summary>
         void GrabBite(bool hurts);
 
-        /// <summary>A good press pushed it back. <paramref name="final"/>: that was the last one and you broke free.</summary>
-        void GrabShoved(bool final);
+        /// <summary>A good press (not the last) pushed it back for a moment.</summary>
+        void GrabShoved();
 
         /// <summary>
-        /// You broke free and shoved it off with both hands: fly back a few metres along <paramref name="away"/>
-        /// (flat, from you to it) and lie stunned for a while before getting back up. It isn't hurt.
+        /// You broke free and your hands just hit its chest: get pushed over backwards, away along <paramref name="away"/>
+        /// (flat, from you to it), and lie stunned for a while before getting back up. It isn't hurt.
         /// </summary>
         void GrabThrown(Vector3 away);
 
@@ -39,8 +39,8 @@ namespace Blink.Player
     /// middle: press that key as they meet (W/A/S/D, or the gamepad's Y/X/A/B face button in the same spot). A hit
     /// shoves the zombie back; the wrong key, bad timing or a ring left to pass means it bites, which costs health with
     /// a red flash, and the next ring follows with a new key. <see cref="Beats"/> hits and you break free: a two-handed
-    /// shove flings it a few metres back, where it lies stunned (unhurt) and then gets up and comes for you again, while
-    /// time eases through slow motion back to normal. Die from the bites and time eases back over your body instead.
+    /// shove (<see cref="GrabShovePose"/>) pushes it over backwards, where it lies stunned (unhurt) and then gets up and
+    /// comes for you again, while time eases through slow motion back to normal. Die from the bites and time eases back over your body instead.
     /// Timing lives in <see cref="GrabRing"/>.
     ///
     /// Drawn with IMGUI in the <see cref="BlinkTheme"/> style (a thin bone ring closing on a key cap inside a thin red
@@ -60,9 +60,9 @@ namespace Blink.Player
         const float BlinkGraceSeconds = 0.5f;
         const float LookSharpness = 14f;           // how hard the camera is yanked onto the face
 
-        // Escape, seconds after the last hit: the hands' shove reaches full stretch and flings it off while the world is
-        // still frozen, then time eases into slow motion as it flies, and back up to full speed.
-        const float LaunchAt = 0.08f;
+        // Escape, seconds after the last hit: the hands pull in and drive out (GrabShovePose), and as they land on its
+        // chest it's pushed over, then time eases into slow motion as it falls, and back up to full speed.
+        const float LaunchAt = GrabShovePose.ContactSeconds;
         const float SlowMoScale = 0.35f;
         const float SlowMoUntil = 0.65f;
         const float EscapeEndsAt = 1.25f;
@@ -84,8 +84,11 @@ namespace Blink.Player
         /// <summary>A correct press that didn't finish the QTE (a shove that hasn't broken free yet).</summary>
         public static event Action Beat;
 
-        /// <summary>The last press landed: the big two-handed shove that flings it off (the hands and rumble play it).</summary>
+        /// <summary>The last press landed: the hands start the two-handed shove (<see cref="GrabShovePose"/>).</summary>
         public static event Action BrokeFree;
+
+        /// <summary>The shove lands, <see cref="GrabShovePose.ContactSeconds"/> after <see cref="BrokeFree"/>: it's pushed over.</summary>
+        public static event Action ShovedOff;
 
         /// <summary>
         /// True during a QTE and briefly after, so the presses and clicks used for it don't register as
@@ -112,6 +115,7 @@ namespace Blink.Player
             Resolved = null;
             Beat = null;
             BrokeFree = null;
+            ShovedOff = null;
         }
 
         /// <summary>Starts a QTE for <paramref name="grabber"/>. Returns false if one is already running.</summary>
@@ -206,16 +210,14 @@ namespace Blink.Player
             switch (_ring.Press(key))
             {
                 case GrabRing.Result.Hit:
-                    _grabber.GrabShoved(false);
+                    _grabber.GrabShoved();
                     Jolt(1.5f, 0.03f);
                     Beat?.Invoke();
                     _spot = GrabRing.PickSpot(Random01, _spot, Aspect);
                     _biteTimer = Mathf.Max(_biteTimer, 0.5f); // let the shove land before it lunges again
                     break;
                 case GrabRing.Result.Escaped:
-                    _grabber.GrabShoved(true);
-                    Jolt(2f, 0f);
-                    BrokeFree?.Invoke();
+                    BrokeFree?.Invoke(); // it stays in your face until the hands land
                     _phase = Phase.Escape;
                     _endClock = 0f;
                     break;
@@ -249,6 +251,8 @@ namespace Blink.Player
             if (!_launched && _endClock >= LaunchAt)
             {
                 _launched = true;
+                Jolt(2f, 0f);
+                ShovedOff?.Invoke();
                 if (!gone) _grabber.GrabThrown(Away());
             }
 

@@ -63,7 +63,7 @@ namespace Blink.Effects
             if (_health) { _health.Damaged += OnDamaged; _health.Died += OnDied; }
             foreach (var d in _doors) d.Opened += OnDoorOpened;
             GrabQte.Bit += OnGrabBite;
-            GrabQte.BrokeFree += OnGrabBrokeFree;
+            GrabQte.ShovedOff += OnGrabShovedOff;
         }
 
         void OnDestroy()
@@ -75,7 +75,7 @@ namespace Blink.Effects
             if (_health) { _health.Damaged -= OnDamaged; _health.Died -= OnDied; }
             if (_doors != null) foreach (var d in _doors) if (d) d.Opened -= OnDoorOpened;
             GrabQte.Bit -= OnGrabBite;
-            GrabQte.BrokeFree -= OnGrabBrokeFree;
+            GrabQte.ShovedOff -= OnGrabShovedOff;
         }
 
         // Each bite lunge while grabbed. Lower priority than the grab jolt, so the first bite doesn't cut it short.
@@ -85,8 +85,8 @@ namespace Blink.Effects
             if (!hurts) Pulse(0.7f, 0.9f, 0.2f, 2);
         }
 
-        // The two-handed shove that flings it off you: one heavy thump.
-        void OnGrabBrokeFree() => Pulse(0.9f, 0.6f, 0.22f, 2);
+        // The two-handed shove landing on its chest: one heavy thump.
+        void OnGrabShovedOff() => Pulse(0.9f, 0.6f, 0.22f, 2);
 
         // Motors hold their last speed forever (even after leaving Play mode), so always stop them: on disable, when
         // the app is paused or loses focus (Update may not run then), on quit, and when the Editor pauses.
