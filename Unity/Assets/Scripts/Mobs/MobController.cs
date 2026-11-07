@@ -2,15 +2,22 @@ using System;
 using Blink.Combat;
 using Blink.Player;
 using Blink.TimeSkip;
+using Blink.World;
 using UnityEngine;
 using UnityEngine.AI;
 
 namespace Blink.Mobs
 {
     /// <summary>
-    /// Zombie brain: chase the player on the navmesh, attack in range, die when its Health runs out.
-    /// On a blink skip it jumps along its navmesh path by speed x seconds x skipDistanceMultiplier,
-    /// keeps running without a hitch, and can land a hit if it was already in range. Hitting the player while their eyes are shut interrupts fast-forward.
+    /// Zombie brain. Patrols a loop of waypoints until it notices you:
+    /// - Sees you (in range, inside its view cone, nothing in the way, or you're touching distance) => Chase.
+    /// - Loses sight for <see cref="loseSightTime"/> => walks to where it last saw you and searches.
+    /// - Hears a <see cref="Noise"/> within range (walking distance, so walls muffle it) while it can't
+    ///   see you => walks over to the noise and searches. Noise can lure it off a chase.
+    /// - Search over => back to the nearest waypoint. No patrol route => stands guard (Idle).
+    /// Attacks in range, dies when its Health runs out.
+    /// On a blink skip it jumps along its current navmesh path by speed x seconds x skipDistanceMultiplier,
+    /// keeps moving without a hitch, and can land a hit if it was already in range. Hitting the player while their eyes are shut interrupts fast-forward.
     /// On death it goes limp as a <see cref="ZombieRagdoll"/> if it has one (otherwise it plays the
     /// Animator's "Dead" clip, or falls over procedurally) and the body is removed after
     /// <see cref="corpseLifetime"/> world seconds, which skips also count towards.
@@ -21,7 +28,7 @@ namespace Blink.Mobs
     [RequireComponent(typeof(NavMeshAgent))]
     public sealed class MobController : MonoBehaviour, ISkippable
     {
-        public enum State { Idle, Chase, Attack, Dead }
+        public enum State { Idle, Patrol, Investigate, Chase, Attack, Dead }
 
         [Tooltip("Defaults to the PlayerController in the scene.")]
         [SerializeField] Transform target;
@@ -29,10 +36,35 @@ namespace Blink.Mobs
         [Header("Movement")]
         [SerializeField] float moveSpeed = 1.6f;
         [SerializeField] float turnSpeed = 360f;
-        [SerializeField] float detectionRange = 40f;
         [SerializeField] float repathInterval = 0.25f;
         [Tooltip("How much further than its normal pace a zombie lurches on a blink skip (2 = twice as far).")]
         [SerializeField, Min(0f)] float skipDistanceMultiplier = 2f;
+
+        [Header("Patrol")]
+        [Tooltip("Its children are the waypoints, walked in order and looped. Positions are read once at start, " +
+                 "so the route can sit anywhere (even under the zombie). Empty = stand guard.")]
+        [SerializeField] Transform patrolRoute;
+        [SerializeField] float patrolSpeed = 0.8f;
+        [Tooltip("World seconds to pause at each waypoint.")]
+        [SerializeField, Min(0f)] float patrolWait = 2f;
+
+        [Header("Senses")]
+        [SerializeField] float sightRange = 15f;
+        [Tooltip("Full view-cone angle in degrees.")]
+        [SerializeField, Range(1f, 360f)] float fieldOfView = 120f;
+        [Tooltip("Notices you this close whatever direction it faces.")]
+        [SerializeField] float touchRange = 2f;
+        [SerializeField] float eyeHeight = 1.6f;
+        [Tooltip("What blocks its sight.")]
+        [SerializeField] LayerMask sightBlockers = ~0;
+        [Tooltip("World seconds it keeps tracking you after losing sight, before going to search.")]
+        [SerializeField, Min(0f)] float loseSightTime = 3f;
+        [Tooltip("Multiplies every noise's audible range for this zombie (2 = hears twice as far).")]
+        [SerializeField, Min(0f)] float hearing = 1f;
+        [Tooltip("World seconds spent looking around where it heard a noise or lost you.")]
+        [SerializeField, Min(0f)] float searchTime = 3f;
+        [Tooltip("Degrees per second it turns while searching.")]
+        [SerializeField] float searchTurnSpeed = 90f;
 
         [Header("Attack")]
         [SerializeField] float attackRange = 1.6f;
@@ -68,11 +100,22 @@ namespace Blink.Mobs
         NavMeshAgent _agent;
         Health _health;
         IDamageable _targetHealth;
-        NavMeshPath _skipPath;
+        Collider _targetCollider;
+        NavMeshPath _skipPath, _noisePath;
         float _attackCooldown;
         float _repathTimer;
         bool _hasSpeedParam, _hasAttackParam, _hasDeadParam;
         bool _warnedOffMesh;
+
+        // Senses and patrol.
+        Vector3[] _waypoints = Array.Empty<Vector3>();
+        int _waypointIndex;
+        bool _seesTarget;
+        float _senseTimer;
+        float _lostTimer;
+        Vector3 _lastSeen;
+        /// <summary>Pause at a waypoint, or search time at an investigated spot. Counts while the agent is stopped.</summary>
+        float _waitTimer;
 
         // Death: procedural fall-over (placeholder until there's a death clip) and corpse removal.
         WorldTimer _corpseTimer;
@@ -90,24 +133,37 @@ namespace Blink.Mobs
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (ragdoll == null) ragdoll = GetComponent<ZombieRagdoll>();
             CacheAnimatorParameters();
+
+            if (patrolRoute != null)
+            {
+                _waypoints = new Vector3[patrolRoute.childCount];
+                for (int i = 0; i < _waypoints.Length; i++) _waypoints[i] = patrolRoute.GetChild(i).position;
+            }
         }
 
         void OnEnable()
         {
             TimeSkipController.Register(this);
+            Noise.Made += OnNoise;
             if (_health != null) _health.Died += OnDied;
         }
 
         void OnDisable()
         {
             TimeSkipController.Unregister(this);
+            Noise.Made -= OnNoise;
             if (_health != null) _health.Died -= OnDied;
         }
 
         void Start()
         {
             if (target == null && FindAnyObjectByType<PlayerController>() is { } player) target = player.transform;
-            if (target != null) _targetHealth = target.GetComponentInParent<IDamageable>();
+            if (target != null)
+            {
+                _targetHealth = target.GetComponentInParent<IDamageable>();
+                _targetCollider = target.GetComponentInChildren<Collider>();
+            }
+            if (_agent.isOnNavMesh) StartPatrol();
         }
 
         void Update()
@@ -119,39 +175,54 @@ namespace Blink.Mobs
             }
             if (!EnsureOnNavMesh()) return;
 
-            _attackCooldown -= Time.deltaTime;
+            float dt = Time.deltaTime;
+            _attackCooldown -= dt;
+            bool targetAlive = TargetAlive();
 
-            if (target == null || (_targetHealth != null && _targetHealth.IsDead))
+            if (!targetAlive) _seesTarget = false;
+            else if ((_senseTimer -= dt) <= 0f)
             {
-                SetState(State.Idle);
-                _agent.isStopped = true;
+                _seesTarget = CanSeeTarget();
+                _senseTimer = repathInterval;
             }
-            else
+
+            if (_seesTarget)
             {
-                float distance = FlatDistanceToTarget();
-                if (distance <= attackRange)
+                _lastSeen = target.position;
+                _lostTimer = loseSightTime;
+            }
+            else _lostTimer -= dt;
+
+            bool hunting = CurrentState is State.Chase or State.Attack;
+            bool tracking = targetAlive && (_seesTarget || (hunting && _lostTimer > 0f));
+
+            if (tracking && FlatDistanceToTarget() <= attackRange)
+            {
+                SetState(State.Attack);
+                _agent.isStopped = true;
+                FaceTarget(dt);
+                if (_attackCooldown <= 0f) Attack();
+            }
+            else if (tracking)
+            {
+                if (CurrentState != State.Chase) _repathTimer = 0f;
+                SetState(State.Chase);
+                _agent.speed = moveSpeed;
+                _agent.isStopped = false;
+                if ((_repathTimer -= dt) <= 0f)
                 {
-                    SetState(State.Attack);
-                    _agent.isStopped = true;
-                    FaceTarget(Time.deltaTime);
-                    if (_attackCooldown <= 0f) Attack();
+                    _agent.SetDestination(target.position);
+                    _repathTimer = repathInterval;
                 }
-                else if (distance <= detectionRange)
-                {
-                    SetState(State.Chase);
-                    _agent.isStopped = false;
-                    _repathTimer -= Time.deltaTime;
-                    if (_repathTimer <= 0f)
-                    {
-                        _agent.SetDestination(target.position);
-                        _repathTimer = repathInterval;
-                    }
-                }
-                else
-                {
-                    SetState(State.Idle);
-                    _agent.isStopped = true;
-                }
+            }
+            else if (hunting)
+            {
+                if (targetAlive) Investigate(_lastSeen);
+                else StartPatrol(); // killed you: wander off
+            }
+            else if (CurrentState is State.Investigate or State.Patrol)
+            {
+                TickWander(dt);
             }
 
             // While chasing, animate at the intended pace: the measured velocity drops to zero for a
@@ -159,6 +230,87 @@ namespace Blink.Mobs
             if (_hasSpeedParam)
                 animator.SetFloat(SpeedParam, CurrentState == State.Chase ? moveSpeed : _agent.velocity.magnitude);
         }
+
+        /// <summary>Walk to the patrol waypoint / investigated spot, then pause or search there.</summary>
+        void TickWander(float dt)
+        {
+            if (!_agent.isStopped)
+            {
+                if (_agent.pathPending || _agent.remainingDistance > _agent.stoppingDistance + 0.2f) return;
+                _agent.isStopped = true;
+                _waitTimer = CurrentState == State.Investigate ? searchTime : patrolWait;
+            }
+
+            if (CurrentState == State.Investigate) transform.Rotate(0f, searchTurnSpeed * dt, 0f);
+            if ((_waitTimer -= dt) > 0f) return;
+
+            if (CurrentState == State.Investigate) StartPatrol();
+            else GoToWaypoint((_waypointIndex + 1) % _waypoints.Length);
+        }
+
+        void StartPatrol()
+        {
+            if (_waypoints.Length == 0)
+            {
+                SetState(State.Idle);
+                _agent.isStopped = true;
+                return;
+            }
+            int nearest = 0;
+            for (int i = 1; i < _waypoints.Length; i++)
+                if ((_waypoints[i] - transform.position).sqrMagnitude < (_waypoints[nearest] - transform.position).sqrMagnitude)
+                    nearest = i;
+            SetState(State.Patrol);
+            GoToWaypoint(nearest);
+        }
+
+        void GoToWaypoint(int index)
+        {
+            _waypointIndex = index;
+            _agent.speed = patrolSpeed;
+            _agent.isStopped = false;
+            _agent.SetDestination(_waypoints[index]);
+        }
+
+        void Investigate(Vector3 point)
+        {
+            SetState(State.Investigate);
+            _agent.speed = moveSpeed;
+            _agent.isStopped = false;
+            _agent.SetDestination(point);
+        }
+
+        void OnNoise(Vector3 position, float loudness)
+        {
+            if (CurrentState is State.Dead or State.Attack || _seesTarget || !_agent.isOnNavMesh) return;
+            // Cheap straight-line reject first; walking distance is never shorter.
+            if (!Noise.CanHear(loudness, Vector3.Distance(transform.position, position), hearing)) return;
+            // Noises happen in the air (a gun at hand height): snap to the floor before pathing.
+            if (!NavMesh.SamplePosition(position, out var floor, 2.5f, _agent.areaMask)) return;
+            _noisePath ??= new NavMeshPath();
+            if (!NavMesh.CalculatePath(transform.position, floor.position, _agent.areaMask, _noisePath)) return;
+            if (_noisePath.status != NavMeshPathStatus.PathComplete) return;
+            if (!Noise.CanHear(loudness, NavPathUtility.PathLength(_noisePath.corners), hearing)) return;
+            Investigate(floor.position);
+        }
+
+        bool CanSeeTarget()
+        {
+            if (FlatDistanceToTarget() <= touchRange) return true;
+
+            Vector3 eye = transform.position + Vector3.up * eyeHeight;
+            Vector3 aim = _targetCollider != null ? _targetCollider.bounds.center : target.position + Vector3.up;
+            Vector3 toTarget = aim - eye;
+            float distance = toTarget.magnitude;
+            if (distance > sightRange) return false;
+
+            Vector3 flat = new Vector3(toTarget.x, 0f, toTarget.z);
+            if (Vector3.Angle(transform.forward, flat) > fieldOfView * 0.5f) return false;
+            return !Physics.Raycast(eye, toTarget / distance, out var hit, distance, sightBlockers, QueryTriggerInteraction.Ignore)
+                   || hit.collider.transform.IsChildOf(target);
+        }
+
+        bool TargetAlive() => target != null && (_targetHealth == null || !_targetHealth.IsDead);
 
         public void Skip(float seconds)
         {
@@ -168,27 +320,36 @@ namespace Blink.Mobs
                 AdvanceDeath(seconds);
                 return;
             }
-            if (target == null || !_agent.isOnNavMesh) return;
-            if (_targetHealth != null && _targetHealth.IsDead) return;
+            if (!_agent.isOnNavMesh) return;
 
             _attackCooldown -= seconds;
+            _lostTimer -= seconds;
             AdvanceAnimation(seconds);
-            float distance = FlatDistanceToTarget();
+            bool hunting = CurrentState is State.Chase or State.Attack;
+            if (hunting && !TargetAlive()) return;
 
-            if (distance <= attackRange)
+            if (hunting && FlatDistanceToTarget() <= attackRange)
             {
                 if (_attackCooldown <= 0f) Attack(grabbed: true);
                 return;
             }
-            if (distance > detectionRange) return;
+            if (CurrentState == State.Idle) return;
+            if (!hunting && _agent.isStopped)
+            {
+                _waitTimer -= seconds; // pausing at a waypoint or searching: Update moves on when it runs out
+                return;
+            }
 
+            Vector3 destination = hunting ? target.position : _agent.destination;
             _skipPath ??= new NavMeshPath();
-            if (!NavMesh.CalculatePath(transform.position, target.position, _agent.areaMask, _skipPath)) return;
+            if (!NavMesh.CalculatePath(transform.position, destination, _agent.areaMask, _skipPath)) return;
             if (_skipPath.status == NavMeshPathStatus.PathInvalid) return;
 
             var corners = _skipPath.corners;
-            float travel = Mathf.Min(moveSpeed * seconds * skipDistanceMultiplier,
-                                     NavPathUtility.PathLength(corners) - attackRange * 0.9f);
+            float speed = hunting ? moveSpeed : _agent.speed;
+            float stopShort = hunting ? attackRange * 0.9f : 0f;
+            float travel = Mathf.Min(speed * seconds * skipDistanceMultiplier,
+                                     NavPathUtility.PathLength(corners) - stopShort);
             if (travel <= 0f) return;
 
             Vector3 landing = NavPathUtility.AdvanceAlongPath(corners, travel);
@@ -197,13 +358,13 @@ namespace Blink.Mobs
 
             _agent.Warp(landing);
             if (heading.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(heading);
-            _agent.SetDestination(target.position);
+            _agent.SetDestination(destination);
             // Warp zeroes the agent's velocity; keep the momentum so it doesn't restart from a standstill.
-            _agent.velocity = heading.normalized * moveSpeed;
+            _agent.velocity = heading.normalized * speed;
             _repathTimer = repathInterval;
 
             // Closed the gap during your blink: it grabs you as your eyes open.
-            if (_attackCooldown <= 0f && FlatDistanceToTarget() <= attackRange) Attack(grabbed: true);
+            if (hunting && _attackCooldown <= 0f && FlatDistanceToTarget() <= attackRange) Attack(grabbed: true);
         }
 
         /// <summary>Moves the animation on by the skipped time so the pose jumps with the body.</summary>
@@ -331,6 +492,20 @@ namespace Blink.Mobs
             Vector3 delta = target.position - transform.position;
             delta.y = 0f;
             return delta.magnitude;
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.yellow;
+            Vector3 eye = transform.position + Vector3.up * eyeHeight;
+            Gizmos.DrawLine(eye, eye + Quaternion.Euler(0f, -fieldOfView * 0.5f, 0f) * transform.forward * sightRange);
+            Gizmos.DrawLine(eye, eye + Quaternion.Euler(0f, fieldOfView * 0.5f, 0f) * transform.forward * sightRange);
+            Gizmos.DrawWireSphere(transform.position, touchRange);
+            if (patrolRoute == null) return;
+            Gizmos.color = Color.cyan;
+            int n = patrolRoute.childCount;
+            for (int i = 0; i < n; i++)
+                Gizmos.DrawLine(patrolRoute.GetChild(i).position, patrolRoute.GetChild((i + 1) % n).position);
         }
 
         bool EnsureOnNavMesh()
