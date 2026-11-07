@@ -34,7 +34,7 @@ flowchart LR
     UDP --> BD
     KEY --> BD
     BD["BlinkDetector<br/>Blinked · EyesShutBegan · EyesShutEnded"] --> TS
-    TS["TimeSkipController<br/>Skip(0.5 s) · timeScale 3x"] -- "ISkippable.Skip(s)" --> W["PlayerController · MobController · Gun<br/>(anything with a WorldTimer)"]
+    TS["TimeSkipController<br/>Skip(0.5 s) · timeScale 3x"] -- "ISkippable.Skip(s)" --> W["MobController · Gun<br/>(anything with a WorldTimer)"]
     TS -- "Skipped · FastForwardStarted/Ended" --> FX["SkipFX · EyesShutView · Audio<br/>(to build)"]
     BD -- "SecondsSinceLastBlink · BlinkCount" --> UI["StareFX · HUD · end screen<br/>(to build)"]
 ```
@@ -86,7 +86,7 @@ Unity/Assets/
   ```
 - **`WorldTimer`**: serializable countdown for anything blinking can speed up (reload, bandage, door, generator). `Start / Pause / Resume / Cancel / Advance(seconds)`, `Progress01`, `Completed` event. Call `Advance(Time.deltaTime)` in Update and `Advance(seconds)` in Skip.
 
-**Time rule:** world things (zombies, timers, player movement) use **scaled** time, so fast-forward speeds them up for free. Camera, UI, effects, eyelids and audio cues that must not speed up use **unscaled** time (`Time.unscaledDeltaTime`).
+**Time rule:** world things (zombies, timers) use **scaled** time, so fast-forward speeds them up for free. The **player stays out of world time**: `PlayerController` is not an `ISkippable` and moves on real time, so neither a blink nor fast-forward moves the player. Camera, UI, effects, eyelids and audio cues that must not speed up also use **unscaled** time (`Time.unscaledDeltaTime`).
 
 ### Combat (`Blink.Combat`)
 - **`IDamageable`**: `IsDead`, `TakeDamage(amount, point, direction)`. Bullets find it with `GetComponentInParent`.
@@ -94,7 +94,7 @@ Unity/Assets/
 - **`Gun`**: hitscan from screen centre. Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster.
 
 ### Player (`Blink.Player`)
-- **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Keeps moving through a blink skip. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
+- **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.

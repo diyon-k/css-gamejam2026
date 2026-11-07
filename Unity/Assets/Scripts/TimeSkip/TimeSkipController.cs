@@ -10,8 +10,8 @@ namespace Blink.TimeSkip
     /// (every registered <see cref="ISkippable"/> jumps). Eyes held shut run the world at
     /// <see cref="fastForwardScale"/> via Time.timeScale until they reopen.
     ///
-    /// World systems (zombies, timers, player movement) use scaled time. Camera, UI, effects and
-    /// audio cues that must not speed up use unscaled time.
+    /// World systems (zombies, timers) use scaled time. The player is not part of world time: it
+    /// isn't skipped and moves on real time. Camera, UI, effects and audio cues use unscaled time.
     /// </summary>
     [DefaultExecutionOrder(-90)]
     public sealed class TimeSkipController : MonoBehaviour
