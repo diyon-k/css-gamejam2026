@@ -169,7 +169,8 @@ namespace Blink.Player
         /// <summary>Holding Crouch shrinks the capsule (feet stay put) and drops the camera with it.</summary>
         void Crawl(float dt)
         {
-            bool held = _crouch != null && _crouch.IsPressed();
+            // Pad B also puts a note down; that press isn't a crouch.
+            bool held = _crouch != null && _crouch.IsPressed() && !Interaction.Readable.ClaimsCrouch;
             IsCrawling = held || (IsCrawling && !HeadroomToStand());
 
             SetHeight(Mathf.MoveTowards(_controller.height, IsCrawling ? crawlHeight : _standHeight, crawlTransitionSpeed * dt));

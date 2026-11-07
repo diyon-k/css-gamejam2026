@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Blink.Combat;
 using Blink.Detection;
@@ -15,8 +16,9 @@ namespace Blink.Audio
     /// muffle never touches it: it's how you read danger without looking.
     ///
     /// Everything runs on real time (the player is outside world time). Each heartbeat is its own
-    /// "lub-dub" one-shot, so the rate changes without pitching anything. Finds the player at runtime;
-    /// lives on GameSystems.
+    /// "lub-dub" one-shot, so the rate changes without pitching anything. This is the game's one heart:
+    /// every beat also raises <see cref="Heartbeat"/>, which the gamepad rumble follows while your eyes are
+    /// shut, so what you feel lands on what you hear. Finds the player at runtime; lives on GameSystems.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PlayerAudio : MonoBehaviour
@@ -73,6 +75,12 @@ namespace Blink.Audio
         /// <summary>Distance to the nearest living zombie at the last scan.</summary>
         public float NearestZombieDistance => _nearest;
 
+        /// <summary>
+        /// A heartbeat landed (real time), whether or not a heartbeat sound is assigned. Arguments: intensity
+        /// (0..1) and rate (bpm). None while no zombie is in range. <c>GamepadHaptics</c> beats on it.
+        /// </summary>
+        public event Action<float, float> Heartbeat;
+
         void OnEnable()
         {
             if (player != null) Subscribe(player);
@@ -115,13 +123,15 @@ namespace Blink.Audio
             float target = HeartbeatMath.Intensity(_nearest, panicDistance, heartbeatRange);
             if (_health != null && _health.IsDead) target = 0f;
             _intensity = Mathf.MoveTowards(_intensity, target, intensityResponse * dt);
-            if (heartbeatCue == null) return;
             if (_intensity <= 0f)
             {
                 _heart.Reset(0.7f); // the first beat comes quickly once a zombie shows up
                 return;
             }
-            if (!_heart.Tick(dt, HeartbeatMath.Bpm(_intensity, bpm.x, bpm.y))) return;
+            float rate = HeartbeatMath.Bpm(_intensity, bpm.x, bpm.y);
+            if (!_heart.Tick(dt, rate)) return;
+            Heartbeat?.Invoke(_intensity, rate);
+            if (heartbeatCue == null) return;
             var eyes = BlinkDetector.Instance;
             float eyesScale = eyes != null && eyes.EyesShut ? 1f : eyesOpenHeartbeat;
             Play(heartbeatCue, HeartbeatMath.Volume(_intensity, heartbeatVolume.x, heartbeatVolume.y) * eyesScale);
@@ -132,7 +142,7 @@ namespace Blink.Audio
             _nextScanTime = Time.unscaledTime + scanInterval;
             _nearest = float.PositiveInfinity;
             _mobs.Clear();
-            _mobs.AddRange(FindObjectsByType<MobController>(FindObjectsSortMode.None));
+            _mobs.AddRange(FindObjectsByType<MobController>());
             Vector3 here = _subscribed.transform.position;
             foreach (var mob in _mobs)
             {

@@ -19,6 +19,7 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Creaky light wooden door](https://opengameart.org/content/creaky-light-wooden-door) | fractilegames | OpenGameArt | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | Jammed door strain loop |
 | [FPS Placeholder Sounds](https://opengameart.org/content/fps-placeholder-sounds) | Jack Menhorn | OpenGameArt | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | Player hurt grunts |
 | [Packsmithy SFX sampler](https://opengameart.org/content/packsmithy-sfx-sampler-30-synthesised-sound-effects-ui-retro-horror-sci-fi-glitch) | Packsmithy ([packsmithy.com](https://packsmithy.com)) | OpenGameArt | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Grab jump-scare stings |
+| [Horror Atmosphere](https://opengameart.org/content/horror-atmosphere) ("Post Apocalyptic Wastelands [Loop Ready]") | Juhani Junkala (SubspaceAudio) | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Background music loop |
 | [The Free Firearm Sound Library](https://opengameart.org/content/the-free-firearm-sound-library) | Free Firearm Sound Library (posted by bart) | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Pistol shots (Walther PPQ 9 mm) |
 | [Camera Shutter Sound](https://archive.org/details/CameraShutterSound) | A Clock in the Kingdom | Internet Archive | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Blink skip shutter clicks (Olympus E-1 DSLR) |
 | [Handgun Reload Sound Effect](https://opengameart.org/content/handgun-reload-sound-effect) | zer0_sol | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Pistol mag out, mag in, slide |
@@ -33,6 +34,8 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Zombie noises and moans](https://opengameart.org/content/zombie-noises-and-moans) | ianzazz | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie groans and an alert growl |
 | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | Kenney | kenney.nl | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Player footsteps (wood), hit thuds, bullet-on-wall hits, door burst |
 | [Pipe Wrench](https://polyhaven.com/a/pipe_wrench), [Crowbar 01](https://polyhaven.com/a/crowbar_01), [Brass Pan 01](https://polyhaven.com/a/brass_pan_01) | Poly Haven | polyhaven.com | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Melee props you can pick up and swing |
+| [Cormorant SC](https://github.com/CatharsisFonts/Cormorant) (Medium, SemiBold) | Christian Thalmann (Catharsis Fonts), the Cormorant Project Authors | [Google Fonts repository](https://github.com/google/fonts/tree/main/ofl/cormorantsc) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/CormorantSC-OFL.txt`) | UI titles, headings, small caps and prompts |
+| [EB Garamond](https://github.com/octaviopardo/EBGaramond12) (Regular, Medium) | Georg Duffner, Octavio Pardo, the EB Garamond Project Authors | [EBGaramond12 repository](https://github.com/octaviopardo/EBGaramond12) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/EBGaramond-OFL.txt`) | Note text, HUD numbers and key letters |
 
 ## Licence notes
 

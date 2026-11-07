@@ -78,7 +78,7 @@ Master
 | Every 0.8 m the agent walks | ZombieAudio | `Zombie_Step` at the feet | 3D | Zombies |
 | Every 1.6 m the player walks (grounded) | PlayerAudio (GameSystems) | `Player_Step` | 2D | Body |
 | `Health.Damaged` (player) | PlayerAudio | `Player_HitThud` + `Player_Hurt` | 2D | Body |
-| Nearest living zombie within 15 m | PlayerAudio | `Heartbeat` lub-dub retriggered at 65 → 170 bpm, volume 0.25 → 1 (×0.35 with eyes open; full while `BlinkDetector.EyesShut`) | 2D | Body |
+| Nearest living zombie within 15 m | PlayerAudio | `Heartbeat` lub-dub retriggered at 65 → 170 bpm, volume 0.25 → 1 (×0.35 with eyes open; full while `BlinkDetector.EyesShut`). Each beat also raises `PlayerAudio.Heartbeat(intensity, bpm)`, which `GamepadHaptics` follows during fast-forward, so the rumble beats with the sound | 2D | Body |
 | `JammedDoor.ForcingStarted` / `ForcingStopped` | WorldAudio (GameSystems) | `Door_ForcingLoop` loop at the door, 0.2 s fade out | 3D | World |
 | `JammedDoor.Opened` | WorldAudio | `Door_Burst` | 3D | World |
 

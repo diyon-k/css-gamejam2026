@@ -130,7 +130,7 @@ namespace Blink.TimeSkip
             StopFastForward(interrupted: true);
         }
 
-        // Space doubles as the keyboard blink key, so blinks during/just after a grab QTE are ignored.
+        // Blinks during/just after a grab QTE are ignored: the world is frozen, and mashing the QTE makes you blink.
         void OnBlinked()
         {
             if (GrabQte.BlocksInput || Locked) return;
