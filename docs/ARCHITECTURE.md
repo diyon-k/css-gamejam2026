@@ -14,10 +14,10 @@ The core is already working end to end: the webcam sidecar's UDP messages drive 
 | WASD / left stick | Move |
 | Mouse / right stick | Look |
 | Left click / right trigger | Shoot / swing the axe |
-| R / gamepad West | Reload |
+| R / gamepad X (West) | Reload (on a pad, X interacts instead while something usable is in focus) |
 | 1 / 2 / 3 | Hands / pistol / axe |
-| Mouse wheel, gamepad LB / RB or d-pad left / right | Previous / next weapon |
-| E / gamepad North | Interact (hold to force a door), with any weapon |
+| Mouse wheel, gamepad LB / RB, d-pad left / right, or Y (North) | Previous / next weapon (Y = next) |
+| E / gamepad X (West) | Interact (hold to force a door), with any weapon. Reading a note: E / X, or B on a pad, puts it down |
 | **Blink** (webcam) | World skips 0.5 s |
 | **Eyes shut** (webcam) | World runs at 3× until you open them; the pad rumbles with your heartbeat the whole time |
 | Look away from the webcam | Nothing: no face counts as eyes open |
@@ -164,6 +164,22 @@ Unity/Assets/
 - **`ZombieRagdoll`** (on the Zombie root; bones built with Unity's Ragdoll wizard): while alive the bone bodies are kinematic and each bone collider gets a `Hitbox`. On death the Animator stops and the bodies go limp with the zombie's running speed, knocked back by the killing shot (`knockbackSpeed`, `hitImpulse`). The body freezes once at rest or after `settleSeconds` (3 s) of world time. `RagdollSkipper` (on GameSystems) steps physics on a blink so falling bodies jump forward too.
 - **Layers**: `Zombie` (root capsule: blocks the player, not bullets), `ZombieHitbox` (bone colliders while alive: collide with nothing, only raycasts), `Corpse` (bone colliders once dead: level and other corpses only), `Player`. The gun's `hitMask` skips `Zombie`, `Corpse`, `Player` and `Ignore Raycast`, so shots land on limbs and pass over bodies. A zombie without a ragdoll must keep its root on `Default` to stay shootable.
 - Levels need a **NavMeshSurface** (AI Navigation package, already installed) baked over the floor.
+
+### UI theme (`Blink.UI`, `Scripts/UI/`)
+All in-game UI is IMGUI drawn through one theme, so the look is retuned in one place. The style is restrained and western-serif: off-white "bone" text with a soft shadow, muted grey for secondary text, one deep red accent, short eased fades on unscaled time, and nothing on screen unless it matters.
+- **`BlinkThemeAsset`** (`Assets/Art/UI/Resources/BlinkTheme.asset`, loaded automatically): fonts (Cormorant SC and EB Garamond, OFL, see CREDITS.md), palette, `uiScale`, type sizes, reticle sizes and fade timings. Edit it in Play mode to retune live.
+- **`BlinkTheme`** (static): the asset, `Scale` (screen height / 1080 × `uiScale`), `Px(size1080)`, `PxText` (type never shrinks below `minTextScale`), palette (`Bone`, `Muted`, `Accent`, `Ink`, `Paper`...), cached styles (`Title`, `Heading`, `Subtitle`, `Prompt`, `SmallCaps`, `Body`, `Number`, `Key`), easing and `StepFade`/`Linger` helpers, and drawing primitives: `Text`/`SpacedText` (letterspaced, soft shadow), `Rule`, `RoundedRect`, `CornerShade` (soft darkening behind corner HUD so it reads over bright scenes), and anti-aliased GL `Disc`, `Ring`, `Arc`. Call the drawing helpers from OnGUI on Repaint.
+- **`BlinkWidgets`**: the pieces, each taking plain state: `Reticle` (soft dot), `HitRing` (bone on a hit, red on a kill, larger on a headshot), `KeyCap` (with an optional hold ring), `PromptRow`, `Ammo`, `HealthCore`, `Clock`, `Inventory`, `TitleCard` (title/death screens), `NoteCard` (aged paper), `QteTarget`/`QtePips`/`Banner` (grab QTE), `DebugPanel`.
+- **`BlinkPrompts`**: the bottom-right prompt stack. Call `BlinkPrompts.Show(owner, action, fallbackKey, label, progress, order)` every frame from Update/LateUpdate while the prompt applies (`action` and `fallbackKey` both null = a muted statement; `progress` 0..1 = hold ring). With an `InputAction`, the glyph follows the device in use. Rows fade and slide in and out by themselves; `ReserveBottom(px)` keeps them above the ammo. Drawn by a `BlinkPromptHud` that creates itself.
+- **`BlinkInput`**: controller support for the UI. `UsingGamepad` flips live on real input (sticks past a dead zone, buttons, triggers; mouse movement or keys flip it back). `GlyphFor(action, fallbackKey)` reads the action's actual bindings (overrides included) for that device. Gamepad glyphs are device-neutral and drawn in code: face buttons and the d-pad by position (a four-dot diagram with the button filled), `LB`/`RB`/`LT`/`RT` pills, `L`/`R` sticks. The grab QTE shows W/A/S/D or the face button in the same position.
+- **Pad layout (shooter style):**
+  - **X (West)** is Interact *and* Reload. It interacts when something usable is in focus: the look target, a jammed door in reach, getting out of a hiding spot, or a note held up. Otherwise it reloads. `SharedPress` decides the owner once, when the button goes down, and keeps it until release, so one press never does both. `Interactor.InteractOwns`/`ReloadOwns` are what `PlayerWeapons` and `JammedDoor` check.
+  - **Y (North)** swaps to the next weapon (as do RB and d-pad right).
+  - **A** jumps.
+  - **B** crouches, and also puts a note down. That press doesn't crouch (`Readable.ClaimsCrouch`).
+  - Keyboard is unchanged: E interacts, R reloads.
+- **`NotePaper`**: procedural worn paper for `Readable` notes. Each seed (from the note's text, or `paperSeed`) gives a different sheet: torn side, nick, dog-ear, creases, stains, grime, a broken border and patchy ink. It is baked on a worker thread from `Readable.Start` and cached. `LiftPose` is the pure lift/drop/sway animation (unscaled time).
+- Users: `GunHud`, `WakeUpSequence`, `GrabQte`, `Interactor`, `Inventory`, `Readable`, `JammedDoor`, `ClockHud`, `BlinkDebugOverlay`. `GunHud` and `ClockHud` have a `themeColors` toggle to fall back to their own colour fields.
 
 ## Workstreams
 
