@@ -21,7 +21,8 @@ namespace Blink.EditorTools
         const string KeyItemId = "key_dorm";
         const string KeyName = "Lily's key";
         const string ClueText = "Lily's doll hates to be ignored. Keep your eyes on her, and don't you dare blink.";
-        const string Mats = "Assets/Art/Puzzles/LilysDoll/Materials/";
+        const string Art = "Assets/Art/Puzzles/LilysDoll/";
+        const string Mats = Art + "Materials/";
         const string Cues = "Assets/Art/Audio/Cues/";
         const string Clips = "Assets/Art/Audio/World/";
         /// <summary>Seat height of painted_wooden_chair_01 (bungalow_prop_models.json "top") and of the fallback chair.</summary>
@@ -173,7 +174,7 @@ namespace Blink.EditorTools
                     foreach (float y in new[] { 1.0f, 2.0f })
                     {
                         var p = new Vector3(basePos.x, floor + y, basePos.z);
-                        if (Physics.Raycast(p, dir, 0.9f, Probe, QueryTriggerInteraction.Ignore)) open = false;
+                        if (BlockedIgnoringDoors(p, dir, 0.9f)) open = false;
                     }
                     if (open)
                     {
@@ -191,6 +192,23 @@ namespace Blink.EditorTools
                 }
             }
             return width > 0f;
+        }
+
+        /// <summary>A ray blocked by anything but a door leaf: a closed door still leaves its doorway an opening.</summary>
+        static bool BlockedIgnoringDoors(Vector3 from, Vector3 dir, float distance)
+        {
+            foreach (var hit in Physics.RaycastAll(from, dir, distance, Probe, QueryTriggerInteraction.Ignore))
+                if (!IsDoor(hit.collider)) return true;
+            return false;
+        }
+
+        /// <summary>Matched by component name (Door, DoorLeaf, FrontDoor...) so this editor script needs no door types.</summary>
+        static bool IsDoor(Collider c)
+        {
+            for (var t = c.transform; t != null; t = t.parent)
+                foreach (var m in t.GetComponents<MonoBehaviour>())
+                    if (m != null && (m.GetType().Name.StartsWith("Door") || m.GetType().Name.StartsWith("FrontDoor"))) return true;
+            return false;
         }
 
         // ------------------------------------------------------------------ the chair and the doll
@@ -231,66 +249,33 @@ namespace Blink.EditorTools
         }
 
         /// <summary>
-        /// Placeholder porcelain doll, sitting with her legs out (+Z forward, origin on the seat). No colliders: the key is the
-        /// only thing to hit. Keep the Head / Face / Lap children if a real model replaces it.
+        /// The modelled porcelain doll (tools/blender/puzzle_doll.py), sitting with her legs out (+Z forward, origin on the
+        /// seat). No colliders: the key is the only thing to hit. The FBX holds Head (the neck pivot), HeadMesh and Face
+        /// as siblings; they are put under Head here so the head turns as one piece with its tilt baked into the mesh.
         /// </summary>
         static (Transform doll, Transform head, Transform face, Transform lap) BuildDoll(Transform root)
         {
-            var porcelain = Mat("Porcelain", new Color(0.93f, 0.9f, 0.85f), 0.8f);
-            var dress = Mat("Dress", new Color(0.42f, 0.13f, 0.16f), 0.25f);
-            var lace = Mat("Lace", new Color(0.9f, 0.88f, 0.82f), 0.2f);
-            var hair = Mat("Hair", new Color(0.2f, 0.12f, 0.07f), 0.35f);
-            var eyes = Mat("Eyes", new Color(0.01f, 0.01f, 0.012f), 0.97f);
-            var mouth = Mat("Mouth", new Color(0.55f, 0.04f, 0.06f), 0.7f);
-            var shoes = Mat("Shoes", new Color(0.05f, 0.04f, 0.04f), 0.8f);
-
-            var doll = new GameObject("Doll").transform;
+            var doll = Spawn("LilysDoll.fbx").transform;
+            doll.name = "Doll";
             doll.SetParent(root, false);
-
-            Part(doll, PrimitiveType.Capsule, "Body", new Vector3(0f, 0.2f, 0f), Vector3.zero, new Vector3(0.2f, 0.17f, 0.15f), dress);
-            Part(doll, PrimitiveType.Cylinder, "Skirt", new Vector3(0f, 0.06f, 0.03f), Vector3.zero, new Vector3(0.3f, 0.05f, 0.3f), dress);
-            Part(doll, PrimitiveType.Sphere, "Collar", new Vector3(0f, 0.35f, 0f), Vector3.zero, new Vector3(0.14f, 0.04f, 0.12f), lace);
-
-            foreach (float sx in new[] { -1f, 1f })
-            {
-                Limb(doll, "Arm", new Vector3(0.11f * sx, 0.32f, 0f), new Vector3(0.07f * sx, 0.16f, 0.12f), 0.045f, lace);
-                Part(doll, PrimitiveType.Sphere, "Hand", new Vector3(0.07f * sx, 0.155f, 0.125f), Vector3.zero, Vector3.one * 0.045f, porcelain);
-                Limb(doll, "Leg", new Vector3(0.05f * sx, 0.04f, 0.03f), new Vector3(0.05f * sx, 0.04f, 0.31f), 0.06f, lace);
-                Part(doll, PrimitiveType.Sphere, "Shoe", new Vector3(0.05f * sx, 0.045f, 0.33f), Vector3.zero, new Vector3(0.06f, 0.05f, 0.08f), shoes);
-            }
-
-            var head = new GameObject("Head").transform; // the neck: turns to track you
-            head.SetParent(doll, false);
-            head.localPosition = new Vector3(0f, 0.37f, 0f);
-            Part(head, PrimitiveType.Sphere, "Skull", new Vector3(0f, 0.1f, 0f), Vector3.zero, Vector3.one * 0.2f, porcelain);
-            Part(head, PrimitiveType.Sphere, "Hair", new Vector3(0f, 0.12f, -0.025f), Vector3.zero, new Vector3(0.215f, 0.2f, 0.215f), hair);
-            foreach (float sx in new[] { -1f, 1f })
-            {
-                Part(head, PrimitiveType.Sphere, "Ringlet", new Vector3(0.09f * sx, 0.03f, -0.03f), Vector3.zero, new Vector3(0.06f, 0.09f, 0.06f), hair);
-                Part(head, PrimitiveType.Sphere, "Eye", new Vector3(0.036f * sx, 0.105f, 0.083f), Vector3.zero, Vector3.one * 0.04f, eyes);
-            }
-            Part(head, PrimitiveType.Sphere, "Mouth", new Vector3(0f, 0.055f, 0.088f), Vector3.zero, new Vector3(0.035f, 0.012f, 0.012f), mouth);
-
-            var face = new GameObject("Face").transform; // between the eyes
-            face.SetParent(head, false);
-            face.localPosition = new Vector3(0f, 0.105f, 0.1f);
-
-            var lap = new GameObject("Lap").transform;
-            lap.SetParent(doll, false);
-            lap.localPosition = new Vector3(0f, 0.105f, 0.13f);
+            var head = doll.Find("Head") ?? throw new System.InvalidOperationException("LilysDoll.fbx has no Head.");
+            var face = doll.Find("Face") ?? throw new System.InvalidOperationException("LilysDoll.fbx has no Face.");
+            var lap = doll.Find("Lap") ?? throw new System.InvalidOperationException("LilysDoll.fbx has no Lap.");
+            var headMesh = doll.Find("HeadMesh") ?? throw new System.InvalidOperationException("LilysDoll.fbx has no HeadMesh.");
+            headMesh.SetParent(head, true);
+            face.SetParent(head, true);
             return (doll, head, face, lap);
         }
 
         static Pickup BuildKey(Transform lap)
         {
-            var brass = Mat("Brass", new Color(0.9f, 0.7f, 0.32f), 0.7f, metallic: 0.6f);
             var key = new GameObject("Key_Dorm");
             key.transform.SetParent(lap, false);
             key.transform.localPosition = new Vector3(0f, 0.008f, 0f);
             key.transform.localRotation = Quaternion.Euler(0f, 20f, 0f);
-            Part(key.transform, PrimitiveType.Cylinder, "Bow", new Vector3(-0.045f, 0f, 0f), Vector3.zero, new Vector3(0.04f, 0.004f, 0.04f), brass);
-            Part(key.transform, PrimitiveType.Cube, "Shaft", new Vector3(0.01f, 0f, 0f), Vector3.zero, new Vector3(0.075f, 0.007f, 0.009f), brass);
-            Part(key.transform, PrimitiveType.Cube, "Bit", new Vector3(0.04f, 0f, -0.012f), Vector3.zero, new Vector3(0.012f, 0.007f, 0.022f), brass);
+            var model = Spawn("LilysKey.fbx").transform;
+            model.name = "Model";
+            model.SetParent(key.transform, false);
             var hit = key.AddComponent<BoxCollider>(); // generous: it's small and it's what you aim at
             hit.center = Vector3.zero;
             hit.size = new Vector3(0.17f, 0.07f, 0.12f);
@@ -298,6 +283,18 @@ namespace Blink.EditorTools
             pickup.itemId = KeyItemId;
             pickup.displayName = KeyName;
             return pickup;
+        }
+
+        /// <summary>An unlinked copy of a model from the doll's art folder, wearing the doll material.</summary>
+        static GameObject Spawn(string file)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(Art + file)
+                         ?? throw new System.InvalidOperationException($"Missing {Art + file}; run tools/blender/puzzle_doll.py.");
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(Mats + "LilysDoll.mat")
+                      ?? throw new System.InvalidOperationException($"Missing {Mats}LilysDoll.mat.");
+            var go = Object.Instantiate(prefab);
+            foreach (var r in go.GetComponentsInChildren<Renderer>()) r.sharedMaterial = mat;
+            return go;
         }
 
         // ------------------------------------------------------------------ dressing
@@ -385,13 +382,6 @@ namespace Blink.EditorTools
             go.transform.localScale = scale;
             go.GetComponent<Renderer>().sharedMaterial = mat;
             return go;
-        }
-
-        /// <summary>A cylinder from <paramref name="a"/> to <paramref name="b"/> (local), <paramref name="thickness"/> across.</summary>
-        static void Limb(Transform parent, string name, Vector3 a, Vector3 b, float thickness, Material mat)
-        {
-            var go = Part(parent, PrimitiveType.Cylinder, name, (a + b) * 0.5f, Vector3.zero, new Vector3(thickness, (b - a).magnitude * 0.5f, thickness), mat);
-            go.transform.localRotation = Quaternion.FromToRotation(Vector3.up, b - a);
         }
 
         static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);

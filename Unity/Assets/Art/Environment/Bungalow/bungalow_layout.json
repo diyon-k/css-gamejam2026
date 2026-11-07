@@ -1270,7 +1270,7 @@
    "keys": 0,
    "key": "key_front",
    "also": [],
-   "open": true
+   "open": false
   },
   {
    "id": "D6",
@@ -1278,7 +1278,7 @@
    "keys": 0,
    "key": "key_front",
    "also": [],
-   "open": true
+   "open": false
   },
   {
    "id": "D7",
@@ -1286,7 +1286,7 @@
    "keys": 0,
    "key": "key_front",
    "also": [],
-   "open": true
+   "open": false
   },
   {
    "id": "D8",
@@ -1294,7 +1294,7 @@
    "keys": 0,
    "key": "key_front",
    "also": [],
-   "open": true
+   "open": false
   },
   {
    "id": "D9",
@@ -1302,7 +1302,7 @@
    "keys": 0,
    "key": "key_front",
    "also": [],
-   "open": true
+   "open": false
   }
  ],
  "keyItem": "key_front",

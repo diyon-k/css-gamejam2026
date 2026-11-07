@@ -364,7 +364,7 @@ DOOR_LEAVES = {
 # Door gameplay state (Unity: BLINK/Bungalow/Setup Doors). locked + keys: that many of `key` (default KEY_ITEM), each
 # used up in the lock as the player brings it (one hand: one key at a time); keys=0 is a story lock nothing opens (D4).
 # A keyed door is only locked in Unity once a Pickup of its key is in the scene, so the player can't be shut in.
-# open: starts open toward its swing side. Unlisted unlocked doors start closed.
+# open: starts open toward its swing side. Every door starts shut (open=False); unlisted doors do too.
 DOOR_STATE = {
     "D1": dict(locked=True, keys=3, key="key_dorm", also=("key_workshop", "key_front_3"), open=False,
                note="front door; one key per puzzle room, any order: key_dorm (Lily's doll), key_workshop "
@@ -374,12 +374,12 @@ DOOR_STATE = {
                note="the start bedroom: shut and locked, key on the chest of drawers (BLINK/Bungalow/Set Up Start Bedroom)"),
     "D3": dict(locked=False, open=False),
     "D4": dict(locked=True, keys=0, open=False, note="kitchen back door, locked for story use"),
-    "D5": dict(locked=False, open=True, note="basement door open: the B1-D5-B2 sightline"),
-    # revision 3 north wing: all unlocked and open, so the D1-D6-D7 sightline and the two chase loops read
-    "D6": dict(locked=False, open=True, note="hall -> corridor, on the D1 sightline"),
-    "D7": dict(locked=False, open=True, note="corridor -> parlour, on the D1 sightline"),
-    "D8": dict(locked=False, open=True),
-    "D9": dict(locked=False, open=True, note="kitchen -> corridor chase loop"),
+    "D5": dict(locked=False, open=False, note="basement door, shut like the rest (it was open for the B1-D5-B2 sightline)"),
+    # revision 3 north wing: unlocked, shut like the rest (opening D6 then D7 shows the D1-D6-D7 sightline)
+    "D6": dict(locked=False, open=False, note="hall -> corridor, on the D1 sightline"),
+    "D7": dict(locked=False, open=False, note="corridor -> parlour, on the D1 sightline"),
+    "D8": dict(locked=False, open=False),
+    "D9": dict(locked=False, open=False, note="kitchen -> corridor chase loop"),
 }
 KEY_ITEM = "key_front"
 # Radiators: wall run axis, wall face coordinate, inward direction (+1 / -1 across the face), span along the wall

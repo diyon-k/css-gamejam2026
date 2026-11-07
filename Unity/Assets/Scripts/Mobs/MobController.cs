@@ -14,6 +14,8 @@ namespace Blink.Mobs
     /// - Loses sight for <see cref="loseSightTime"/> => walks to where it last saw you and searches.
     /// - Hears a <see cref="Noise"/> within range (walking distance, so walls muffle it) while it can't
     ///   see you => walks over to the noise and searches. Noise can lure it off a chase.
+    /// - You hide (<see cref="Interaction.HidingSpot"/>) => blind to you, searches where it last saw you. Unless it was
+    ///   watching as you got in: then it walks to the spot and drags you out into the grab.
     /// - Search over => back to the nearest waypoint. No patrol route => stands guard (Idle).
     /// Attacks in range, dies when its Health runs out.
     /// On a blink skip it jumps along its current navmesh path by speed x seconds x skipDistanceMultiplier,
@@ -52,6 +54,8 @@ namespace Blink.Mobs
         [SerializeField] float patrolSpeed = 0.8f;
         [Tooltip("World seconds to pause at each waypoint.")]
         [SerializeField, Min(0f)] float patrolWait = 2f;
+        [Tooltip("Room patrol: world seconds (random between x and y) it lurks in a room's far corner, watching the doorway.")]
+        [SerializeField] Vector2 lurkSeconds = new Vector2(6f, 12f);
 
         [Header("Senses")]
         [SerializeField] float sightRange = 15f;
@@ -143,10 +147,20 @@ namespace Blink.Mobs
         // Senses and patrol.
         Vector3[] _waypoints = Array.Empty<Vector3>();
         int _waypointIndex;
+        // Room patrol (wins over the waypoint loop when set): wanders to a random reachable room, one no other mob is heading for.
+        Bounds[] _rooms;
+        int _room = -1;
+        bool _claimed;
+        NavMeshPath _roomPath;
+        Vector3 _lurkWatch; // the doorway it came in by, which it faces while lurking
+        /// <summary>Rooms mobs are heading for; a list, so two claims on one room (when nothing else is free) release cleanly.</summary>
+        static readonly System.Collections.Generic.List<int> ClaimedRooms = new();
         bool _seesTarget;
         float _senseTimer;
         float _lostTimer;
         Vector3 _lastSeen;
+        /// <summary>The hiding spot it watched you climb into, or null.</summary>
+        Interaction.HidingSpot _hidingIn;
         /// <summary>Pause at a waypoint, or search time at an investigated spot. Counts while the agent is stopped.</summary>
         float _waitTimer;
 
@@ -195,6 +209,7 @@ namespace Blink.Mobs
 
         void OnDisable()
         {
+            ReleaseRoom();
             TimeSkipController.Unregister(this);
             Noise.Made -= OnNoise;
             if (_health != null) _health.Died -= OnDied;
@@ -215,6 +230,9 @@ namespace Blink.Mobs
 
         /// <summary>For spawned mobs, before Awake (the prefab can't reference scene objects).</summary>
         public void SetPatrolRoute(Transform route) => patrolRoute = route;
+
+        /// <summary>Patrol by wandering between these rooms (world bounds, min y = floor) instead of a waypoint loop.</summary>
+        public void SetPatrolRooms(Bounds[] rooms) => _rooms = rooms;
 
         /// <summary>Back to where it started, calm (used when the player respawns). Corpses stay put.</summary>
         public void ResetToSpawn()
@@ -250,11 +268,16 @@ namespace Blink.Mobs
             _attackCooldown -= dt;
             bool targetAlive = TargetAlive();
 
+            var hide = Interaction.HidingSpot.Occupant;
+            _hidingIn = KnownHidingSpot(hide, _hidingIn, _seesTarget && targetAlive);
             if (!targetAlive) _seesTarget = false;
-            else if (Interaction.HidingSpot.Occupant != null)
+            else if (hide != null)
             {
-                _seesTarget = false;
-                _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
+                if (_hidingIn != hide)
+                {
+                    _seesTarget = false;
+                    _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
+                }
             }
             else if ((_senseTimer -= dt) <= 0f)
             {
@@ -272,7 +295,7 @@ namespace Blink.Mobs
             bool hunting = CurrentState is State.Chase or State.Attack;
             bool tracking = targetAlive && (_seesTarget || (hunting && _lostTimer > 0f));
 
-            if (tracking && FlatDistanceToTarget() <= attackRange)
+            if (tracking && DistanceToPrey() <= attackRange)
             {
                 SetState(State.Attack);
                 _agent.isStopped = true;
@@ -287,7 +310,7 @@ namespace Blink.Mobs
                 _agent.isStopped = false;
                 if ((_repathTimer -= dt) <= 0f)
                 {
-                    _agent.SetDestination(target.position);
+                    _agent.SetDestination(PreyPosition);
                     _repathTimer = repathInterval;
                 }
             }
@@ -319,18 +342,30 @@ namespace Blink.Mobs
             {
                 if (_agent.pathPending || _agent.remainingDistance > _agent.stoppingDistance + 0.2f) return;
                 _agent.isStopped = true;
-                _waitTimer = CurrentState == State.Investigate ? searchTime : patrolWait;
+                _waitTimer = CurrentState == State.Investigate ? searchTime
+                           : _rooms is { Length: > 0 } ? UnityEngine.Random.Range(lurkSeconds.x, lurkSeconds.y)
+                           : patrolWait;
             }
 
             if (CurrentState == State.Investigate) transform.Rotate(0f, searchTurnSpeed * dt, 0f);
+            else if (_rooms is { Length: > 0 }) FacePoint(_lurkWatch, dt); // in its corner, staring at the doorway
             if ((_waitTimer -= dt) > 0f) return;
 
             if (CurrentState == State.Investigate) StartPatrol();
+            else if (_rooms is { Length: > 0 }) { if (!GoToRandomRoom()) _waitTimer = patrolWait; } // nowhere reachable: try again later
             else GoToWaypoint((_waypointIndex + 1) % _waypoints.Length);
         }
 
         void StartPatrol()
         {
+            if (_rooms is { Length: > 0 })
+            {
+                SetState(State.Patrol);
+                if (GoToRandomRoom()) return;
+                _agent.isStopped = true; // TickWander waits patrolWait, then tries again
+                _waitTimer = patrolWait;
+                return;
+            }
             if (_waypoints.Length == 0)
             {
                 SetState(State.Idle);
@@ -348,9 +383,118 @@ namespace Blink.Mobs
         void GoToWaypoint(int index)
         {
             _waypointIndex = index;
+            GoTo(_waypoints[index]);
+        }
+
+        /// <summary>
+        /// Heads for the far corner of a random room it can walk to (a locked door cuts the navmesh, so rooms behind one
+        /// drop out). Skips the room it's in and rooms other mobs are heading for, unless nothing else is reachable.
+        /// </summary>
+        bool GoToRandomRoom()
+        {
+            ReleaseRoom();
+            int last = _room;
+            var failed = new System.Collections.Generic.HashSet<int>();
+            for (int pass = 0; pass < 2; pass++) // second pass allows rooms another mob has claimed
+            {
+                while (true)
+                {
+                    int room = PickRoom(_rooms.Length, i => i != last && !failed.Contains(i) && (pass == 1 || !ClaimedRooms.Contains(i)),
+                                        UnityEngine.Random.Range);
+                    if (room < 0) break;
+                    if (!TryLurkCorner(_rooms[room], out var point, out _lurkWatch)) { failed.Add(room); continue; }
+                    _room = room;
+                    ClaimedRooms.Add(room);
+                    _claimed = true;
+                    GoTo(point);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>A random index in [0, count) that <paramref name="allowed"/> accepts, or -1 if none. random(min, maxExclusive).</summary>
+        public static int PickRoom(int count, Func<int, bool> allowed, Func<int, int, int> random)
+        {
+            var options = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < count; i++) if (allowed(i)) options.Add(i);
+            return options.Count == 0 ? -1 : options[random(0, options.Count)];
+        }
+
+        /// <summary>
+        /// Where to lurk in the room: the corner farthest from where its path comes in (the doorway it'll use), with a
+        /// complete path to it. Also gives that entry point, so it can stand there watching the door.
+        /// </summary>
+        bool TryLurkCorner(Bounds room, out Vector3 point, out Vector3 entry)
+        {
+            point = entry = default;
+            _roomPath ??= new NavMeshPath();
+            if (!TryRoomFloor(room, room.center, 2.5f, out var middle)) return false;
+            if (!NavMesh.CalculatePath(transform.position, middle, _agent.areaMask, _roomPath) || _roomPath.status != NavMeshPathStatus.PathComplete) return false;
+            entry = PathEntry(_roomPath.corners, room);
+            foreach (var corner in FarthestCorners(room, entry, 0.7f))
+            {
+                if (!TryRoomFloor(room, corner, 1.2f, out var p)) continue; // furniture in that corner: next one
+                if (!NavMesh.CalculatePath(transform.position, p, _agent.areaMask, _roomPath) || _roomPath.status != NavMeshPathStatus.PathComplete) continue;
+                point = p;
+                return true;
+            }
+            point = middle; // every corner blocked: the middle of the room will do
+            return true;
+        }
+
+        /// <summary>Nearest navmesh point to <paramref name="guess"/> (at floor height) that lands inside this room, not through a wall or a storey down.</summary>
+        bool TryRoomFloor(Bounds room, Vector3 guess, float radius, out Vector3 point)
+        {
+            guess.y = room.min.y;
+            point = NavMesh.SamplePosition(guess, out var floor, radius, _agent.areaMask) ? floor.position : default;
+            return point != default && InRoom(room, point);
+        }
+
+        static bool InRoom(Bounds room, Vector3 p) =>
+            p.x >= room.min.x && p.x <= room.max.x && p.z >= room.min.z && p.z <= room.max.z && Mathf.Abs(p.y - room.min.y) <= 0.5f;
+
+        /// <summary>Where a path first crosses into the room (its start if it begins inside).</summary>
+        static Vector3 PathEntry(Vector3[] corners, Bounds room)
+        {
+            for (int i = 0; i < corners.Length; i++)
+            {
+                if (!InRoom(room, corners[i])) continue;
+                if (i == 0) return corners[0];
+                Vector3 outside = corners[i - 1], inside = corners[i];
+                for (int step = 0; step < 8; step++) // home in on the wall crossing
+                {
+                    var mid = (outside + inside) * 0.5f;
+                    if (InRoom(room, mid)) inside = mid; else outside = mid;
+                }
+                return inside;
+            }
+            return corners.Length > 0 ? corners[^1] : room.center;
+        }
+
+        /// <summary>The room's four floor corners, <paramref name="inset"/> in from the walls, farthest from <paramref name="from"/> first.</summary>
+        public static Vector3[] FarthestCorners(Bounds room, Vector3 from, float inset)
+        {
+            float x0 = room.min.x + inset, x1 = room.max.x - inset, z0 = room.min.z + inset, z1 = room.max.z - inset, y = room.min.y;
+            var corners = new[] { new Vector3(x0, y, z0), new Vector3(x1, y, z0), new Vector3(x0, y, z1), new Vector3(x1, y, z1) };
+            Vector2 f = new Vector2(from.x, from.z);
+            Array.Sort(corners, (a, b) => Vector2.Distance(f, new Vector2(b.x, b.z)).CompareTo(Vector2.Distance(f, new Vector2(a.x, a.z))));
+            return corners;
+        }
+
+        /// <summary>Drops its claim (once). _room stays as "the room it was last in" so the next pick skips it.</summary>
+        void ReleaseRoom()
+        {
+            if (!_claimed) return;
+            ClaimedRooms.Remove(_room);
+            _claimed = false;
+        }
+
+        void GoTo(Vector3 point)
+        {
             _agent.speed = patrolSpeed;
             _agent.isStopped = false;
-            _agent.SetDestination(_waypoints[index]);
+            _agent.SetDestination(point);
         }
 
         void Investigate(Vector3 point)
@@ -414,7 +558,7 @@ namespace Blink.Mobs
             bool hunting = CurrentState is State.Chase or State.Attack;
             if (hunting && !TargetAlive()) return;
 
-            if (hunting && FlatDistanceToTarget() <= attackRange)
+            if (hunting && DistanceToPrey() <= attackRange)
             {
                 if (_attackCooldown <= 0f) Attack(grabbed: true);
                 return;
@@ -426,7 +570,7 @@ namespace Blink.Mobs
                 return;
             }
 
-            Vector3 destination = hunting ? target.position : _agent.destination;
+            Vector3 destination = hunting ? PreyPosition : _agent.destination;
             _skipPath ??= new NavMeshPath();
             if (!NavMesh.CalculatePath(transform.position, destination, _agent.areaMask, _skipPath)) return;
             if (_skipPath.status == NavMeshPathStatus.PathInvalid) return;
@@ -450,7 +594,7 @@ namespace Blink.Mobs
             _repathTimer = repathInterval;
 
             // Closed the gap during your blink: it grabs you as your eyes open.
-            if (hunting && _attackCooldown <= 0f && FlatDistanceToTarget() <= attackRange) Attack(grabbed: true);
+            if (hunting && _attackCooldown <= 0f && DistanceToPrey() <= attackRange) Attack(grabbed: true);
         }
 
         /// <summary>Moves the animation on by the skipped time so the pose jumps with the body.</summary>
@@ -470,6 +614,14 @@ namespace Blink.Mobs
             if (timeSkip != null && timeSkip.IsFastForwarding)
             {
                 timeSkip.InterruptFastForward();
+                grabbed = true;
+            }
+
+            // Found you hiding: haul you out and grab you.
+            if (_hidingIn != null && Interaction.HidingSpot.Occupant == _hidingIn)
+            {
+                _hidingIn.DragOut(transform.position);
+                _hidingIn = null;
                 grabbed = true;
             }
 
@@ -647,6 +799,7 @@ namespace Blink.Mobs
         void OnDied()
         {
             EndGrabHold(); // let the ragdoll take over from where it stands
+            ReleaseRoom();
             SetState(State.Dead);
             // Read before the agent is switched off, which zeroes it: the body keeps its running speed.
             Vector3 velocity = _agent.enabled ? _agent.velocity : Vector3.zero;
@@ -710,13 +863,33 @@ namespace Blink.Mobs
             StateChanged?.Invoke(next);
         }
 
-        void FaceTarget(float deltaTime)
+        void FaceTarget(float deltaTime) => FacePoint(target.position, deltaTime);
+
+        void FacePoint(Vector3 point, float deltaTime)
         {
-            Vector3 flat = target.position - transform.position;
+            Vector3 flat = point - transform.position;
             flat.y = 0f;
             if (flat.sqrMagnitude < 0.0001f) return;
             var goal = Quaternion.LookRotation(flat);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, goal, turnSpeed * deltaTime);
+        }
+
+        /// <summary>
+        /// The hiding spot it knows you're in: the one it was watching you as you got into (its sight is frozen while
+        /// you hide, so <paramref name="sawYou"/> stays true), else none. Cleared once you're out.
+        /// </summary>
+        public static Interaction.HidingSpot KnownHidingSpot(Interaction.HidingSpot occupant, Interaction.HidingSpot known, bool sawYou) =>
+            occupant != null && (sawYou || known == occupant) ? occupant : null;
+
+        /// <summary>Where it heads for you: the front of the hiding spot it saw you get into, else you.</summary>
+        Vector3 PreyPosition => _hidingIn != null ? _hidingIn.ExitPoint : target.position;
+
+        float DistanceToPrey()
+        {
+            if (_hidingIn == null) return FlatDistanceToTarget();
+            Vector3 delta = _hidingIn.ExitPoint - transform.position;
+            delta.y = 0f;
+            return delta.magnitude;
         }
 
         float FlatDistanceToTarget()
