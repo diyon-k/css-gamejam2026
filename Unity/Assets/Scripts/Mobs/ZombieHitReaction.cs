@@ -106,7 +106,7 @@ namespace Blink.Mobs
         [Tooltip("How much the animation slows with the stagger (0 = not at all, 1 = as much as the movement).")]
         [SerializeField, Range(0f, 1f)] float animationSlowdown = 0.5f;
         [Tooltip("Knock-back slide speed (m/s) at strength 1, along the shot.")]
-        [SerializeField, Min(0f)] float knockbackSpeed = 0.6f;
+        [SerializeField, Min(0f)] float knockbackSpeed = 0.3f;
         [Tooltip("Seconds for the slide to fade (it covers speed x this in total).")]
         [SerializeField, Min(0.01f)] float knockbackFade = 0.12f;
 

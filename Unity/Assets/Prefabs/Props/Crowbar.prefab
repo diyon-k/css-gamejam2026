@@ -100,9 +100,9 @@ MonoBehaviour:
   lengthAxis: {x: 0, y: 1, z: 0}
   knocksDown: 1
   damage: 7
-  launchSpeed: 1.375
-  launchLift: 0.5625
-  launchSideways: 0.3125
+  launchSpeed: 0.6875
+  launchLift: 0.28125
+  launchSideways: 0.15625
   stunSeconds: 3.5
   swingCue: {fileID: 11400000, guid: c2cd3d733b3ca2340922fc6b87a5c557, type: 2}
   hitCue: {fileID: 11400000, guid: 5a5fb51907e6dd94f9ae56d7a3eca003, type: 2}
