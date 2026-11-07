@@ -41,7 +41,7 @@ namespace Blink.Interaction
         [Tooltip("Sideways speed (m/s) along the swing (the chop sweeps right to left).")]
         [SerializeField] float launchSideways = 0.3125f;
         [Tooltip("World seconds a zombie lies stunned before getting back up (longer if it's still tumbling).")]
-        [SerializeField, Min(0f)] float stunSeconds = 5f;
+        [SerializeField, Min(0f)] float stunSeconds = 3.5f;
 
         [Header("Sound (empty = the axe's)")]
         [SerializeField] SoundCue swingCue;
