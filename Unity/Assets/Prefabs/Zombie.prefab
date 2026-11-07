@@ -13,6 +13,8 @@ GameObject:
   - component: {fileID: 9058201220350931150}
   - component: {fileID: 7601202578911143461}
   - component: {fileID: 6978270602319620792}
+  - component: {fileID: 3733218339216610282}
+  - component: {fileID: 7885029127904775568}
   m_Layer: 0
   m_Name: Zombie
   m_TagString: Untagged
@@ -92,6 +94,8 @@ MonoBehaviour:
   attackDamage: 25
   attackInterval: 1.4
   attackWindup: 0.5
+  corpseLifetime: 6
+  toppleDuration: 0.45
   animator: {fileID: 0}
 --- !u!136 &6978270602319620792
 CapsuleCollider:
@@ -116,6 +120,39 @@ CapsuleCollider:
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!114 &3733218339216610282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6963140950601576065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1d0eedd0709433b824b40efdc2bc91e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.DamageFlash
+  flashColor: {r: 1, g: 0.12, b: 0.08, a: 1}
+  duration: 0.15
+--- !u!114 &7885029127904775568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6963140950601576065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5cdbd67675e4d9db08dc78fe921dad7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.HealthBar
+  heightOffset: 2.1
+  size: {x: 70, y: 8}
+  referenceDistance: 6
+  maxDistance: 30
+  onlyWhenDamaged: 1
+  fillColor: {r: 0.85, g: 0.12, b: 0.1, a: 0.95}
+  backColor: {r: 0, g: 0, b: 0, a: 0.6}
 --- !u!1001 &3141514465635760509
 PrefabInstance:
   m_ObjectHideFlags: 0

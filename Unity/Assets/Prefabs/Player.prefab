@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2179215392067340665}
   - component: {fileID: 1607570296416809711}
   - component: {fileID: 4229830482227302727}
+  - component: {fileID: 6127039504923669072}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -90,11 +91,28 @@ MonoBehaviour:
   sprintSpeed: 5.5
   acceleration: 20
   gravity: -20
-  moveDuringSkip: 1
   mouseSensitivity: 0.1
   gamepadSensitivity: 180
   maxPitch: 85
   lockCursor: 1
+--- !u!114 &6127039504923669072
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370471841403644919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 238400d3909a4f94b8291c5dfacc2f35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.GunHud
+  gun: {fileID: 0}
+  health: {fileID: 0}
+  crosshairColor: {r: 1, g: 1, b: 1, a: 0.85}
+  hitColor: {r: 1, g: 1, b: 1, a: 1}
+  killColor: {r: 1, g: 0.15, b: 0.1, a: 1}
+  markerSeconds: 0.2
 --- !u!1 &1406138421326163226
 GameObject:
   m_ObjectHideFlags: 0

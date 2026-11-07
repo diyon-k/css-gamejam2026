@@ -43,11 +43,13 @@ namespace Blink.Combat
         InputAction _fireAction;
         InputAction _reloadAction;
         float _nextShotTime;
+        IDamageable _owner;
 
         void Awake()
         {
             AmmoInMagazine = magazineSize;
             if (aimCamera == null) aimCamera = GetComponentInParent<Camera>();
+            _owner = GetComponentInParent<IDamageable>();
             reloadTimer.Completed += FinishReload;
 
             _fireAction = InputSystem.actions?.FindAction("Player/Attack");
@@ -83,6 +85,7 @@ namespace Blink.Combat
 
         public void TryFire()
         {
+            if (_owner != null && _owner.IsDead) return; // no shooting after you've been killed
             if (IsReloading || Time.time < _nextShotTime || aimCamera == null) return;
             if (AmmoInMagazine <= 0)
             {
