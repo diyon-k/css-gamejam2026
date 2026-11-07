@@ -24,8 +24,14 @@ namespace Blink.Mobs
         [SerializeField] List<Transform> spawnPoints = new();
         [Tooltip("NavMesh agent type the scene is baked for (the prefab's own type is used if not found).")]
         [SerializeField] string agentType = "BungalowZombie";
+        [Tooltip("bungalow_layout.json: clowns wander between its rooms. Empty = they walk their Route_ loops instead.")]
+        [SerializeField] TextAsset layout;
+
+        [System.Serializable] class Layout { public Room[] rooms; }
+        [System.Serializable] class Room { public float[] min, max; }
 
         readonly List<Health> _alive = new();
+        Bounds[] _rooms;
         Transform _holder;
         readonly Dictionary<Transform, Transform> _routes = new();
         float _timer;
@@ -41,6 +47,16 @@ namespace Blink.Mobs
                 if (open < 0) continue;
                 var id = p.name.Substring(open + 1).TrimEnd(')', ' ');
                 if (GameObject.Find("Markers/Routes/Route_" + id) is { } route) _routes[p] = route.transform;
+            }
+            if (layout != null && JsonUtility.FromJson<Layout>(layout.text)?.rooms is { Length: > 0 } rooms)
+            {
+                _rooms = new Bounds[rooms.Length];
+                for (int i = 0; i < rooms.Length; i++)
+                {
+                    _rooms[i] = new Bounds();
+                    _rooms[i].SetMinMax(new Vector3(rooms[i].min[0], rooms[i].min[1], rooms[i].min[2]),
+                                        new Vector3(rooms[i].max[0], rooms[i].max[1], rooms[i].max[2]));
+                }
             }
         }
 
@@ -76,8 +92,11 @@ namespace Blink.Mobs
             if (_holder == null) { _holder = new GameObject("ClownSpawnHolder").transform; _holder.gameObject.SetActive(false); }
             var clown = Instantiate(clownPrefab, point.position, point.rotation, _holder);
             if (clown.TryGetComponent<NavMeshAgent>(out var agent) && AgentTypeId(agentType) is int id) agent.agentTypeID = id;
-            if (clown.TryGetComponent<MobController>(out var mob) && _routes.TryGetValue(point, out var route))
-                mob.SetPatrolRoute(route);
+            if (clown.TryGetComponent<MobController>(out var mob))
+            {
+                if (_rooms != null) mob.SetPatrolRooms(_rooms);
+                else if (_routes.TryGetValue(point, out var route)) mob.SetPatrolRoute(route);
+            }
             if (clown.TryGetComponent<Health>(out var health)) _alive.Add(health);
             clown.transform.SetParent(null, true);
         }

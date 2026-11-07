@@ -143,6 +143,13 @@ namespace Blink.Mobs
         // Senses and patrol.
         Vector3[] _waypoints = Array.Empty<Vector3>();
         int _waypointIndex;
+        // Room patrol (wins over the waypoint loop when set): wanders to a random reachable room, one no other mob is heading for.
+        Bounds[] _rooms;
+        int _room = -1;
+        bool _claimed;
+        NavMeshPath _roomPath;
+        /// <summary>Rooms mobs are heading for; a list, so two claims on one room (when nothing else is free) release cleanly.</summary>
+        static readonly System.Collections.Generic.List<int> ClaimedRooms = new();
         bool _seesTarget;
         float _senseTimer;
         float _lostTimer;
@@ -195,6 +202,7 @@ namespace Blink.Mobs
 
         void OnDisable()
         {
+            ReleaseRoom();
             TimeSkipController.Unregister(this);
             Noise.Made -= OnNoise;
             if (_health != null) _health.Died -= OnDied;
@@ -215,6 +223,9 @@ namespace Blink.Mobs
 
         /// <summary>For spawned mobs, before Awake (the prefab can't reference scene objects).</summary>
         public void SetPatrolRoute(Transform route) => patrolRoute = route;
+
+        /// <summary>Patrol by wandering between these rooms (world bounds, min y = floor) instead of a waypoint loop.</summary>
+        public void SetPatrolRooms(Bounds[] rooms) => _rooms = rooms;
 
         /// <summary>Back to where it started, calm (used when the player respawns). Corpses stay put.</summary>
         public void ResetToSpawn()
@@ -326,11 +337,20 @@ namespace Blink.Mobs
             if ((_waitTimer -= dt) > 0f) return;
 
             if (CurrentState == State.Investigate) StartPatrol();
+            else if (_rooms is { Length: > 0 }) { if (!GoToRandomRoom()) _waitTimer = patrolWait; } // nowhere reachable: try again later
             else GoToWaypoint((_waypointIndex + 1) % _waypoints.Length);
         }
 
         void StartPatrol()
         {
+            if (_rooms is { Length: > 0 })
+            {
+                SetState(State.Patrol);
+                if (GoToRandomRoom()) return;
+                _agent.isStopped = true; // TickWander waits patrolWait, then tries again
+                _waitTimer = patrolWait;
+                return;
+            }
             if (_waypoints.Length == 0)
             {
                 SetState(State.Idle);
@@ -348,9 +368,77 @@ namespace Blink.Mobs
         void GoToWaypoint(int index)
         {
             _waypointIndex = index;
+            GoTo(_waypoints[index]);
+        }
+
+        /// <summary>
+        /// Heads for a random point in a random room it can walk to (a locked door cuts the navmesh, so rooms behind one
+        /// drop out). Skips the room it's in and rooms other mobs are heading for, unless nothing else is reachable.
+        /// </summary>
+        bool GoToRandomRoom()
+        {
+            ReleaseRoom();
+            int last = _room;
+            var failed = new System.Collections.Generic.HashSet<int>();
+            for (int pass = 0; pass < 2; pass++) // second pass allows rooms another mob has claimed
+            {
+                while (true)
+                {
+                    int room = PickRoom(_rooms.Length, i => i != last && !failed.Contains(i) && (pass == 1 || !ClaimedRooms.Contains(i)),
+                                        UnityEngine.Random.Range);
+                    if (room < 0) break;
+                    if (!TryRoomPoint(_rooms[room], out var point)) { failed.Add(room); continue; }
+                    _room = room;
+                    ClaimedRooms.Add(room);
+                    _claimed = true;
+                    GoTo(point);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>A random index in [0, count) that <paramref name="allowed"/> accepts, or -1 if none. random(min, maxExclusive).</summary>
+        public static int PickRoom(int count, Func<int, bool> allowed, Func<int, int, int> random)
+        {
+            var options = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < count; i++) if (allowed(i)) options.Add(i);
+            return options.Count == 0 ? -1 : options[random(0, options.Count)];
+        }
+
+        /// <summary>A walkable point inside the room with a complete path to it (a few random tries, so furniture doesn't rule a room out).</summary>
+        bool TryRoomPoint(Bounds room, out Vector3 point)
+        {
+            _roomPath ??= new NavMeshPath();
+            for (int i = 0; i < 4; i++)
+            {
+                var guess = new Vector3(UnityEngine.Random.Range(room.min.x + 0.5f, room.max.x - 0.5f), room.min.y,
+                                        UnityEngine.Random.Range(room.min.z + 0.5f, room.max.z - 0.5f));
+                if (!NavMesh.SamplePosition(guess, out var floor, 1.5f, _agent.areaMask)) continue;
+                var p = floor.position;
+                // must land in this room, not snapped through a wall into the next one or onto the storey below
+                if (p.x < room.min.x || p.x > room.max.x || p.z < room.min.z || p.z > room.max.z || Mathf.Abs(p.y - room.min.y) > 0.5f) continue;
+                if (!NavMesh.CalculatePath(transform.position, p, _agent.areaMask, _roomPath) || _roomPath.status != NavMeshPathStatus.PathComplete) continue;
+                point = p;
+                return true;
+            }
+            point = default;
+            return false;
+        }
+
+        /// <summary>Drops its claim (once). _room stays as "the room it was last in" so the next pick skips it.</summary>
+        void ReleaseRoom()
+        {
+            if (!_claimed) return;
+            ClaimedRooms.Remove(_room);
+            _claimed = false;
+        }
+
+        void GoTo(Vector3 point)
+        {
             _agent.speed = patrolSpeed;
             _agent.isStopped = false;
-            _agent.SetDestination(_waypoints[index]);
+            _agent.SetDestination(point);
         }
 
         void Investigate(Vector3 point)
@@ -647,6 +735,7 @@ namespace Blink.Mobs
         void OnDied()
         {
             EndGrabHold(); // let the ragdoll take over from where it stands
+            ReleaseRoom();
             SetState(State.Dead);
             // Read before the agent is switched off, which zeroes it: the body keeps its running speed.
             Vector3 velocity = _agent.enabled ? _agent.velocity : Vector3.zero;
