@@ -62,6 +62,10 @@ namespace Blink.Combat
         [Tooltip("When grabbed, the hands come out to push the zombie off; after breaking free the weapon comes back this long later (lets the shove play).")]
         [SerializeField, Min(0f)] float regrabWeaponDelay = 0.4f;
 
+        [Header("Attack cooldown (world seconds)")]
+        [Tooltip("After any shot or swing, no weapon (pistol, axe, picked-up melee item) can attack again for this long. Shared across slots.")]
+        [SerializeField, Min(0f)] float attackCooldown = 2f;
+
         /// <summary>A gun fired (the pistol). Once per trigger pull, after its <see cref="RayFired"/> ray.</summary>
         public event Action<WeaponKind> ShotFired;
 
@@ -98,6 +102,9 @@ namespace Blink.Combat
         /// <summary>0 = weapon up, 1 = fully lowered.</summary>
         public float Lowered01 => _switch.Lowered01;
 
+        /// <summary>Attack cooldown left, 1 = just attacked, 0 = ready.</summary>
+        public float Cooldown01 => attackCooldown > 0f ? Mathf.Clamp01((_readyAt - Time.time) / attackCooldown) : 0f;
+
         public int SlotCount => _slots.Count;
         public Gun Pistol => pistol;
         public MeleeWeapon Axe => axe;
@@ -114,6 +121,7 @@ namespace Blink.Combat
         float _nextScrollTime, _grabDown;
         WeaponKind? _beforeGrab;
         float _restoreAt = float.PositiveInfinity;
+        float _readyAt = float.NegativeInfinity;
         bool _subscribed, _brokeFree, _hasPistol = true;
 
         InputAction _fire, _reload, _next, _previous, _scroll, _drop;
@@ -315,6 +323,7 @@ namespace Blink.Combat
 
         void Use(Slot slot)
         {
+            if (Time.time < _readyAt) return; // cooling down; started by a real shot or swing (OnPistolFired / OnAxeSwung)
             switch (slot.Kind)
             {
                 case WeaponKind.Pistol: pistol.TryFire(); break;
@@ -456,6 +465,7 @@ namespace Blink.Combat
         {
             // Gun.Fired is raised in the same frame as its raycast, so the camera's centre ray is the shot's ray.
             var ray = aimCamera != null ? aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)) : new Ray(pistol.transform.position, pistol.transform.forward);
+            _readyAt = Time.time + attackCooldown;
             RayFired?.Invoke(new ShotRay(WeaponKind.Pistol, ray, pistol.Range, hit, info, pistol.Muzzle));
             ShotFired?.Invoke(WeaponKind.Pistol);
         }
@@ -482,7 +492,11 @@ namespace Blink.Combat
         void OnPistolDryFired() => DryFired?.Invoke(WeaponKind.Pistol);
         void OnPistolReloadStarted() => ReloadStarted?.Invoke(WeaponKind.Pistol);
         void OnPistolReloadFinished() => ReloadFinished?.Invoke(WeaponKind.Pistol);
-        void OnAxeSwung() => MeleeSwing?.Invoke(WeaponKind.Axe);
+        void OnAxeSwung()
+        {
+            _readyAt = Time.time + attackCooldown;
+            MeleeSwing?.Invoke(WeaponKind.Axe);
+        }
         void OnMeleeHit(MeleeHitInfo hit) => MeleeHit?.Invoke(hit);
 
         sealed class Slot
