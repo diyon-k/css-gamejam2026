@@ -106,6 +106,9 @@ MonoBehaviour:
   launchLift: 3.5
   launchSideways: 2.5
   stunSeconds: 2.5
+  swingCue: {fileID: 11400000, guid: c2cd3d733b3ca2340922fc6b87a5c557, type: 2}
+  hitCue: {fileID: 11400000, guid: a69d263efc607a74b89544161adee46c, type: 2}
+  surfaceHitCue: {fileID: 11400000, guid: c93f61db0481dec44a4f05589ef1143f, type: 2}
 --- !u!1001 &3578489212693379838
 PrefabInstance:
   m_ObjectHideFlags: 0
