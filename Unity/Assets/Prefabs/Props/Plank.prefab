@@ -54,7 +54,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.11, y: 1.2, z: 0.03}
+  m_Size: {x: 0.11, y: 0.7, z: 0.03}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &5792959092675881486
 Rigidbody:
@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.SwingableProp
   displayName: plank
-  grip: {x: 0, y: -0.5, z: 0}
+  grip: {x: 0, y: -0.27, z: 0}
   lengthAxis: {x: 0, y: 1, z: 0}
   knocksDown: 1
   damage: 10
@@ -135,7 +135,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.11, y: 1.2, z: 0.03}
+  m_LocalScale: {x: 0.11, y: 0.7, z: 0.03}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3334224407376152784}
