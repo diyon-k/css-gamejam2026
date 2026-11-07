@@ -1,84 +1,90 @@
-import bpy, bmesh, numpy as np, os, sys
+# Builds zombie body-type variants from ZombieGirl on the SAME skeleton (bind poses unchanged),
+# so Unity prefab variants can swap meshes onto the existing rig/ragdoll.
+# Mesh is reshaped radially around each bone; the head is scaled about its centre.
+# Also writes uv_labels.json (UV triangles per region) for tools/zombie_textures.py.
+# Run: blender -b --python tools/blender_zombie_variants.py -- <out dir for uv_labels.json>
+import bpy, json, os, sys
 from mathutils import Vector
-SRC = r"C:/Users/jackp/github/css-gamejam2026/Unity/Assets/Art/Zombies/ZombieGirl"
-OUT = r"C:/Users/jackp/github/css-gamejam2026/Unity/Assets/Art/Zombies"
-PREV = sys.argv[sys.argv.index("--")+1]
 
-# name: (inflate cm per bone-group keyword, diffuse tint fn)
-def bloater(rgb):  # sickly green-yellow, swollen
-    g = rgb.mean(-1, keepdims=True)
-    out = rgb*0.55 + g*np.array([0.55,0.75,0.30])*0.75
-    return np.clip(out*1.05, 0, 1)
-def husk(rgb):     # charred, ashen grey-blue, darker
-    g = rgb.mean(-1, keepdims=True)
-    out = g*np.array([0.62,0.66,0.74]) * 0.75 + rgb*0.12
-    return np.clip(out, 0, 1)
+SRC = r"C:/Users/jackp/github/css-gamejam2026/Unity/Assets/Art/Zombies/ZombieGirl/ZombieGirl.fbx"
+OUT = r"C:/Users/jackp/github/css-gamejam2026/Unity/Assets/Art/Zombies"
+TMP = sys.argv[sys.argv.index("--") + 1]
+
+# region -> (side x, front -y, back +y, vertical z) thickness multipliers; a float means uniform.
 VARIANTS = {
-  "ZombieBloater": ({"Spine":4.5, "Hips":3.5, "UpLeg":2.5, "Arm":2.0, "Neck":1.5, "Shoulder":2.0}, bloater),
-  "ZombieHusk":    ({"Spine":-0.8, "Hips":-0.5, "UpLeg":-0.6, "Neck":-0.4}, husk),
+    "ZombieBloater": dict(head=0.9, Hips=(1.45, 1.9, 1.35, 1), Spine=(1.5, 2.3, 1.35, 1), Spine1=(1.5, 2.1, 1.35, 1),
+                          Spine2=(1.35, 1.5, 1.3, 1), Neck=1.5, Shoulder=1.3, Arm=1.55, ForeArm=1.35, Hand=1.15,
+                          UpLeg=1.5, Leg=1.3, Foot=1.1),
+    "ZombieHusk": dict(head=1.06, Hips=0.8, Spine=(0.7, 0.55, 0.85, 1), Spine1=(0.72, 0.6, 0.85, 1), Spine2=(0.85, 0.85, 0.9, 1),
+                       Neck=0.65, Shoulder=0.85, Arm=0.6, ForeArm=0.6, Hand=0.85, UpLeg=0.62, Leg=0.6, Foot=0.9),
+    "ZombieBrute": dict(head=0.82, Hips=1.2, Spine=(1.25, 1.2, 1.2, 1), Spine1=(1.4, 1.3, 1.3, 1), Spine2=(1.6, 1.45, 1.5, 1),
+                        Neck=1.7, Shoulder=1.7, Arm=1.9, ForeArm=1.7, Hand=1.45, UpLeg=1.35, Leg=1.3, Foot=1.15),
+    "ZombieStalker": dict(head=1.15, Hips=0.85, Spine=(0.8, 0.7, 0.9, 1), Spine1=(0.82, 0.75, 0.9, 1), Spine2=0.88,
+                          Neck=0.75, Shoulder=0.9, Arm=0.75, ForeArm=0.72, Hand=1.3, UpLeg=0.8, Leg=0.75, Foot=1.05),
 }
+
+def region(bone):
+    n = bone.replace("mixamorig:", "").replace("Left", "").replace("Right", "")
+    if n.startswith("Hand"): return "Hand"          # fingers follow the hand
+    if n.startswith("Toe"): return "Foot"
+    if n.startswith("Head") or n.endswith("Eye"): return "Head"
+    return n
 
 def load():
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    bpy.ops.import_scene.fbx(filepath=SRC + "/ZombieGirl.fbx")
-
-def displace(o, table):
-    s = o.matrix_world.to_scale()[0]  # local units per world metre
-    names = {g.index: g.name for g in o.vertex_groups}
-    me = o.data
-    me.calc_normals_split() if hasattr(me, "calc_normals_split") else None
-    # average normal per position so split verts move together (no tearing)
-    from collections import defaultdict
-    acc = defaultdict(lambda: Vector())
-    for v in me.vertices: acc[v.co.to_tuple(4)] += v.normal
-    for v in me.vertices:
-        amt = 0.0
-        for g in v.groups:
-            n = names[g.group]
-            # ForeArm/Hand/Head excluded: "Arm" must not match "ForeArm"
-            for k, cm in table.items():
-                if k in n and not (k == "Arm" and "ForeArm" in n):
-                    amt += g.weight * cm; break
-        if amt:
-            v.co += acc[v.co.to_tuple(4)].normalized() * (amt / 100.0 / s)
-
-def tint(img_path, fn, out_path):
-    im = bpy.data.images.load(img_path)
-    px = np.empty(len(im.pixels), np.float32); im.pixels.foreach_get(px)
-    px = px.reshape(-1, 4); px[:, :3] = fn(px[:, :3])
-    out = bpy.data.images.new(os.path.basename(out_path), im.size[0], im.size[1], alpha=True)
-    out.pixels.foreach_set(px.ravel()); out.filepath_raw = out_path; out.file_format = 'PNG'; out.save()
-    return out
-
-def preview(path):
-    sc = bpy.context.scene
+    bpy.ops.import_scene.fbx(filepath=SRC)
     arm = bpy.data.objects["Armature"]
-    cam = bpy.data.cameras.new("c"); co = bpy.data.objects.new("c", cam); sc.collection.objects.link(co)
-    co.location = (0, -4.2, 1.0); co.rotation_euler = (1.5708, 0, 0); sc.camera = co
-    l = bpy.data.lights.new("l", 'SUN'); l.energy = 4; lo = bpy.data.objects.new("l", l); sc.collection.objects.link(lo)
-    lo.rotation_euler = (0.8, 0.2, 0.4)
-    sc.render.engine = 'BLENDER_WORKBENCH'; sc.display.shading.color_type = 'TEXTURE'; sc.display.shading.light = 'STUDIO'
-    sc.render.resolution_x, sc.render.resolution_y = 500, 700
-    sc.render.filepath = path; bpy.ops.render.render(write_still=True)
+    segs = {b.name: (arm.matrix_world @ b.head_local, arm.matrix_world @ b.tail_local) for b in arm.data.bones}
+    return arm, segs
 
-load(); preview(PREV + "/ZombieGirl.png")
-for name, (table, fn) in VARIANTS.items():
-    load()
-    os.makedirs(f"{OUT}/{name}/Textures", exist_ok=True)
-    body = tint(SRC + "/Textures/zombie_body_diffuse.png", fn, f"{OUT}/{name}/Textures/{name}_body_diffuse.png")
-    head = tint(SRC + "/Textures/zombie_diffuse.png", fn, f"{OUT}/{name}/Textures/{name}_diffuse.png")
+def deform(o, segs, spec):
+    M = o.matrix_world; Mi = M.inverted()
+    names = {g.index: g.name for g in o.vertex_groups}
+    hb = segs["mixamorig:Head"]; centre = hb[0] + Vector((0, 0, 0.08))
+    for v in o.data.vertices:
+        p = M @ v.co; acc = Vector(); ws = 0.0
+        for g in v.groups:
+            if g.weight <= 0 or names[g.group] not in segs: continue
+            r = region(names[g.group])
+            if r == "Head":
+                t = centre + (p - centre) * spec["head"]
+            else:
+                f = spec.get(r, 1.0)
+                sx, sf, sb, sz = (f, f, f, f) if isinstance(f, float) else f
+                a, b = segs[names[g.group]]; d = b - a; L = d.length
+                d = d / L if L > 1e-6 else Vector((0, 0, 1))
+                c = a + d * max(0.0, min(L, (p - a).dot(d)))
+                rv = p - c; par = d * rv.dot(d); perp = rv - par
+                perp = Vector((perp.x * sx, perp.y * (sf if perp.y < 0 else sb), perp.z * sz))
+                t = c + par + perp
+            acc += t * g.weight; ws += g.weight
+        if ws: v.co = Mi @ (acc / ws)
+
+def dump_uv_labels(path):
+    tris = []
     for o in bpy.data.objects:
+        if o.type != 'MESH': continue
+        names = {g.index: g.name for g in o.vertex_groups}
+        uv = o.data.uv_layers.active.data
+        for p in o.data.polygons:
+            if o.name.endswith("Top"): lab = "shirt"
+            elif o.name.endswith("Pants"): lab = "pants"
+            else:
+                head = sum(g.weight for vi in p.vertices for g in o.data.vertices[vi].groups
+                           if region(names[g.group]) in ("Head", "Neck")) / len(p.vertices)
+                lab = "head" if head > 0.5 else "skin"
+            tris.append([lab, [list(uv[li].uv) for li in p.loop_indices]])
+    json.dump(tris, open(path, "w"))
+
+arm, segs = load()
+dump_uv_labels(os.path.join(TMP, "uv_labels.json"))
+for name, spec in VARIANTS.items():
+    arm, segs = load()
+    for o in list(bpy.data.objects):
         if o.type == 'MESH':
-            displace(o, table)
+            deform(o, segs, spec)
             o.name = o.name.replace("ZombieGirl", name); o.data.name = o.name
-    for m in bpy.data.materials:  # swap diffuse for the preview only; Unity materials get their own
-        if not m.use_nodes: continue
-        for n in m.node_tree.nodes:
-            if n.type == 'TEX_IMAGE' and n.image:
-                p = os.path.basename(n.image.filepath).lower()
-                if p == "zombie_body_diffuse.png": n.image = body
-                elif p == "zombie_diffuse.png": n.image = head
-    preview(f"{PREV}/{name}.png")
-    bpy.ops.export_scene.fbx(filepath=f"{OUT}/{name}/{name}.fbx", object_types={'ARMATURE','MESH'},
-        add_leaf_bones=False, bake_anim=False, path_mode='STRIP', embed_textures=False)
+    os.makedirs(f"{OUT}/{name}", exist_ok=True)
+    bpy.ops.export_scene.fbx(filepath=f"{OUT}/{name}/{name}.fbx", object_types={'ARMATURE', 'MESH'},
+                             add_leaf_bones=False, bake_anim=False, path_mode='STRIP', embed_textures=False)
     print("EXPORTED", name)
