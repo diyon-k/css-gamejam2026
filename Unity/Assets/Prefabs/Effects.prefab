@@ -89,7 +89,7 @@ MonoBehaviour:
   shotCue: {fileID: 11400000, guid: 4f304fba2ec344d44a2a92881f7462d7, type: 2}
   tailCue: {fileID: 11400000, guid: d42ad65274f8c3042b3c49734f09a004, type: 2}
   dryFireCue: {fileID: 11400000, guid: f9cde2d263f8e3c4aa3014b513503350, type: 2}
-  reloadStartCue: {fileID: 0}
+  reloadStartCue: {fileID: 11400000, guid: b5027b298aa62e74ba06a4360a148019, type: 2}
   magOutCue: {fileID: 11400000, guid: 9677ecb44c1b3584b843578881738d5b, type: 2}
   magInCue: {fileID: 11400000, guid: dd6c62b4070d9c14d8d77e623076def1, type: 2}
   slideCue: {fileID: 11400000, guid: 0e6e12d220f506d48854d62e25301947, type: 2}

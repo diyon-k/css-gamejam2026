@@ -3,11 +3,10 @@ using UnityEngine;
 namespace Blink.Audio
 {
     /// <summary>
-    /// Background music: one looping 2D bed that starts with the scene, fades in, and plays for the whole game,
+    /// Background music or an ambience bed (add one per bed): one looping 2D bed that starts with the scene, fades in, and plays for the whole game,
     /// looping when it reaches the end. Route its cue to the Ambience group so the eyes-shut muffle ducks it
     /// under the heartbeat. Runs on real time (the music ignores fast-forward and skips). Lives on GameSystems.
     /// </summary>
-    [DisallowMultipleComponent]
     public sealed class MusicAudio : MonoBehaviour
     {
         [Tooltip("Looping 2D music bed. Give it a fixed pitch (1..1) so it never plays detuned.")]
