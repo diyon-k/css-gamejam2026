@@ -6,11 +6,12 @@ Sends one JSON datagram per camera frame (~30 Hz) to 127.0.0.1:5065:
 Usage:
     python blink_server.py                 # default camera
     python blink_server.py --preview       # show the camera with the blink score (q / Esc to quit)
-    python blink_server.py --camera 1 --close 0.45 --open 0.3
+    python blink_server.py --camera 1 --close 0.45 --open 0.3 --max-turn 30
 """
 
 import argparse
 import json
+import math
 import os
 import socket
 import sys
@@ -50,13 +51,19 @@ def closest_face(face_landmarks) -> int | None:
     return max(range(len(face_landmarks)), key=lambda i: area(face_landmarks[i]), default=None)
 
 
-def blink_score(result) -> float | None:
-    """Average of eyeBlinkLeft/Right for the closest face, or None if no face."""
+def head_turn_deg(matrix) -> float:
+    """Degrees between where the face points and straight at the camera (any direction: yaw, pitch or both)."""
+    return math.degrees(math.acos(max(-1.0, min(1.0, matrix[2][2]))))
+
+
+def read_face(result) -> tuple[float, float] | None:
+    """(average eyeBlinkLeft/Right, head turn in degrees) for the closest face, or None if no face."""
     i = closest_face(result.face_landmarks)
     if i is None or not result.face_blendshapes:
         return None
     scores = {c.category_name: c.score for c in result.face_blendshapes[i]}
-    return (scores["eyeBlinkLeft"] + scores["eyeBlinkRight"]) / 2
+    turn = head_turn_deg(result.facial_transformation_matrixes[i]) if result.facial_transformation_matrixes else 0.0
+    return (scores["eyeBlinkLeft"] + scores["eyeBlinkRight"]) / 2, turn
 
 
 def process_alive(pid: int) -> bool:
@@ -94,6 +101,8 @@ def main() -> None:
     parser.add_argument("--camera", type=int, default=0, help="camera index (default 0)")
     parser.add_argument("--close", type=float, default=0.5, help="blink score above this = closed")
     parser.add_argument("--open", type=float, default=0.35, help="blink score below this = open again")
+    parser.add_argument("--max-turn", type=float, default=30.0,
+                        help="head turned further than this many degrees from the camera = eyes count as open")
     parser.add_argument("--preview", action="store_true", help="show a camera window with the score")
     parser.add_argument("--parent-pid", type=int, help="exit when this process dies (Unity passes its own pid)")
     args = parser.parse_args()
@@ -115,6 +124,7 @@ def main() -> None:
         running_mode=vision.RunningMode.VIDEO,
         num_faces=3,
         output_face_blendshapes=True,
+        output_facial_transformation_matrixes=True,
     )
     eyes = EyeHysteresis(args.close, args.open)
     start = time.monotonic()
@@ -138,11 +148,13 @@ def main() -> None:
             rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             result = landmarker.detect_for_video(mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb), ts)
 
-            score = blink_score(result)
-            present = score is not None
+            face = read_face(result)
+            present = face is not None
+            score, turn = face if present else (0.0, 0.0)
+            turned_away = turn > args.max_turn  # blink score is unreliable side-on, and you're not looking anyway
             was_closed = eyes.closed
-            closed = eyes.update(score) if present else False
-            eyes.closed = closed  # face lost resets to open, so a lost face isn't counted as a blink every frame
+            closed = eyes.update(score) if present and not turned_away else False
+            eyes.closed = closed  # face lost / turned resets to open, so it isn't counted as a blink every frame
             if was_closed and not closed:
                 blinks += 1
                 print(f"BLINK #{blinks}", flush=True)
@@ -150,7 +162,9 @@ def main() -> None:
             sock.sendto(json.dumps(packet).encode("utf-8"), (HOST, PORT))
 
             if args.preview:
-                label = "NO FACE" if not present else f"{'CLOSED' if closed else 'open'}  {score:.2f}"
+                label = "NO FACE" if not present else f"{'CLOSED' if closed else 'open'}  {score:.2f}  turn {turn:.0f}"
+                if turned_away:
+                    label += " (AWAY)"
                 colour = (0, 0, 255) if closed or not present else (0, 200, 0)
                 cv2.putText(frame, label, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.1, colour, 2)
                 cv2.putText(frame, f"blinks: {blinks}", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
