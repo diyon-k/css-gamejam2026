@@ -505,6 +505,14 @@ The emitters in `fixtures.json` are authoritative for the lighting pass. The two
 - Poly Haven models, either from `Art/Mansion/PolyHaven` or downloaded, all decimated and re-baked into the atlases (§3.5). The CC0 authors are in §3.1, §3.2 and the Phase 5 report.
 - Self-built models in `bungalow_prop_models.py`.
 
+**Openable drawers:** the chest of drawers (`GothicCommode_01`: `Bed_Dresser` and `Liv_Sideboard`) has 3 drawers that open and close; they start empty.
+- The Blender build keeps the Poly Haven drawer objects as child meshes `GothicCommode_01_Drawer1`–`3` (top first, each pivoted at its own centre): `ph(..., split=("GothicCommode_01_door",))`. The 1,600-triangle budget is shared by triangle count.
+- `BungalowPropsPlacer.SetupDrawers` (prefab build) gives every `<Model>_Drawer<N>` child:
+  - a sliding `Openable` ("drawer", 0.30 m out of the front over 0.3 s);
+  - a box collider 1 cm proud of the body's, so the look ray finds the drawer, not the body;
+  - no static flags and light-probe lighting, so it can move.
+- Covered by `Tests/EditMode/DrawerPrefabTests.cs`. Design: `docs/superpowers/specs/2026-11-07-openable-drawers-design.md`.
+
 **Placement data:** `tools/blender/bungalow_props.py` → `Props/bungalow_props.json`, 143 instances of 84 models.
 - Each instance has a room, position, euler and scale.
 - Items that sit on something reference their parent's top or shelf height, measured from the built model.

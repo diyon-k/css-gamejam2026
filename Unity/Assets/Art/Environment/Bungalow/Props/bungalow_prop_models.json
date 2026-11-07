@@ -490,7 +490,7 @@
    ]
   },
   "GothicCommode_01": {
-   "tris": 1600,
+   "tris": 1599,
    "pivot": "floor",
    "collider": "box",
    "kind": "furniture",
@@ -512,9 +512,6 @@
    "top": 1.21,
    "levels": [
     0.21,
-    0.27,
-    0.58,
-    0.9,
     1.21
    ],
    "materials": [
