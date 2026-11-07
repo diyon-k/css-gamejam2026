@@ -14,7 +14,8 @@ namespace Blink.Mobs
     /// itself still carries on to whatever it hit.
     ///
     /// The axe: at the apex of each swing (<see cref="AxeViewModel.StrikeApex"/>) a short sphere sweep along the view
-    /// shoves the nearest corpse limb within reach (and nearer than whatever the blade connected with).
+    /// shoves the nearest corpse limb within reach (and nearer than whatever the blade connected with) and launches
+    /// the whole body along the swing (<see cref="ZombieRagdoll.Fling"/>), so it flies a few metres.
     ///
     /// Listens to <see cref="PlayerWeapons.RayFired"/> (every gunshot), <see cref="PlayerWeapons.MeleeHit"/> and the
     /// axe's apex. Without a hub it falls back to every <see cref="Gun"/>'s <see cref="Gun.Fired"/>. The killing
@@ -48,6 +49,12 @@ namespace Blink.Mobs
         [SerializeField, Range(0f, 1f)] float floorDeflect = 0.75f;
         [Tooltip("Upward share added to the push.")]
         [SerializeField, Range(0f, 1f)] float lift = 0.2f;
+
+        [Header("Axe launch (corpses fly from an axe hit; guns only shove)")]
+        [Tooltip("Speed (m/s) an axe hit adds to the whole corpse, flat along the swing, on top of the axe impulse.")]
+        [SerializeField, Min(0f)] float axeLaunchSpeed = 4.5f;
+        [Tooltip("Upward speed (m/s) an axe hit adds to the whole corpse, so it lifts off the floor instead of dragging.")]
+        [SerializeField, Min(0f)] float axeLaunchLift = 2f;
 
         [Header("Axe sweep")]
         [Tooltip("Radius of the sweep against corpses, metres.")]
@@ -261,11 +268,15 @@ namespace Blink.Mobs
                 }
 
                 if (!entry.Clock.Advance(deltaTime, fastest)) continue;
+                if (entry.Ragdoll.IsFlying) continue; // never re-frozen mid-air: wait for its flight to end
                 _woken.RemoveAt(i);
                 // Freeze it again. A body still falling from its death is left to its ragdoll, which freezes it itself.
                 if (entry.WasFrozen || entry.Ragdoll.IsFrozen)
+                {
+                    entry.Ragdoll.EndFlight(); // continuous collision off before going kinematic
                     foreach (var body in entry.Bodies)
                         if (body != null) body.isKinematic = true;
+                }
             }
         }
 
@@ -355,7 +366,20 @@ namespace Blink.Mobs
             var limb = _hits[nearest];
             var ragdoll = limb.rigidbody.GetComponentInParent<ZombieRagdoll>();
             if (ragdoll == null || _deadSeen.Contains(ragdoll)) return;
-            Push(ragdoll, limb.rigidbody, limb.point, ray.direction, axeImpulse);
+            LaunchCorpse(ragdoll, limb.rigidbody, limb.point, ray.direction);
+        }
+
+        /// <summary>
+        /// An axe hit on a corpse: <see cref="Push"/> with <see cref="axeImpulse"/> at <paramref name="point"/>, then the
+        /// whole body is launched (<see cref="ZombieRagdoll.Fling"/>, the same flight as an axe kill or a knockdown) with
+        /// <see cref="axeLaunchSpeed"/> along the swing and <see cref="axeLaunchLift"/> up. It isn't re-frozen until
+        /// that flight ends. Public so editor tests can drive it. Returns the body pushed, or null.
+        /// </summary>
+        public Rigidbody LaunchCorpse(ZombieRagdoll ragdoll, Rigidbody body, Vector3 point, Vector3 direction)
+        {
+            var pushed = Push(ragdoll, body, point, direction, axeImpulse);
+            if (pushed != null) ragdoll.Fling(RagdollMath.LaunchVelocity(direction, Vector3.up, axeLaunchSpeed, axeLaunchLift));
+            return pushed;
         }
 
         // ---- Listening ----
