@@ -902,7 +902,8 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
   - **`Fixtures`:** one light per §5.1 row (25 lights; H5 is a dark fixture with no light).
     - Each light has a `PracticalLight` (`Scripts/Visuals/PracticalLight.cs`) that makes its shade glow through a per-renderer emission override. One `M_Shade` therefore serves every fixture: lit lamps glow; H5 doesn't, and C2 doesn't until it's switched on.
     - Lights are parented to Phase 5's fixture emitters (`FX_<id>` / `<Model>_Emitter`, from `Props/fixtures.json`) when those are in the scene. Otherwise they go at the `emitterWorld` from `fixtures.json` or at the layout position, with simple placeholder shades.
-    - Sconce lights are kept at least 0.16 m off the wall; closer burns a hot spot into the paper.
+    - Sconce lights are kept at least **0.24 m** off the wall (`SconceWallGap`). Closer burns a hot spot into the paper: at 0.16 m the halos round H2, H3 and H6 clipped at the room exposures.
+    - Fixtures with a `cone` in `tuning` are downward spot lights, not points: E1, K1, K2 (domes) and L1 (the fan's light kit), 150° outer and 110° inner. Their emitters sit 0.08–0.45 m under the ceiling, so as points they burnt a ring into it.
     - C1 has `LightFlicker` (dying).
     - **C2 starts off.** The generator beat calls `PracticalLight.Find("C2").SetOn(true)`, which switches on the light and the bulb glow.
   - **`Probes`** (1,712 light probes in 8 groups, plus 9 reflection probes):
@@ -944,30 +945,60 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
 
 **Light settings as built** (layout values from §5.1 unless overridden in `tuning`):
 - **Shadows:**
-  - All point lights have soft shadows. Baked shadow radius: 0.03 m for bulbs, 0.08 m for sconces and domes, 0.12 m for lamps.
+  - All point and spot lights have soft shadows. Baked shadow radius: 0.03 m for bulbs, 0.08 m for sconces, domes and the fan, 0.12 m for lamps.
   - Mixed H4 and L2: strength 0.6, Medium tier.
   - L1, K1 and R1: Low tier; the shadowmask carries their static shadows.
   - Realtime C1 and C2: strength **1.0**, Medium tier. At 0.6, 40% of the bulb would come through the slab into the ground floor.
-- **Re-tuned colours and intensities for the ref match.** The §5.1 colours are deep orange in linear light and turned every frame orange-red under ACES. The refs read as white-balanced tungsten, so:
+- **Re-tuned colours and intensities for the ref match.** The §5.1 colours are deep orange in linear light and turned every frame orange-red under ACES. The refs read as white-balanced tungsten, so the colours below are paler. Intensities in bold were cut or raised in the balance pass (below).
 
-  | Light | Colour | Intensity |
-  |---|---|---|
-  | E1 | #F5E8CC | 1.4 |
-  | H1 | #FFE4C0 | 1.6 |
-  | H2, H3 | #FFDDB0 | 0.45 |
-  | H4 | #FFD9A8 | 1.8 |
-  | H6 | (layout) | 0.35 |
-  | L1 | #FFE6C4 | 1.5 |
-  | L2 | #FFEED8 | 3.0 |
-  | L3, L4 | #FFDDB4 | 0.6, 0.4 |
-  | R1 | #F5E6C8 | 2.2 |
-  | R2 | (layout) | 0.8 |
-  | W1 | (layout) | 1.0 |
-  | RW1 | #B8BCB0 | 3.0 |
-  | WW1 | (layout) | 0.9 |
-  | CW1, CW2 | (layout) | 0.8 |
+  | Light | Colour | Intensity | Shape |
+  |---|---|---|---|
+  | E1 | #F5E8CC | 1.4 | spot 150° down |
+  | H1 | #FFE4C0 | 1.6 | point |
+  | H2, H3 | #FFDDB0 | 0.45 | point |
+  | H4 | #FFD9A8 | **1.1** (was 1.8) | point |
+  | H6 | (layout) | 0.35 | point |
+  | K1, K2 | (layout) | 1.1, 0.9 | spot 150° down |
+  | L1 | #FFE6C4 | 1.5 | spot 150° down |
+  | L2 | #FFEED8 | **1.6** (was 3.0) | point |
+  | L3, L4 | #FFDDB4 | 0.6, 0.4 | point |
+  | R1 | #F5E6C8 | **1.4** (was 2.2) | point |
+  | R2 | (layout) | 0.8 | point |
+  | W1 | (layout) | 1.0 | point |
+  | RW1 | #B8BCB0 | 3.0 | window |
+  | KW1 | (layout) | **1.2** (was 0.8) | window |
+  | WW1 | (layout) | 0.9 | window |
+  | CW1, CW2 | (layout) | 0.8 | window |
 
 - Shade glow follows the §5.1 "Emissive" column. W1 fizzes (emission only).
+
+**Balance pass (after the props and doors):** an audit of 14 player-eye views (1.65 m, arms and flashlight hidden) looking for surfaces that clip. ACES flattens out around sRGB luminance 229, so "clipping" here means a flat area at 200 or above, measured with the shades and bulbs masked out and each hot spot attributed to the light that dominates it.
+- **Causes found:**
+  - Sconces 0.16 m off the wall: halos on the hall's north wall (H2, H3) and on the wall behind H6.
+  - H4 0.30 m from the wall at intensity 1.8: the hall corner.
+  - L2 at 3.0: a pool on the living-room floor and sofa out to 1.8 m, under the living room's +3.8 EV total.
+  - L1, E1, K1 and K2 as point lights 0.08–0.45 m under the ceiling: rings on the ceiling.
+  - R1 at 2.2: the bedroom's west wall.
+- **Not causes:** glossy materials and reflection probes; toggling them on the hot surfaces changed nothing. Room exposures were left alone, since lowering them darkens the corners and the sightline backdrops too.
+- **The bathtub.** `ClawfootTub`'s Blender UV2 had collapsed: 532 of its 1,124 triangles were zero-area, covering 95% of its surface, and half the texels it used overlapped. Every bake gave it garbage lighting (one bake a glowing white tub, the next a black one).
+  - The tub's importer now generates lightmap UVs in Unity (`UNITY_LIGHTMAP_UV` in `tools/blender/unity_setup.py`), and its `scaleInLightmap` is back at the prop default 0.4.
+  - No other lightmapped mesh is affected; the rest have under 1% of their surface in sliver triangles.
+- **Changes:** the four lamp and window values in the table above, sconce gap 0.24 m, and the ceiling spots.
+- **Results**, as the share of the frame's walls and floors at 200 or above, before → after:
+
+  | View | Before | After |
+  |---|---|---|
+  | Hall, looking north | 2.68% | 1.83% |
+  | Hall CAM-1 | 0.18% | 0.13% |
+  | Living CAM-2 | 0.76% | 0.12% |
+  | Living lamp view | 0.88% | 0.05% |
+  | Living → kitchen | 0.15% | 0.05% |
+  | Kitchen | 0.08% | 0% |
+  | Bedroom CAM-3 | 0.23% | 0.01% |
+  | Bathroom, basement | 0% | 0% |
+
+  The hall's north wall still clips round H2, H3 and H4 at the hall's +2.9 EV total.
+- **Zombie readability:** a dark capsule 11 m down each §1.6 sightline, as the ratio of the background behind it to the capsule. Hall 3.6 → 3.5. Living → kitchen 2.3 → 2.1 (the cuts to L1 and L2 took out some of the fill that the KW1 raise added). Bedroom → living 1.26 → 1.24. Basement about 1.4 either way, so it still needs the flashlight.
 
 **Fog and post as built** (the §5.2 starting values, re-tuned against the refs):
 - **Fog:** Exponential, #141408, **density 0.11**. At 0.15 a zombie at 12 m was hidden; at 0.11 it reads as a silhouette down every §1.6 sightline (see the playability check below).

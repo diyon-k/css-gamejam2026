@@ -52,7 +52,7 @@ namespace Blink.EditorTools
         [Serializable] public class AreaLight { public string id; public float[] size, face; }
         [Serializable] public class Box { public string id; public float[] min, max; }
         [Serializable] public class Water { public float y; public string[] rooms; }
-        [Serializable] public class FixtureTune { public string id, col; public float glow, fizz, i, range; }
+        [Serializable] public class FixtureTune { public string id, col; public float glow, fizz, i, range, cone; }
         [Serializable] public class Globals { public string ambient, fog, fogMode; public float fogDensity; }
         [Serializable] public class Post
         {
@@ -170,7 +170,17 @@ namespace Blink.EditorTools
                     }
                     else
                     {
-                        light.type = LightType.Point;
+                        float cone = t?.cone ?? 0f;
+                        if (cone > 0f)
+                        {
+                            // ceiling dome / fan light kit: a wide downward spot, so the ceiling only gets bounce
+                            // (a point light this close to it burns a ring that clips at the room exposures)
+                            light.type = LightType.Spot;
+                            light.spotAngle = Mathf.Min(cone, 179f);
+                            light.innerSpotAngle = Mathf.Max(1f, light.spotAngle - SpotInnerFalloff);
+                            go.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.forward);
+                        }
+                        else light.type = LightType.Point;
                         light.range = range;
                         light.shadows = LightShadows.Soft;
                         light.shapeRadius = f.kind == "lamp" ? 0.12f : f.kind == "bulb" ? 0.03f : 0.08f; // baked softness
@@ -215,7 +225,10 @@ namespace Blink.EditorTools
             return sb.ToString();
         }
 
-        const float SconceWallGap = 0.16f; // a sconce bulb sits ~16 cm off the wall; closer burns a hot spot into it
+        // A sconce light sits at least this far off the wall; closer burns a hot spot into it. 0.16 still clipped the
+        // paper round H2 / H3 / H6 at the room exposures; the halo peak goes with 1/gap^2, so 0.24 is ~2.2x dimmer.
+        const float SconceWallGap = 0.24f;
+        const float SpotInnerFalloff = 40f; // degrees between a ceiling spot's outer and inner cone
 
         /// <summary>Pushes a wall-mounted light out of the nearest wall of the room it is in, to at least gap metres.</summary>
         static Vector3 OffWall(Vector3 p, Layout layout, float gap)
