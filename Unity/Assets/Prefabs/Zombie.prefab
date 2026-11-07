@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 6978270602319620792}
   - component: {fileID: 1268930743237078639}
   - component: {fileID: 3775479674508525852}
+  - component: {fileID: 5603719608058040048}
   m_Layer: 6
   m_Name: Zombie
   m_TagString: Untagged
@@ -186,6 +187,54 @@ MonoBehaviour:
   footstepCue: {fileID: 11400000, guid: 017f47442888ce64fbfa2f04bc479ec9, type: 2}
   stepLength: 0.8
   minStepSpeed: 0.2
+--- !u!114 &5603719608058040048
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6963140950601576065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04583b6aa6b03e84d88509f05656b45a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Mobs.ZombieHitReaction
+  animator: {fileID: 0}
+  referenceDamage: 34
+  strengthExponent: 0.7
+  maxStrength: 2.2
+  meleeStrength: 1.5
+  variation: 0.2
+  directionJitter: 12
+  bendDegrees: 28
+  twistDegrees: 30
+  twistRadius: 0.2
+  headDegrees: 16
+  torsoPeakSeconds: 0.09
+  headPeakSeconds: 0.12
+  maxTorsoDegrees: 60
+  maxHeadDegrees: 45
+  armDegrees: 65
+  shoulderDegrees: 25
+  forearmFollow: 0.35
+  armHitBend: 0.5
+  shoulderZone: {x: 0.08, y: 0.24}
+  armPeakSeconds: 0.08
+  maxArmDegrees: 95
+  buckleDegrees: 45
+  thighShare: 0.45
+  hipDip: 0.12
+  legSagDegrees: 16
+  legHitBend: -0.45
+  legPeakSeconds: 0.11
+  maxBuckleDegrees: 75
+  staggerDepth: 0.7
+  maxStaggerDepth: 0.85
+  staggerSeconds: 0.6
+  legStaggerBonus: 0.5
+  animationSlowdown: 0.5
+  knockbackSpeed: 2.4
+  knockbackFade: 0.12
 --- !u!1001 &3141514465635760509
 PrefabInstance:
   m_ObjectHideFlags: 0
