@@ -9,7 +9,8 @@ namespace Blink.Mobs
     /// <summary>
     /// Keeps up to <see cref="maxAlive"/> clowns in the house. The first spawns at once, then one more every
     /// <see cref="spawnDelay"/> world seconds (blinks skip it forward) while there's room; a death frees a slot.
-    /// Spawn points the player can see or is close to are skipped. <see cref="Restart"/> (player death) removes them all.
+    /// With a layout they spawn in a room (not the player's, not in sight, at least minPlayerDistance away); without one,
+    /// at the Spawn_Z markers by the same rules. <see cref="Restart"/> (player death) removes them all.
     /// </summary>
     public sealed class ClownSpawner : MonoBehaviour, ISkippable
     {
@@ -19,7 +20,7 @@ namespace Blink.Mobs
         [Tooltip("World seconds between spawns, and from a death to its replacement.")]
         [SerializeField, Min(0f)] float spawnDelay = 15f;
         [Tooltip("Never spawn closer to the player than this.")]
-        [SerializeField, Min(0f)] float minPlayerDistance = 8f;
+        [SerializeField, Min(0f)] float minPlayerDistance = 12f;
         [Tooltip("Empty = every Markers/Spawns/Spawn_Z* marker, with the Markers/Routes/Route_<id> in its name as patrol.")]
         [SerializeField] List<Transform> spawnPoints = new();
         [Tooltip("NavMesh agent type the scene is baked for (the prefab's own type is used if not found).")]
@@ -86,16 +87,19 @@ namespace Blink.Mobs
 
         void Spawn()
         {
-            if (clownPrefab == null || spawnPoints.Count == 0) return;
-            var point = PickPoint();
+            if (clownPrefab == null) return;
+            int? typeId = AgentTypeId(agentType);
+            var candidates = Candidates(typeId);
+            if (candidates.Count == 0) return;
+            var (position, rotation, marker) = PickPoint(candidates);
             // built under an inactive holder so the agent type and route are set before its Awake / OnEnable
             if (_holder == null) { _holder = new GameObject("ClownSpawnHolder").transform; _holder.gameObject.SetActive(false); }
-            var clown = Instantiate(clownPrefab, point.position, point.rotation, _holder);
-            if (clown.TryGetComponent<NavMeshAgent>(out var agent) && AgentTypeId(agentType) is int id) agent.agentTypeID = id;
+            var clown = Instantiate(clownPrefab, position, rotation, _holder);
+            if (clown.TryGetComponent<NavMeshAgent>(out var agent) && typeId is int id) agent.agentTypeID = id;
             if (clown.TryGetComponent<MobController>(out var mob))
             {
                 if (_rooms != null) mob.SetPatrolRooms(_rooms);
-                else if (_routes.TryGetValue(point, out var route)) mob.SetPatrolRoute(route);
+                else if (marker != null && _routes.TryGetValue(marker, out var route)) mob.SetPatrolRoute(route);
             }
             if (clown.TryGetComponent<Health>(out var health)) _alive.Add(health);
             clown.transform.SetParent(null, true);
@@ -111,24 +115,61 @@ namespace Blink.Mobs
             return null;
         }
 
-        /// <summary>Random point out of view and far enough away; failing that, the one farthest from the player.</summary>
-        Transform PickPoint()
+        /// <summary>With rooms: the middle of every room (on the navmesh), so there's plenty of choice. Without: the Spawn_Z markers.</summary>
+        List<(Vector3 pos, Quaternion rot, Transform marker)> Candidates(int? typeId)
+        {
+            var list = new List<(Vector3, Quaternion, Transform)>();
+            if (_rooms == null)
+            {
+                foreach (var p in spawnPoints) if (p != null) list.Add((p.position, p.rotation, p));
+                return list;
+            }
+            var filter = new NavMeshQueryFilter { agentTypeID = typeId ?? 0, areaMask = NavMesh.AllAreas };
+            foreach (var room in _rooms)
+            {
+                var floor = new Vector3(room.center.x, room.min.y, room.center.z);
+                if (NavMesh.SamplePosition(floor, out var hit, 2.5f, filter))
+                    list.Add((hit.position, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), null));
+            }
+            return list;
+        }
+
+        /// <summary>
+        /// Random candidate the player can't see, at least minPlayerDistance away and not in the player's room;
+        /// failing that, the one farthest from the player.
+        /// </summary>
+        (Vector3, Quaternion, Transform) PickPoint(List<(Vector3 pos, Quaternion rot, Transform marker)> candidates)
         {
             var cam = Camera.main;
-            if (cam == null) return spawnPoints[Random.Range(0, spawnPoints.Count)];
+            if (cam == null) return candidates[Random.Range(0, candidates.Count)];
             Vector3 eye = cam.transform.position;
-            var ok = new List<Transform>();
-            Transform farthest = spawnPoints[0];
-            foreach (var p in spawnPoints)
+            int playerRoom = RoomOf(eye);
+            var ok = new List<(Vector3, Quaternion, Transform)>();
+            var farthest = candidates[0];
+            foreach (var c in candidates)
             {
-                float d = Vector3.Distance(eye, p.position);
-                if (d > Vector3.Distance(eye, farthest.position)) farthest = p;
-                // ponytail: frustum test only, no occlusion ray; treats a point behind a wall but on screen as seen
-                var v = cam.WorldToViewportPoint(p.position + Vector3.up);
+                float d = Vector3.Distance(eye, c.pos);
+                if (d > Vector3.Distance(eye, farthest.pos)) farthest = c;
+                if (d < minPlayerDistance || (playerRoom >= 0 && RoomOf(c.pos + Vector3.up) == playerRoom)) continue;
+                // seen = on screen with nothing solid in between
+                Vector3 head = c.pos + Vector3.up * 1.5f;
+                var v = cam.WorldToViewportPoint(head);
                 bool onScreen = v.z > 0f && v.x > 0f && v.x < 1f && v.y > 0f && v.y < 1f;
-                if (d >= minPlayerDistance && !onScreen) ok.Add(p);
+                if (onScreen && !Physics.Linecast(eye, head, ~0, QueryTriggerInteraction.Ignore)) continue;
+                ok.Add(c);
             }
             return ok.Count > 0 ? ok[Random.Range(0, ok.Count)] : farthest;
+        }
+
+        int RoomOf(Vector3 p)
+        {
+            if (_rooms == null) return -1;
+            for (int i = 0; i < _rooms.Length; i++)
+            {
+                var r = _rooms[i];
+                if (p.x >= r.min.x && p.x <= r.max.x && p.z >= r.min.z && p.z <= r.max.z && p.y >= r.min.y - 0.5f && p.y <= r.max.y + 0.5f) return i;
+            }
+            return -1;
         }
     }
 }
