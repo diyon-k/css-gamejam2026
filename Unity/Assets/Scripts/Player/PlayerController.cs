@@ -142,7 +142,11 @@ namespace Blink.Player
             bool held = _crouch != null && _crouch.IsPressed();
             IsCrawling = held || (IsCrawling && !HeadroomToStand());
 
-            float height = Mathf.MoveTowards(_controller.height, IsCrawling ? crawlHeight : _standHeight, crawlTransitionSpeed * dt);
+            SetHeight(Mathf.MoveTowards(_controller.height, IsCrawling ? crawlHeight : _standHeight, crawlTransitionSpeed * dt));
+        }
+
+        void SetHeight(float height)
+        {
             if (Mathf.Approximately(height, _controller.height)) return;
             _controller.height = height;
             _controller.center = new Vector3(_controller.center.x, _feetY + height * 0.5f, _controller.center.z);
@@ -185,6 +189,8 @@ namespace Blink.Player
             _controller.enabled = true;
             _velocity = Vector3.zero;
             _pitch = 0f;
+            IsCrawling = false;
+            SetHeight(_standHeight);
         }
 
         void OnDied()

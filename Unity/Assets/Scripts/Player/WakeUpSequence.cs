@@ -126,6 +126,7 @@ namespace Blink.Player
             DropItems();
             _player.Teleport(_bedPos, _bedRot);
             _health.ResetHealth();
+            foreach (var mob in FindObjectsByType<Blink.Mobs.MobController>()) mob.ResetToSpawn();
             if (FindAnyObjectByType<GamepadHaptics>() is { } haptics) haptics.enabled = true; // it switches off on death
             Sleep();
         }
