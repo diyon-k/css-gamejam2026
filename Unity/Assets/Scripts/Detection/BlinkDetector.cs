@@ -45,7 +45,8 @@ namespace Blink.Detection
         BlinkClassifier _classifier;
         float _lastOpenedAt;
 
-        void Awake()
+        // OnEnable, not Awake: a script recompile during Play wipes these fields and re-runs OnEnable but not Awake.
+        void OnEnable()
         {
             if (Instance != null && Instance != this)
             {
@@ -54,11 +55,14 @@ namespace Blink.Detection
                 return;
             }
             Instance = this;
-            _classifier = new BlinkClassifier(holdThreshold, minClosedTime);
+            if (_classifier == null)
+            {
+                _classifier = new BlinkClassifier(holdThreshold, minClosedTime);
+                _lastOpenedAt = Time.unscaledTime;
+            }
             _sources = GetComponents<IEyeStateSource>();
             if (_sources.Length == 0)
                 Debug.LogWarning("[Blink] BlinkDetector has no IEyeStateSource components next to it.");
-            _lastOpenedAt = Time.unscaledTime;
         }
 
         void OnDestroy()
