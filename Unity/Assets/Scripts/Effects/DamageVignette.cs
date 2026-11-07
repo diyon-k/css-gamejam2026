@@ -14,6 +14,8 @@ namespace Blink.Effects
     [RequireComponent(typeof(Health))]
     public sealed class DamageVignette : MonoBehaviour
     {
+        [Tooltip("Optional overlay image per stage 1..4 (transparent centre, blood at the edges). Empty = generated.")]
+        [SerializeField] Texture2D[] stageImages = new Texture2D[4];
         [Tooltip("Per stage 1..4: how far in from the edge the blood reaches (0 = edge only, 1 = centre).")]
         [SerializeField] float[] reach = { 0.12f, 0.24f, 0.36f, 0.5f };
         [Tooltip("Per stage 1..4: opacity of the blood.")]
@@ -34,13 +36,17 @@ namespace Blink.Effects
         {
             _health = GetComponent<Health>();
             _stages = new Texture2D[4];
-            for (int i = 0; i < 4; i++) _stages[i] = Build(reach[i]);
+            for (int i = 0; i < 4; i++)
+                _stages[i] = stageImages != null && i < stageImages.Length && stageImages[i] != null
+                    ? stageImages[i]
+                    : Build(reach[i]);
         }
 
         void OnDestroy()
         {
             if (_stages == null) return;
-            foreach (var t in _stages) Destroy(t);
+            for (int i = 0; i < _stages.Length; i++)
+                if (_stages[i] != null && _stages[i].hideFlags == HideFlags.HideAndDontSave) Destroy(_stages[i]); // only the generated ones
         }
 
         /// <summary>0 at full health, then 1..4 for each 25% lost.</summary>
@@ -67,10 +73,12 @@ namespace Blink.Effects
 
         void Draw(Rect screen, int stage, float weight)
         {
-            var c = bloodColor;
+            var tex = _stages[stage - 1];
+            // Images carry their own blood colour; only the generated white masks get tinted.
+            var c = tex.hideFlags == HideFlags.HideAndDontSave ? bloodColor : Color.white;
             c.a = opacity[stage - 1] * weight;
             GUI.color = c;
-            GUI.DrawTexture(screen, _stages[stage - 1], ScaleMode.StretchToFill);
+            GUI.DrawTexture(screen, tex, ScaleMode.StretchToFill);
         }
 
         /// <summary>White texture whose alpha is a ragged, blotchy ring around the edge.</summary>
