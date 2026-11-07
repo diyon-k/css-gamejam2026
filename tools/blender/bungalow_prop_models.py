@@ -1291,6 +1291,24 @@ def BoxFallen():
     return o
 
 
+def FloorGrate():
+    """Cast-iron floor grate over a vent hole (bungalow_layout.VENTS / GRATE): 0.68 square, top 0.025 over the floor,
+    a frame round 11 bars with two cross bars under them, so you see down into the duct between the bars."""
+    U, s, h, rim = "M_Atlas_Utility", 0.34, 0.025, 0.05
+    p = [F(box_z("FrameS", (-s, s), (-s, -s + rim), (0, h), U, bev=0.004), "castiron"),
+         F(box_z("FrameN", (-s, s), (s - rim, s), (0, h), U, bev=0.004), "castiron"),
+         F(box_z("FrameW", (-s, -s + rim), (-s + rim, s - rim), (0, h), U, bev=0.004), "castiron", rot=True),
+         F(box_z("FrameE", (s - rim, s), (-s + rim, s - rim), (0, h), U, bev=0.004), "castiron", rot=True)]
+    n, w = 11, 0.018
+    for i in range(n):
+        x = -s + rim + (i + 0.5) * (2 * (s - rim)) / n
+        p.append(F(box_z("Bar", (x - w / 2, x + w / 2), (-s + rim, s - rim), (0.004, h - 0.002), U), "castiron",
+                   rot=True))
+    for y in (-0.1, 0.1):
+        p.append(F(box_z("Cross", (-s + rim, s - rim), (y - 0.008, y + 0.008), (0.0, 0.006), U), "castiron"))
+    return join(p, "FloorGrate")
+
+
 def TrashBags():
     a = ph("trashbag", 450, name="BagA")
     b = ph("trashbag", 450, name="BagB")
@@ -1382,6 +1400,7 @@ MODELS = {
     "Towel_Rail": (Towel_Rail, "wall", "none", "wall"),
     "Curtains_Window": (Curtains_Window, "wall", "none", "wall"),
     "Bed_Blanket": (Bed_Blanket, "floor", "none", "prop"),
+    "FloorGrate": (FloorGrate, "floor", "box", "furniture"),
     "Speaker": (Speaker, "floor", "box", "prop"),
     "PlantPot": (PlantPot, "floor", "box", "prop"),
     "UmbrellaStand": (UmbrellaStand, "floor", "box", "prop"),
