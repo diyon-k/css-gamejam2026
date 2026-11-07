@@ -1,5 +1,8 @@
+using System;
+using Blink.Combat;
 using Blink.Detection;
 using Blink.Effects;
+using Blink.Interaction;
 using Blink.TimeSkip;
 using UnityEngine;
 
@@ -9,6 +12,10 @@ namespace Blink.Player
     /// Game start. Black screen with "BLINK to begin" and the world frozen. The first blink (or Space)
     /// slowly opens the eyelids on the bedroom while the player sits up from lying on the bed, then hands
     /// over control and starts world time. Lives on GameSystems next to <see cref="BlinkEyelids"/>.
+    ///
+    /// Also the respawn: when the player dies they slump to the floor as the screen fades to black, then
+    /// wake in the same bed the same way. World progress (doors, dead zombies, weapons) stays; carried
+    /// inventory items are lost and go back to where they were picked up.
     /// </summary>
     public sealed class WakeUpSequence : MonoBehaviour
     {
@@ -28,6 +35,15 @@ namespace Blink.Player
         [SerializeField] Vector3 lyingOffset = new(0f, -0.9f, 0f);
         [SerializeField] string prompt = "BLINK to begin";
 
+        [Header("Death")]
+        [Tooltip("Real seconds from dying to fully black.")]
+        [SerializeField, Min(0.1f)] float knockSeconds = 2f;
+        [Tooltip("Camera drop while slumping to the floor, in the player's local space.")]
+        [SerializeField] Vector3 knockOffset = new(0f, -1.2f, 0f);
+        [Tooltip("Camera roll at the end of the slump, head on the floor.")]
+        [SerializeField] float knockRoll = 75f;
+        [SerializeField] string respawnPrompt = "You were knocked out\nBLINK to wake up";
+
         BlinkEyelids _eyelids;
         PlayerController _player;
         Transform _cam;
@@ -36,6 +52,11 @@ namespace Blink.Player
         BlinkDetector _detector;
         float _startedAt = -1f; // -1 = still waiting for the first blink
         GUIStyle _style;
+        Health _health;
+        Inventory _inventory;
+        Vector3 _bedPos, _diedPos;
+        Quaternion _bedRot, _diedRot;
+        float _diedAt = -1f; // -1 = alive
 
         void Start()
         {
@@ -45,7 +66,22 @@ namespace Blink.Player
             var cam = _player != null ? _player.GetComponentInChildren<Camera>() : null;
             _cam = cam == null ? null : cam.transform.parent != _player.transform ? cam.transform.parent : cam.transform;
             if (_cam != null) { _camPos = _cam.localPosition; _camRot = _cam.localRotation; }
+            if (_player != null)
+            {
+                _bedPos = _player.transform.position;
+                _bedRot = _player.transform.rotation;
+                _health = _player.GetComponent<Health>();
+                _inventory = _player.GetComponent<Inventory>();
+                if (_health != null) _health.Died += OnDied;
+            }
+            Sleep();
+        }
 
+        /// <summary>Lying in bed, eyes shut, world frozen, waiting for a blink.</summary>
+        void Sleep()
+        {
+            _startedAt = -1f;
+            enabled = true;
             Time.timeScale = 0f;
             TimeSkipController.Locked = true;
             if (_player != null) _player.InputEnabled = false;
@@ -58,7 +94,54 @@ namespace Blink.Player
             _detector.EyesShutEnded += BeginAfterHold;
         }
 
-        void OnDestroy() => Unsubscribe();
+        void OnDestroy()
+        {
+            Unsubscribe();
+            if (_health != null) _health.Died -= OnDied;
+        }
+
+        void OnDied()
+        {
+            _diedAt = Time.unscaledTime;
+            enabled = true;
+            TimeSkipController.Locked = true;
+            if (_cam != null) { _diedPos = _cam.localPosition; _diedRot = _cam.localRotation; }
+        }
+
+        /// <summary>Slump to the floor while the lids close; once black, back to bed.</summary>
+        void KnockOut()
+        {
+            float t = Mathf.Clamp01((Time.unscaledTime - _diedAt) / knockSeconds);
+            float slump = Mathf.SmoothStep(0f, 1f, Mathf.Min(1f, t * 1.5f));
+            if (_eyelids != null) _eyelids.Hold01 = t * t;
+            if (_cam != null)
+            {
+                _cam.localPosition = _diedPos + knockOffset * slump;
+                _cam.localRotation = _diedRot * Quaternion.Euler(0f, 0f, knockRoll * slump);
+            }
+            if (t < 1f) return;
+
+            _diedAt = -1f;
+            prompt = respawnPrompt;
+            DropItems();
+            _player.Teleport(_bedPos, _bedRot);
+            _health.ResetHealth();
+            if (FindAnyObjectByType<GamepadHaptics>() is { } haptics) haptics.enabled = true; // it switches off on death
+            Sleep();
+        }
+
+        /// <summary>Empties the inventory and puts each item back where it was picked up.</summary>
+        void DropItems()
+        {
+            if (_inventory == null) return;
+            var pickups = FindObjectsByType<Pickup>(FindObjectsInactive.Include);
+            foreach (var id in new System.Collections.Generic.List<string>(_inventory.Items))
+            {
+                var spot = Array.Find(pickups, p => !p.gameObject.activeSelf && p.itemId == id);
+                if (spot != null) spot.gameObject.SetActive(true);
+                _inventory.Remove(id);
+            }
+        }
 
         void Unsubscribe()
         {
@@ -78,6 +161,7 @@ namespace Blink.Player
 
         void Update()
         {
+            if (_diedAt >= 0f) { KnockOut(); return; }
             if (_startedAt < 0f) return;
             float t = Time.unscaledTime - _startedAt;
             if (_eyelids != null) _eyelids.Hold01 = Mathf.Clamp01(lids.Evaluate(t));

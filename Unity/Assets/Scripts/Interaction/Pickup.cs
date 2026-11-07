@@ -14,7 +14,7 @@ namespace Blink.Interaction
         public void Interact(Interactor who)
         {
             who.Inventory.Add(itemId, displayName);
-            Destroy(gameObject);
+            gameObject.SetActive(false); // not destroyed: dying puts it back (WakeUpSequence)
         }
     }
 }

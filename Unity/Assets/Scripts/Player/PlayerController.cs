@@ -177,6 +177,16 @@ namespace Blink.Player
             Cursor.visible = !locked;
         }
 
+        /// <summary>Moves the player (e.g. back to bed on respawn), facing level ahead and standing still.</summary>
+        public void Teleport(Vector3 position, Quaternion rotation)
+        {
+            _controller.enabled = false; // a CharacterController overrides transform moves while enabled
+            transform.SetPositionAndRotation(position, rotation);
+            _controller.enabled = true;
+            _velocity = Vector3.zero;
+            _pitch = 0f;
+        }
+
         void OnDied()
         {
             InputEnabled = false;
