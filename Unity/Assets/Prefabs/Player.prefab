@@ -223,16 +223,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e57ae6bee35a74d428204a94defece6b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.DamageVignette
+  stageImages:
+  - {fileID: 2800000, guid: c05f896ac9a890b41a526921a2b56504, type: 3}
+  - {fileID: 2800000, guid: 6614b2d5fcbcaf546aceb51df341a813, type: 3}
+  - {fileID: 2800000, guid: 2a539a6c3de044a4f925f9d1ccfe27f9, type: 3}
+  - {fileID: 2800000, guid: 787c86065ec74bd47a2f120f283eba75, type: 3}
   reach:
   - 0.12
   - 0.24
   - 0.36
   - 0.5
   opacity:
-  - 0.45
-  - 0.6
-  - 0.75
-  - 0.92
+  - 1
+  - 1
+  - 1
+  - 1
   bloodColor: {r: 0.45, g: 0.01, b: 0.01, a: 1}
   fadeSpeed: 3
   guiDepth: 10
