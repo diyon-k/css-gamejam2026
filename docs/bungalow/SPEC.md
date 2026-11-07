@@ -227,17 +227,39 @@ Each room lists the ref it is based on and why. Material names are defined in §
 | 13 | `M_Glass` | Window panes, picture glass, mirror (transparent) | Self-authored smudge and dirt mask (numpy, textures.py style) | Base (alpha), Mask |
 | 14 | `M_Water` | Basement flood plane | Self-authored tiling ripple normal (numpy) | Normal, Mask |
 | 15 | `M_Decals` (alpha atlas, mesh decals) | Leaks, ceiling stains, mould blooms, flood tide-line, floor stains, paper scraps, plaster crumbs, peel edges, scuffs | ambientCG decals [Leaking013A](https://ambientcg.com/view?id=Leaking013A) and [Leaking017B](https://ambientcg.com/view?id=Leaking017B); mould cut from Wallpaper002C; paper and crumbs self-authored | Base (alpha), Normal, Mask |
-| 16 | `M_Atlas_Soft` (prop atlas) | Sofa, armchair, bedding, plaid settee, curtains, 3 rugs/runners, doily, towel | Re-baked Poly Haven props (below). Plaid: Poly Haven [fabric_pattern_05](https://polyhaven.com/a/fabric_pattern_05) (Rob Tuytel). Rug pile: Poly Haven [dirty_carpet](https://polyhaven.com/a/dirty_carpet) (Rohit Seervi) under self-authored oriental and geometric patterns | Baked Base, Normal, Mask |
-| 17 | `M_Atlas_Wood` (prop atlas) | Sideboard, nightstands, bed frame, rocking chair, coffee and console tables, kitchen cabinets, dresser, chairs, workbench, crates | Re-baked Poly Haven props + `M_Trim` wood for self-built pieces | Baked Base, Normal, Mask |
-| 18 | `M_Atlas_Small` (prop atlas) | Frames and canvases, portrait, VCR, speaker, magazines, bottles, glasses, boxes, mantel clock, ornaments, plant, dishes | Re-baked Poly Haven + self-built. Landscape canvas: fancy_picture_frame_01's own. Portrait: see Q9 | Baked Base, Normal, Mask |
-| 19 | `M_Atlas_Utility` (prop atlas) | Stove, fridge, sink, tub, toilet, pedestal sink, generator, steel shelves, bucket, trash | Re-baked Poly Haven (electric_stove, portable_generator, steel_frame_shelves_01) + self-built ceramics | Baked Base, Normal, Mask |
-| (20) | *spare* | Kept free. First use: split the rugs out of `M_Atlas_Soft` if the texel density is too low | n/a | n/a |
+| 16 | `M_Atlas_Soft` (prop atlas, as built: 18 cells, 98 % fill) | Sofa, 2 armchairs, reading chair, sofa cushions, plaid settee, curtains, bed blanket, towel, 3 rugs and 2 runners | Re-baked Poly Haven Sofa_01, ArmChair_01 (both re-tinted dark), GreenChair_01, throw_pillows_01. Plaid: self-authored tartan woven on Poly Haven [fabric_pattern_05](https://polyhaven.com/a/fabric_pattern_05) (Rob Tuytel). Rugs: self-authored oriental / geometric / runner patterns (seeded numpy) on the pile of Poly Haven [dirty_carpet](https://polyhaven.com/a/dirty_carpet) (Rohit Seervi). Curtain, blanket, linen, towel: self-authored. A rod and leg wood swatch cropped from `M_Trim` | Base (sRGB), Normal (GL), Mask (R metal, G AO, A smooth) |
+| 17 | `M_Atlas_Wood` (prop atlas, 15 cells, 92 %) | Bed, rocking chair, sideboard / dresser, nightstands, hall console, low coffee table, bookshelf, grandfather clock, corner table, wardrobe, glass coffee-table frame, coat stand, fan blades | Re-baked Poly Haven GothicBed_01, GothicCommode_01, Rockingchair_01, ClassicConsole_01, ClassicNightstand_01, WoodenTable_01, wooden_bookshelf_worn, vintage_grandfather_clock_01, side_table_tall_01. Swatches cropped from the `M_Trim` sheet (varnish ×2, dark paint, raw, brass) + iron | as #16 |
+| 18 | `M_Atlas_Small` (prop atlas, 37 cells, 80 %; **alpha-tested**, cutoff 0.5) | Pictures and canvases, oval portrait, plant, mantel clock, vases, suitcases, side table, hall bench, boxes, pans, wall clock, magazines, VCR, speaker, doily, bottles, cups, dishes, paper, plaster chunks, all fixture metalwork (brass, iron, bakelite) | Re-baked Poly Haven anthurium_botany_01 (alpha leaves), fancy_picture_frame_01, hanging_picture_frame_02 (+ its artwork), mantel_clock_01, vintage_suitcase, small_wooden_table_01, painted_wooden_bench, cardboard_box_01, ceramic_vase_01/03, wall_clock, pot_enamel_01, brass_pan_01. Self-authored: landscape, portrait (decision 9) and seascape canvases, magazine covers, VCR, speaker, doily lace (alpha), paper, newspaper, glass, ceramic, labels. Also a plaster crop of `M_Plaster` and trim swatches | as #16; Base alpha = cutout |
+| 19 | `M_Atlas_Utility` (prop atlas, 24 cells, 95 %) | Generator, stove, kitchen cabinets / dresser / chairs, steel shelves, crates, barrel, jerrycan, fuse box, vice, buckets, trash bags, sink unit, fridge, tub, toilet, pedestal sink, mirror cabinet, workbench, kitchen table, jars | Re-baked Poly Haven portable_generator, electric_stove, steel_frame_shelves_01, painted_wooden_cabinet, painted_wooden_cabinet_02, painted_wooden_chair_01, wooden_crate_01/02, trashbag, barrel_03, metal_jerrycan_green, power_box_01, bench_vice_01, wooden_bucket_01. Self-authored enamel (white and cream, chipped and rusted), cast iron, steel, jar glass, paper. Trim swatches (light paint, raw, painted metal) | as #16 |
+| (20) | `M_Plaster_Kitchen` | The 20th slot went to the kitchen plaster (Phase 3/4). The rugs did **not** need it: they tile inside `M_Atlas_Soft` (§3.5) | n/a | n/a |
 
 **Shared textures and atlases:**
 - `M_Wall_Damask` and `M_Wall_Pale` share one normal and one mask.
 - The whole modular kit shares the `M_Trim` trim sheet.
 - All modular pieces share one 1K **kit wear atlas** on UV2 (Unity `mesh.uv2` = TEXCOORD1, shared with the lightmap layout): R = baked AO, G = edge wear, B = dirt (cavity × upward-facing), A = polish (nosings, handrail tops, door edges). URP reads it through `SG_BungalowLit` (§3.0.2; Q2 answered by decision 2).
-- Props are packed into 4 atlases.
+- Props are packed into 4 atlases (§3.5).
+
+### 3.5 Prop atlases (Phase 5, as built)
+
+`python -I tools/blender/bungalow_prop_textures.py --src <download root>` writes two things:
+- `Textures/Atlas_<Soft|Wood|Small|Utility>/Atlas_*_Base / _Normal / _Mask.png`, all **1024²**. No 2K atlas was needed.
+- `Props/bungalow_prop_atlas.json`, the cell UV rects.
+
+**How each kind of cell is made:**
+- **Poly Haven models are re-baked in image space.** A model keeps its own 0..1 UV layout, and the build remaps the decimated mesh's UV0 into its cell. This is exact, fast and re-runnable, and needs no Cycles bake.
+  - Its 1K maps are resampled into the cell: diff, nor_gl, and arm repacked to R metal, G AO, A 1 − rough.
+  - The maps are graded towards the abandoned look: dust and desaturation. For ref 2, the light sofa and armchair fabric is re-tinted to dark worn upholstery; the mattress becomes stained linen.
+- **Self-built props use swatch cells:** 0.25–1 m real-world crops of trim-sheet strips or seeded procedural materials. Each part's metric box or cylinder UVs are scaled into the cell, and compressed (never stretched) when the part is bigger than the swatch.
+- **Rugs and runners are 9-slice meshes:** corner, border and field quads. Field tiles are mirrored in alternation, so the repeat has no seams. A 256 px field tile covers 0.5 m, about 5 px/cm, so the 20th material slot was not needed.
+
+**Finishing:**
+- Each cell has a 4 px edge-extended gutter (2 px on 64 px cells), so mips don't bleed between cells.
+- `M_Atlas_Small` is alpha-tested (plant leaves, doily lace) and preserves mip coverage. The other three are opaque URP Lit.
+- Wear is baked into the atlas albedo (dust, grime, chips), so the props don't need `SG_BungalowLit`.
+- **Fill:** Soft 98.4 %, Wood 92.2 %, Small 80.5 %, Utility 95.3 %.
+- **Importers** (`BungalowPropsPlacer.BuildAssets`):
+  - 1024, mipmaps, trilinear, aniso 8, clamp, Standalone **BC7**.
+  - Base sRGB, Normal as Normal Map, Mask linear with alpha.
 
 ### 3.0 As built (Phase 4: surface materials #1–#15)
 
@@ -449,138 +471,243 @@ Sources: **R** = reuse Mansion/PolyHaven, **N** = new Poly Haven CC0, **S** = se
 - Visual clearances vs the grey-box: the stringers stand 3–5 cm above the treads (clear width between them 1.18 m, capsule 0.70), the radiators stand 0.17 m off their walls, and the casings stand 2.4 cm proud of the walls. Board sag is ≤ 24 mm below the collider top (by the well).
 - Not in the kit yet: wallpaper peel holes, lath strips and plaster chunks (they need the decal pass, §3 #15, and the room dressing, Phase 5/6).
 
-### 4.2 Fixtures (all S)
+### 4.2 Fixtures (all S, as built in Phase 5)
 
-| Item | Tris |
-|---|---|
-| L1 ceiling fan + 3-tulip light kit | 1,400 |
-| H1 3-arm chandelier with drum shades | 1,000 |
-| Sconces ×6 (H2, H3, H5, L3, L4, W1) at 180 | 1,080 |
-| Table lamps ×4 (H4, L2, R1, R2) at 300 | 1,200 |
-| Domes ×2 (E1, K1) | 240 |
-| Bare bulbs ×2 (C1, C2) | 200 |
-| **Fixtures subtotal** | **5,120** |
+Self-built in `tools/blender/bungalow_prop_models.py`. Metalwork is on `M_Atlas_Small`; every shade, glass tulip, dome and bulb is **`M_Shade`** (emissive).
+- **Naming:** each fixture prefab `FX_<Model>` has two children:
+  - **`<Model>_Emissive`**: a child mesh with only the `M_Shade` part, shadow casting off.
+  - **`<Model>_Emitter`**: an empty at the light point.
+- **Instances:** the placer names them **`Props/Fixtures/FX_<id>`**, for example `FX_L1/FX_CeilingFan_Emitter`.
+- **`Props/fixtures.json`** lists, per fixture id: prefab, mount point and yaw, `emitterLocal`, `emitterWorld` (where the light goes), the layout light position, and the deviation between the two.
+- **Mounting:** ceiling fixtures hang from the ceiling (y 3.00; basement slab underside −0.25). Sconces sit on their wall face. Lamps stand on their table's top surface.
 
-### 4.3 Props per room
+| Prefab | Fixtures | Tris each | Tris | Emitter (model space) | Emitter vs layout light |
+|---|---|---|---|---|---|
+| FX_CeilingFan (4 varnished blades, brass motor, 3 down-tilted glass tulips + bulbs, pull chain) | L1 | 2,076 | 2,076 | (0, −0.45, 0) | exact |
+| FX_Chandelier3 (chain, brass body, 3 curved arms, fabric drum shades + bulbs) | H1 | 1,776 | 1,776 | (0, −0.55, 0) | exact |
+| FX_Dome (brass rim, frosted dome, finial) | E1, K1, K2 | 384 | 1,152 | (0, −0.08, 0) | exact |
+| FX_BulbPendant (rose, 0.33 m cord, bakelite socket, bare bulb) | C1, C2 | 248 | 496 | (0, −0.42, 0) | 2 cm lower |
+| FX_SconceBrass (backplate, swan arm, small shade, bulb) | H2, H3, W1, H6 | 508 | 2,032 | (0, 0.08, 0.10) | 2–4.5 cm (wall offset) |
+| FX_SconceBroken (shade knocked askew, no bulb; H5 stays off) | H5 | 428 | 428 | (0, 0.08, 0.10) | 4.5 cm |
+| FX_SconceTulip (bronze plate, curved arm, upturned tulip) | L3, L4 | 532 | 1,064 | (0, 0.11, 0.12) | 4.5–7.5 cm |
+| FX_TableLamp (turned ceramic base, brass harp, conical shade) | L2, H4, R1 | 688 | 2,064 | (0, 0.27, 0) | L2 0.24 m; **H4 0.21 m** (higher); R1 3 cm |
+| FX_TableLampSmall (bedside, 0.85 scale) | R2 | 688 | 688 | (0, 0.23, 0) | 10 cm |
+| **Fixtures subtotal** | **18** | | **11,776** | | |
 
-**Living room**
+The emitters in `fixtures.json` are authoritative for the lighting pass. The two largest deviations:
+- **H4:** the hall console (ClassicConsole_01) is 0.95 m high, so the bulb sits at y 1.22 instead of 1.05.
+- **L2:** the end table stands at the sofa's north end, (15.78, 5.15).
 
-| Prop | Src | Tris |
-|---|---|---|
-| Sofa_01 | R | 2,500 |
-| ArmChair_01 | R | 2,500 |
-| GothicCommode_01 sideboard | R | 2,000 |
-| ClassicNightstand_01 (end table) | R | 1,200 |
-| fancy_picture_frame_01 (landscape) | R | 938 |
-| Glass-top coffee table | S | 250 |
-| Doily side table | S | 200 |
-| Oriental rug | S | 100 |
-| Speaker | S | 100 |
-| Boxes ×4 | S | 200 |
-| Bottles ×4 + glasses ×2 | S | 450 |
-| VCR, magazines, paper | S | 300 |
-| Oval portrait | S | 250 |
-| **Room total** | | **10,988** |
+### 4.3 Props per room (as built in Phase 5)
 
-**Bedroom**
+**Sources:**
+- Poly Haven models, either from `Art/Mansion/PolyHaven` or downloaded, all decimated and re-baked into the atlases (§3.5). The CC0 authors are in §3.1, §3.2 and the Phase 5 report.
+- Self-built models in `bungalow_prop_models.py`.
 
-| Prop | Src | Tris |
-|---|---|---|
-| GothicBed_01 (hero) | R | 5,000 |
-| Rockingchair_01 | R | 3,000 |
-| ClassicNightstand_01 | R | 1,200 |
-| Plaid settee | S | 900 |
-| Low coffee table | S | 150 |
-| Mantel clock + 2 ornaments | S | 400 |
-| Curtains ×2 | S | 500 |
-| Rug | S | 100 |
-| Picture | S | 100 |
-| **Room total** | | **11,350** |
+**Placement data:** `tools/blender/bungalow_props.py` → `Props/bungalow_props.json`, 143 instances of 84 models.
+- Each instance has a room, position, euler and scale.
+- Items that sit on something reference their parent's top or shelf height, measured from the built model.
 
-**Entrance hall and central hall**
+**Placement rules (checked in the preview scene):**
+- Every doorway keeps its 1.2 m clear width.
+- The hall walkway stays at least 2.0 m clear.
+- No collider stands within 0.5 m of a spawn or patrol waypoint.
+- One deviation from §2: the living reading corner moved from the NE corner to (18.3, 4.85), because the R1 patrol waypoint (18.8, 6.2) sits in that corner.
 
-| Prop | Src | Tris |
-|---|---|---|
-| anthurium plant | N | 1,500 |
-| WoodenTable_01 console | R | 952 |
-| Runners ×2 | S | 100 |
-| Picture | S | 100 |
-| Coat stand | S | 300 |
-| Umbrella stand, shoes, box | S | 300 |
-| **Room total** | | **3,252** |
+**Revision-2 second groupings:**
+- **Living:** the reading corner.
+- **Bedroom:** wardrobe with suitcases, dresser, reading chair, bookshelf, bedside rug.
+- **Central hall:** hall bench, grandfather clock, landing rug.
+- **Kitchen:** dresser, 4 chairs, a second dish stack.
+- **Basement:** extra crates, barrels, boxes and buckets.
 
-**Kitchen**
+**Living** (24 instances, 17,245 tris)
 
-| Prop | Src | Tris |
-|---|---|---|
-| painted_wooden_cabinet | N | 2,227 |
-| painted_wooden_cabinet_02 | N | 966 |
-| electric_stove | N | 2,000 |
-| painted_wooden_chair_01 ×2 | N | 1,448 |
-| Sink unit | S | 400 |
-| Fridge | S | 250 |
-| Table | S | 200 |
-| Dishes, pans, debris | S | 300 |
-| **Room total** | | **7,791** |
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| ArmChair_01 | Soft | 2 | 2,000 | 4,000 |
+| Sofa_01 | Soft | 1 | 2,600 | 2,600 |
+| ClassicNightstand_01 | Wood | 2 | 800 | 1,600 |
+| GothicCommode_01 | Wood | 1 | 1,600 | 1,600 |
+| small_wooden_table_01 | Small | 1 | 999 | 999 |
+| BoxStack | Small | 1 | 900 | 900 |
+| Picture_Landscape | Small | 1 | 900 | 900 |
+| Clutter_CoffeeTable | Small | 1 | 768 | 768 |
+| throw_pillows_01 | Soft | 1 | 700 | 700 |
+| BoxFallen | Small | 2 | 300 | 600 |
+| Picture_Oval | Small | 1 | 496 | 496 |
+| Debris_Plaster | Small | 2 | 236 | 472 |
+| CoffeeTable_Glass | Wood, M_Glass | 1 | 408 | 408 |
+| ceramic_vase_01 | Small | 1 | 300 | 300 |
+| ceramic_vase_03 | Small | 1 | 300 | 300 |
+| Debris_Paper | Small | 2 | 120 | 240 |
+| Clutter_SideTable | Small | 1 | 188 | 188 |
+| Rug_Oriental | Soft | 1 | 118 | 118 |
+| Speaker | Small | 1 | 56 | 56 |
 
-**Bathroom**
+**Bedroom** (24 instances, 22,834 tris)
 
-| Prop | Src | Tris |
-|---|---|---|
-| Clawfoot tub | S | 1,000 |
-| Toilet | S | 700 |
-| Pedestal sink | S | 350 |
-| Mirror cabinet | S | 100 |
-| Towel, bits | S | 200 |
-| **Room total** | | **2,350** |
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| GothicBed_01 | Wood | 1 | 4,600 | 4,600 |
+| Rockingchair_01 | Wood | 1 | 2,999 | 2,999 |
+| Settee_Plaid | Soft | 1 | 1,728 | 1,728 |
+| GothicCommode_01 | Wood | 1 | 1,600 | 1,600 |
+| GreenChair_01 | Soft | 1 | 1,500 | 1,500 |
+| wooden_bookshelf_worn | Wood | 1 | 1,499 | 1,499 |
+| mantel_clock_01 | Small, M_Glass | 1 | 1,000 | 1,000 |
+| WoodenTable_01 | Wood | 1 | 952 | 952 |
+| vintage_suitcase | Small | 1 | 900 | 900 |
+| side_table_tall_01 | Wood | 1 | 900 | 900 |
+| Curtains_Window | Soft | 1 | 848 | 848 |
+| ClassicNightstand_01 | Wood | 1 | 800 | 800 |
+| Bed_Blanket | Soft | 1 | 776 | 776 |
+| Shoes_Pair | Small | 1 | 472 | 472 |
+| Wardrobe_Painted | Wood | 1 | 460 | 460 |
+| MantelClutter | Small | 1 | 388 | 388 |
+| ceramic_vase_01 | Small | 1 | 300 | 300 |
+| ceramic_vase_03 | Small | 1 | 300 | 300 |
+| Debris_Paper | Small | 2 | 120 | 240 |
+| Debris_Plaster | Small | 1 | 236 | 236 |
+| Picture_Wide | Small | 1 | 172 | 172 |
+| Rug_OrientalSmall | Soft | 1 | 88 | 88 |
+| Rug_Geo | Soft | 1 | 76 | 76 |
 
-**Basement**
+**Entrance hall** (7 instances, 3,447 tris)
 
-| Prop | Src | Tris |
-|---|---|---|
-| portable_generator (hero) | N | 4,000 |
-| steel_frame_shelves_01 | R | 1,500 |
-| wooden_crate_01 ×2 | R | 1,200 |
-| Workbench | S | 300 |
-| Floating boxes and paper | S | 400 |
-| **Room total** | | **7,400** |
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| CoatStand | Wood | 1 | 1,100 | 1,100 |
+| wall_clock | Small, M_Glass | 1 | 699 | 699 |
+| UmbrellaStand | Small | 1 | 644 | 644 |
+| Shoes_Pair | Small | 1 | 472 | 472 |
+| BoxFallen | Small | 1 | 300 | 300 |
+| Debris_Paper | Small | 1 | 120 | 120 |
+| Runner_Entrance | Soft | 1 | 112 | 112 |
 
-**Global**
+**Central hall** (11 instances, 8,466 tris)
 
-| Prop | Src | Tris |
-|---|---|---|
-| Mesh decals (about 150 quads) + floor debris | S | 900 |
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| vintage_grandfather_clock_01 | Wood, M_Glass | 1 | 2,000 | 2,000 |
+| PlantPot | Small | 1 | 1,672 | 1,672 |
+| ClassicConsole_01 | Wood | 1 | 1,600 | 1,600 |
+| Picture_Hall | Small, M_Glass | 1 | 900 | 900 |
+| painted_wooden_chair_01 | Utility | 1 | 724 | 724 |
+| painted_wooden_bench | Small | 1 | 630 | 630 |
+| ceramic_vase_01 | Small | 1 | 300 | 300 |
+| Debris_Plaster | Small | 1 | 236 | 236 |
+| Runner_Hall | Soft | 1 | 196 | 196 |
+| Debris_Paper | Small | 1 | 120 | 120 |
+| Rug_OrientalSmall | Soft | 1 | 88 | 88 |
 
-### 4.4 Running total (Phase 1 baseline; see 4.5 for revision 2)
+**Kitchen** (22 instances, 16,831 tris)
+
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| painted_wooden_cabinet | Utility | 2 | 1,500 | 3,000 |
+| Dishes_Stack | Small | 4 | 572 | 2,288 |
+| painted_wooden_chair_01 | Utility | 3 | 724 | 2,172 |
+| electric_stove | Utility, M_Glass | 1 | 1,799 | 1,799 |
+| painted_wooden_cabinet_02 | Utility | 1 | 966 | 966 |
+| Pans_Stove | Small | 1 | 949 | 949 |
+| TrashBags | Utility | 1 | 900 | 900 |
+| KnockedChair | Utility | 1 | 724 | 724 |
+| Fridge_Retro | Utility | 1 | 716 | 716 |
+| wall_clock | Small, M_Glass | 1 | 699 | 699 |
+| SinkUnit | Utility | 1 | 624 | 624 |
+| KitchenTable | Utility | 1 | 604 | 604 |
+| Debris_Dishes | Small | 1 | 584 | 584 |
+| wooden_bucket_01 | Utility | 1 | 450 | 450 |
+| Debris_Plaster | Small | 1 | 236 | 236 |
+| Debris_Paper | Small | 1 | 120 | 120 |
+
+**Bathroom** (8 instances, 4,456 tris)
+
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| ClawfootTub | Utility | 1 | 1,124 | 1,124 |
+| painted_wooden_chair_01 | Utility | 1 | 724 | 724 |
+| Toilet_Old | Utility | 1 | 686 | 686 |
+| PedestalSink | Utility | 1 | 636 | 636 |
+| Towel_Rail | Soft | 1 | 456 | 456 |
+| wooden_bucket_01 | Utility | 1 | 450 | 450 |
+| Debris_Plaster | Small | 1 | 236 | 236 |
+| MirrorCabinet | Utility, M_Glass | 1 | 144 | 144 |
+
+**B1 cellar** (14 instances, 9,806 tris)
+
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| barrel_03 | Utility | 2 | 900 | 1,800 |
+| wooden_crate_02 | Utility | 2 | 800 | 1,600 |
+| wooden_crate_01 | Utility | 2 | 700 | 1,400 |
+| steel_frame_shelves_01 | Utility | 1 | 1,200 | 1,200 |
+| Jars_Shelf | Utility | 2 | 564 | 1,128 |
+| TrashBags | Utility | 1 | 900 | 900 |
+| BoxStack | Small | 1 | 900 | 900 |
+| wooden_bucket_01 | Utility | 1 | 450 | 450 |
+| BoxFallen | Small | 1 | 300 | 300 |
+| Debris_PaperFloat | Small | 1 | 128 | 128 |
+
+**B2 workshop** (15 instances, 15,111 tris)
+
+| Model | Atlas / materials | × | Tris each | Tris |
+|---|---|---|---|---|
+| portable_generator | Utility, M_Glass | 1 | 4,598 | 4,598 |
+| wooden_crate_01 | Utility | 2 | 700 | 1,400 |
+| steel_frame_shelves_01 | Utility | 1 | 1,200 | 1,200 |
+| power_box_01 | Utility | 1 | 1,199 | 1,199 |
+| Jars_Shelf | Utility | 2 | 564 | 1,128 |
+| metal_jerrycan_green | Utility | 1 | 900 | 900 |
+| BoxStack | Small | 1 | 900 | 900 |
+| barrel_03 | Utility | 1 | 900 | 900 |
+| TrashBags | Utility | 1 | 900 | 900 |
+| Workbench | Utility | 1 | 708 | 708 |
+| bench_vice_01 | Utility | 1 | 700 | 700 |
+| wooden_bucket_01 | Utility | 1 | 450 | 450 |
+| Debris_PaperFloat | Small | 1 | 128 | 128 |
+
+### 4.4 Running total (as built, Phase 5)
 
 | Block | Tris | Running |
 |---|---|---|
-| Kit | 26,400 | 26,400 |
-| Fixtures | 5,120 | 31,520 |
-| Living | 10,988 | 42,508 |
-| Bedroom | 11,350 | 53,858 |
-| Halls | 3,252 | 57,110 |
-| Kitchen | 7,791 | 64,901 |
-| Bathroom | 2,350 | 67,251 |
-| Basement | 7,400 | 74,651 |
-| Decals and debris | 900 | **75,551** |
+| Shell (Phase 3, §4.1) | 84,196 | 84,196 |
+| Living | 17,245 | 101,441 |
+| Bedroom | 22,834 | 124,275 |
+| Entrance hall | 3,447 | 127,722 |
+| Central hall | 8,466 | 136,188 |
+| Kitchen | 16,831 | 153,019 |
+| Bathroom | 4,456 | 157,475 |
+| B1 cellar | 9,806 | 167,281 |
+| B2 workshop | 15,111 | 182,392 |
+| Fixtures | 11,776 | **194,168** |
 
-**75.6k ≤ 80k, leaving a 4.4k margin.**
+**Props and fixtures come to 109,972 tris.** That fits inside the ~110k left by the 84.2k shell under the ~200k cap (decision 13). The level total is **194.2k**; Phase 6's mesh decals are still to come.
+- **Heroes:** GothicBed_01 at 4,600 and portable_generator at 4,598. Every other model is ≤ 3k (Rockingchair_01 is 2,999).
+- **If Phase 7 finds spare tris:** the heroes were decimated harder than first planned to fit 110k (bed 7k → 4.6k, generator 6k → 4.6k). Raise these first, through the `ph()` targets in `bungalow_prop_models.py`:
+  - GothicBed_01 back to 7k;
+  - Rockingchair_01 to 4.5k;
+  - Sofa_01 to 3.2k.
 
-- Every prop is ≤ 3k except the heroes, which are ≤ 8k: bed 5k, generator 4k.
-- Rockingchair_01 is planned at 3k. If its spindles need about 4k, it becomes a third hero, still inside the margin.
+**Materials:** the props use only the 4 atlases, `M_Shade` and `M_Glass`, so the level stays at 20 materials.
+- `M_Glass` is on the glass coffee-table top, the mirror cabinet, the clock glass, the stove door and the hall picture.
+- Most props have 1 material (one draw call). Fixtures have 2: atlas and shade.
 
-**Batches:** static batching plus SRP Batcher. Estimated from any viewpoint:
-- Kit: about 19 materials × 1–2 batches each.
-- Visible props: about 40 draws.
-- Shadow casters for 3 realtime lights: about 40.
+**Static flags and colliders** (`BungalowPropsPlacer.BuildPrefabs`):
+- **Furniture, rugs, wall items and fixtures:** Contribute GI, Batching, Occludee and Reflection Probe static. They are lightmapped through their Blender UV2 at scale in lightmap 0.4 (~8 texels/m).
+- **Small props and debris:** the same flags without Contribute GI, so light probes light them.
+- **Colliders:**
+  - 43 of the 84 prefabs have one box collider from the model bounds. The plant, coat stand and umbrella stand use a trimmed box around the stand.
+  - Rugs, debris, pictures, wall items, clutter and ceiling fixtures have no collider.
+- **Navmesh:** the placer parents `Props` under the scene's `NavMeshSurface` when it collects children, so the bake carves around the furniture.
 
-That comes to roughly 110–130, under 150. This is verified in Phase 7.
+**Batches:** these are measured in Phase 7. Props add about 6 materials to the static batches in each view; with the SRP Batcher and static batching, a room view should add roughly 10–25 draw calls.
 
-**Colliders:** box colliders only.
+**Colliders across the level:** box colliders only.
 - Walls: one box per wall run.
 - Stairs: a single sloped box under the flight, plus step boxes for the navmesh source if needed.
-- Props: 1–3 boxes each.
+- Props: one box each, or none.
 - No mesh colliders.
 
 ---
@@ -710,7 +837,7 @@ Tables 4.1–4.4 are the Phase 1 baseline (75.6k). At 3× floor area the shell a
 - The hall's far end falls to black within about 8 m (the hall is now 10.6 m long, so its north end relies on H2/H3/H4).
 - Shades bloom softly but don't flare.
 
-**The "existing Player flashlight" doesn't exist:** `Player.prefab` has no Light; decision 5 adds one in a later phase.
+**Player flashlight:** added in Phase 6 (decision 5), see §5.4.
 
 ### 5.2 Fog and post
 
@@ -758,6 +885,131 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
 - CAM-2 stands in the living room's SE corner. To keep ref 2's left-to-right order (arch, fan, painting, opening), L1 sits SW of the room centre and the painting / L3 sit towards the north end of the W wall.
 - CAM-3 stands beside the bed foot looking SSW; it is also the player's first view after waking (P0 yaw 200).
 - Phase 2 grey-box renders of all three: see the Phase 2 report. Final tweaks are made against `compare_screenshot` in Phase 7.
+
+### 5.4 As built (Phase 6: lighting, atmosphere, Unity set-up)
+
+**Tools (all re-runnable, data-driven):**
+- `tools/blender/bungalow_decals.py` (plain Python; reads `bungalow_layout.py` read-only) writes `Art/Environment/Bungalow/Lighting/bungalow_atmosphere.json`:
+  - `decals`: 185 mesh-decal quads placed on the wall, floor and ceiling planes of the room rectangles. They sit 6 mm off walls and ceilings and 4 mm off floors.
+    - Each wall decal is checked against the openings cut through its wall, the skirting and cornice band, and fixed obstructions (chimney breast, stair stringer).
+    - Tide-line and grime bands split themselves around openings.
+    - If a layout change puts a door under a stain, the script fails.
+  - `areaLights`: size and facing of the window lights, which aren't in `bungalow_layout.json`.
+  - `stairWell`.
+  - `water`: y −2.77, over B1 and B2.
+  - `tuning`: the per-fixture overrides (colour, intensity, shade glow, emission fizz) and the global and per-room grades below. **Tune here, not in the scene.**
+- **BLINK/Bungalow/Build Lighting** (`Editor/BungalowLightingBuilder.cs` + `Editor/BungalowAtmosphereBuilder.cs`) builds a `Lighting` root in the active scene. Each run replaces its own output. The root holds:
+  - **`Fixtures`:** one light per §5.1 row (25 lights; H5 is a dark fixture with no light).
+    - Each light has a `PracticalLight` (`Scripts/Visuals/PracticalLight.cs`) that makes its shade glow through a per-renderer emission override. One `M_Shade` therefore serves every fixture: lit lamps glow; H5 doesn't, and C2 doesn't until it's switched on.
+    - Lights are parented to Phase 5's fixture emitters (`FX_<id>` / `<Model>_Emitter`, from `Props/fixtures.json`) when those are in the scene. Otherwise they go at the `emitterWorld` from `fixtures.json` or at the layout position, with simple placeholder shades.
+    - Sconce lights are kept at least 0.16 m off the wall; closer burns a hot spot into the paper.
+    - C1 has `LightFlicker` (dying).
+    - **C2 starts off.** The generator beat calls `PracticalLight.Find("C2").SetOn(true)`, which switches on the light and the bulb glow.
+  - **`Probes`** (1,712 light probes in 8 groups, plus 9 reflection probes):
+    - Light-probe groups on a ~1 m grid per room, in 3–4 layers kept 0.3 m off the floor and ceiling.
+    - Columns over the stair well run down the flight to the basement.
+    - Probes inside colliders are dropped.
+    - Box-projected baked reflection probes, one per room plus the stairwell (128 px, HDR).
+  - **`Volumes`:** a global Volume plus one local Volume per room group (box = the room rectangles, blend 1 m, priority 1). Profiles are `Lighting/VP_*.asset`.
+  - **`Atmosphere`:**
+    - Decals are merged into one mesh per room (`Lighting/Meshes/Decals_<room>.asset`). They are lightmap-static with shadow casting off, so they bake with the light of the surface under them, at one draw per room.
+    - The shell's own `Basement_Water` plane is kept but made probe-lit and non-shadowing; otherwise it would shadow the flooded floor in the bake. If the shell has no water plane, the builder makes one.
+- The builder also sets the scene settings:
+  - ambient Color #0A0B08, no skybox, black default reflection, global fog;
+  - lighting settings `Lighting/LS_Bungalow.lighting`;
+  - the grey-box temporary light removed;
+  - `DayNightCycle` disabled **in this scene only** (a prefab-instance override);
+  - the Player camera clears to the fog colour, since there is no sky without DayNightCycle.
+- Builder helpers:
+  - `NormalizeLightmapDensity`: run after a bake. It raises `scaleInLightmap` on renderers whose measured texel density is under 60% of the target.
+    - The shell's rect-per-mesh UV2 left mouldings, arches, radiators, balustrades and pipes at 1.2–5 texels/m instead of 10.
+    - 40 shell renderers were rescaled.
+  - `RenderMatchCameras` / `Render`: player-eye renders with the Player camera's post, and optionally the flashlight.
+  - `RefreshLook`: re-applies the grade and fog without a rebake.
+- **BLINK/Bungalow/Build Shell Scene** (`BungalowGreyboxBuilder.Build(bake, shell: true)`) builds `House_Bungalow.unity` from `Kit/Bungalow_Shell.fbx` and its colliders JSON, opens the door leaves (§6.5) and keeps them in the navmesh build.
+
+**Lightmapping (`LS_Bungalow`):**
+- GPU Progressive, Shadowmask, no realtime GI.
+- 20 texels/m (10 for provisional bakes), max size 2048, padding 4, directional.
+- AO distance 0.6 m (indirect 1, direct 0).
+- 2 bounces, indirect scale 1.4 for the refs' soft fill.
+- Samples: 32 direct, 384 indirect, 128 environment.
+- Bake time on this machine: 40–90 s, giving 3 × 1024² lightmaps.
+- Mixed lights got these shadowmask channels: H4 1, R1 0, L1 1, K1 0, L2 2 (max overlap 3).
+
+**Quality and pipeline settings (decision 7):**
+- The PC quality level's `shadowmaskMode` went from Distance Shadowmask to **Shadowmask**; Mobile was already Shadowmask. Static shadows of the Mixed lights now come from the baked shadowmask, and only dynamic objects (player, zombies) are drawn into their realtime shadow maps.
+- `PC_RPAsset` already had Mixed Lighting, additional-light shadows and soft shadows on. It was not changed.
+- The URP Decal renderer feature is **not** enabled (decision 10).
+
+**Light settings as built** (layout values from §5.1 unless overridden in `tuning`):
+- **Shadows:**
+  - All point lights have soft shadows. Baked shadow radius: 0.03 m for bulbs, 0.08 m for sconces and domes, 0.12 m for lamps.
+  - Mixed H4 and L2: strength 0.6, Medium tier.
+  - L1, K1 and R1: Low tier; the shadowmask carries their static shadows.
+  - Realtime C1 and C2: strength **1.0**, Medium tier. At 0.6, 40% of the bulb would come through the slab into the ground floor.
+- **Re-tuned colours and intensities for the ref match.** The §5.1 colours are deep orange in linear light and turned every frame orange-red under ACES. The refs read as white-balanced tungsten, so:
+
+  | Light | Colour | Intensity |
+  |---|---|---|
+  | E1 | #F5E8CC | 1.4 |
+  | H1 | #FFE4C0 | 1.6 |
+  | H2, H3 | #FFDDB0 | 0.45 |
+  | H4 | #FFD9A8 | 1.8 |
+  | H6 | (layout) | 0.35 |
+  | L1 | #FFE6C4 | 1.5 |
+  | L2 | #FFEED8 | 3.0 |
+  | L3, L4 | #FFDDB4 | 0.6, 0.4 |
+  | R1 | #F5E6C8 | 2.2 |
+  | R2 | (layout) | 0.8 |
+  | W1 | (layout) | 1.0 |
+  | RW1 | #B8BCB0 | 3.0 |
+  | WW1 | (layout) | 0.9 |
+  | CW1, CW2 | (layout) | 0.8 |
+
+- Shade glow follows the §5.1 "Emissive" column. W1 fizzes (emission only).
+
+**Fog and post as built** (the §5.2 starting values, re-tuned against the refs):
+- **Fog:** Exponential, #141408, **density 0.11**. At 0.15 a zombie at 12 m was hidden; at 0.11 it reads as a silhouette down every §1.6 sightline (see the playability check below).
+- **Global volume:**
+  - ACES tonemapping.
+  - Post-exposure **+1.5**. ACES alone takes ~1.4 stops off these dark frames, so the §5.2 value of −0.6 rendered them black. Room values were raised 0.3–0.4 once the props went in.
+  - Contrast +10, saturation −18.
+  - Vignette 0.30, chromatic aberration 0.06, lift (1, 0.99, 0.97, 0).
+  - Bloom 0.35, threshold 0.8, scatter 0.65, tint #FFD9A0.
+  - URP Film Grain off (the user also turned the project's grain off).
+- **Room volumes:**
+
+  | Room | Exposure | Filter | Saturation | Contrast | Extras |
+  |---|---|---|---|---|---|
+  | Hall | +1.4 | #E8E8E4 | −40 | +8 | temp −16, vignette 0.34 |
+  | Living | +2.3 | #E6E4DE | −38 | +14 | temp −16, vignette 0.36, CA 0.12, split-tone #3A2418 / #FFF0DC |
+  | Bedroom | +2.45 | #ECE8DC | −30 | −6 | temp +4, tint +8, vignette 0.28 |
+  | Kitchen | +1.4 | #E4E9E6 | −30 | 0 | temp −10 |
+  | Bathroom | +1.7 | #D9E4D6 | −35 | 0 | temp −8, tint −6 |
+  | Basement | +1.6 | #D8D8C0 | −40 | +10 | vignette 0.4 |
+
+**Player prefab (decisions 4 and 5):**
+- The camera has `UniversalAdditionalCameraData` with Post Processing on (volume mask Default, dithering on).
+- New child `Camera/Flashlight`, a spot light:
+  - range 25 m, 55° outer / 20° inner, intensity 14, #FFF2DE, no cookie, starts on;
+  - soft shadows, High tier, strength 0.9;
+  - **shadow near plane 0.6 m**, so the view-model gun doesn't throw a shadow down the beam.
+- `Scripts/Player/Flashlight.cs` toggles it with **F** or **d-pad up**. This is a code action, as in `PlayerWeapons`; the input asset is unchanged.
+  - Switching on gives a short stutter, on unscaled time.
+  - `FlashlightMath` is covered by `Tests/EditMode/FlashlightTests.cs`.
+
+**Match and playability** (final, House_Bungalow.unity with the props; the flashlight off unless noted):
+- Mean sRGB, ref vs Unity:
+
+  | Camera | Ref | Unity | Unity, flashlight on |
+  |---|---|---|---|
+  | CAM-1 | (30, 26, 22) | (26, 20, 13) | (29, 22, 15) |
+  | CAM-2 | (28, 26, 23) | (24, 18, 13) | (28, 21, 15) |
+  | CAM-3 | (38, 34, 26) | (34, 31, 21) | (40, 36, 25) |
+
+- After the props went in, every exposure went up 0.3–0.4 (furniture absorbs light): global +1.5, Hall +1.4, Living +2.3, Bedroom +2.45, Kitchen +1.4, Bathroom +1.7, Basement +1.6.
+- A zombie placed 10.6–12.6 m down each §1.6 sightline (D1–A2 hall, bedroom–D2–A1–living, living–O1–kitchen, B1–D5–B2) reads as a silhouette with the flashlight in all four, and without it in the hall and the living→kitchen view; the basement needs the flashlight.
 
 ## 6. Pipeline plan (`tools/blender/`)
 
@@ -868,6 +1120,21 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 - `unity_setup.py --target bungalow` adds `kit_textures()` (Trim / KitWear importers: 1024, mips, BC7 Standalone override, normal flagged, masks and the atlas linear, the atlas clamped) and `kit_remaps()` (Kit FBX material names → `Materials/M_*.mat`). The FBX importer has no cameras or lights, and Generate Lightmap UVs is off.
 - Unity: `Scenes/House_Bungalow_KitPreview.unity` is the shell with preview copies of the Phase 4 materials (`Kit/Preview/PV_*.mat`, wear atlas wired) and preview point lights. `House_Bungalow.unity` is untouched; swapping the grey-box for `Bungalow_Shell.fbx` and its colliders JSON is a builder change (`ModelPath` / `CollidersPath`).
 - Known limits: the 1K atlas spread over ~1,500 m² gives 2.5–5 cm wear texels, so the wear reads as broad AO, grime and traffic patterns rather than crisp chips; the chips themselves are geometry. The UV2 rect-per-mesh layout assumes Unity packs lightmaps by each mesh's UV2 bounds; verify the lightmap texel density at the Phase 6 bake.
+
+**Phase 6 (done: Stage A + Stage B)**
+- The lighting rig, probes, volumes, atmosphere, lightmapping, Player flashlight and post are described in §5.4.
+- `House_Bungalow.unity` is the playable level: the textured Phase 3 shell, the 143 Phase 5 props, the Player, GameSystems, Effects, the markers, the BungalowZombie navmesh and the final bake.
+- **Rebuild order** (each step is re-runnable):
+  1. **BLINK/Bungalow/Build Shell Scene**: shell, colliders, door leaves opened (below), markers, prefabs.
+  2. **BLINK/Bungalow/Place Props**, then rebake the navmesh (`BungalowGreyboxBuilder.Bake`). Props sit under the NavMeshSurface, so the furniture carves the navmesh.
+  3. **BLINK/Bungalow/Build Lighting**: lights attach to the `FX_<id>` emitters (18 of 18).
+  4. Bake, `NormalizeLightmapDensity`, bake again, save.
+- **Door leaves** (shell-scene step in `BungalowGreyboxBuilder`; the FBX is unchanged):
+  - Every unlocked leaf hung less than fully open is swung to 90° about its hinge, in the direction it already swings: D1 left 84→90°, D1 right 18→90°, D2 78→90°, D3 62→90°. D5 (96°) is kept, and D4 stays closed (locked).
+  - Leaves are no longer ignored by the navmesh build, so no navmesh lies on any leaf (checked: 0 navmesh samples on every leaf footprint) and D4's navmesh strip is 0 (zombies can't path through the locked door).
+  - Player capsule spare: D1 +0.433 m (was −0.009), D2 / D3 / D5 +0.226 m, D4 −0.249 (closed, intended).
+- **Checks with the props in:** Phase 5's furniture-aware walk test gives 45 / 45 legs with 0 stuck. Navmesh: 534 tris; every door except D4, every arch, O1 and G1 are open; all paths from P0 and all three patrol routes are complete; every spawn is on the navmesh. Room coverage is 65–89 %, which is the furniture.
+- **Totals:** 194.5k tris (shell 84.2k, props and fixtures 110.0k, decals 0.4k), 20 materials.
 
 ## 7. Risks and open questions
 

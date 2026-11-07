@@ -46,6 +46,48 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Fabric032](https://ambientcg.com/view?id=Fabric032) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow lamp shades |
 | [Leaking013A](https://ambientcg.com/view?id=Leaking013A) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow leak decals |
 | [Leaking017B](https://ambientcg.com/view?id=Leaking017B) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow leak decals |
+| [Sofa_01](https://polyhaven.com/a/Sofa_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow living-room sofa |
+| [ArmChair_01](https://polyhaven.com/a/ArmChair_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow armchair |
+| [GothicCommode_01](https://polyhaven.com/a/GothicCommode_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow commode |
+| [ClassicNightstand_01](https://polyhaven.com/a/ClassicNightstand_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow nightstands |
+| [GothicBed_01](https://polyhaven.com/a/GothicBed_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow bed |
+| [Rockingchair_01](https://polyhaven.com/a/Rockingchair_01) | Jorge Camacho | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow rocking chair |
+| [WoodenTable_01](https://polyhaven.com/a/WoodenTable_01) | Ethan Place | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow table |
+| [fancy_picture_frame_01](https://polyhaven.com/a/fancy_picture_frame_01) | Rob Tuytel, Rico Cilliers | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow picture frames |
+| [steel_frame_shelves_01](https://polyhaven.com/a/steel_frame_shelves_01) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow basement shelving |
+| [wooden_crate_01](https://polyhaven.com/a/wooden_crate_01) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow crates |
+| [wooden_bookshelf_worn](https://polyhaven.com/a/wooden_bookshelf_worn) | Ulan Cabanilla | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow bookshelf |
+| [vintage_grandfather_clock_01](https://polyhaven.com/a/vintage_grandfather_clock_01) | Yann Kervran, James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow grandfather clock |
+| [vintage_suitcase](https://polyhaven.com/a/vintage_suitcase) | Maximilian Schuster | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow suitcase |
+| [anthurium_botany_01](https://polyhaven.com/a/anthurium_botany_01) | Rob Tuytel, Rico Cilliers | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow houseplant |
+| [painted_wooden_cabinet](https://polyhaven.com/a/painted_wooden_cabinet) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow cabinet |
+| [painted_wooden_cabinet_02](https://polyhaven.com/a/painted_wooden_cabinet_02) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow cabinet |
+| [ClassicConsole_01](https://polyhaven.com/a/ClassicConsole_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow hall console |
+| [GreenChair_01](https://polyhaven.com/a/GreenChair_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow chair |
+| [painted_wooden_bench](https://polyhaven.com/a/painted_wooden_bench) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow bench |
+| [electric_stove](https://polyhaven.com/a/electric_stove) | Kuutti Siitonen | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow kitchen stove |
+| [painted_wooden_chair_01](https://polyhaven.com/a/painted_wooden_chair_01) | Kuutti Siitonen | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow kitchen chairs |
+| [pot_enamel_01](https://polyhaven.com/a/pot_enamel_01) | Kuutti Siitonen | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow kitchen pots |
+| [portable_generator](https://polyhaven.com/a/portable_generator) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow basement generator |
+| [ceramic_vase_01](https://polyhaven.com/a/ceramic_vase_01) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow vases |
+| [ceramic_vase_03](https://polyhaven.com/a/ceramic_vase_03) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow vases |
+| [wooden_bucket_01](https://polyhaven.com/a/wooden_bucket_01) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow bucket |
+| [side_table_tall_01](https://polyhaven.com/a/side_table_tall_01) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow side table |
+| [hanging_picture_frame_02](https://polyhaven.com/a/hanging_picture_frame_02) | James Ray Cock | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow picture frames |
+| [wooden_crate_02](https://polyhaven.com/a/wooden_crate_02) | James Ray Cock, Jurita Burger | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow crates |
+| [cardboard_box_01](https://polyhaven.com/a/cardboard_box_01) | Rahul Chaudhary | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow boxes |
+| [trashbag](https://polyhaven.com/a/trashbag) | Benny Weimer | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow trash bags |
+| [mantel_clock_01](https://polyhaven.com/a/mantel_clock_01) | Yann Kervran, Rico Cilliers | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow mantel clock |
+| [metal_jerrycan_green](https://polyhaven.com/a/metal_jerrycan_green) | Ulan Cabanilla | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow basement jerrycan |
+| [small_wooden_table_01](https://polyhaven.com/a/small_wooden_table_01) | Ulan Cabanilla | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow small table |
+| [wall_clock](https://polyhaven.com/a/wall_clock) | PierreB3D | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow wall clock |
+| [brass_pan_01](https://polyhaven.com/a/brass_pan_01) | Rico Cilliers | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow kitchen pans |
+| [barrel_03](https://polyhaven.com/a/barrel_03) | Serhii Khromov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow basement barrel |
+| [throw_pillows_01](https://polyhaven.com/a/throw_pillows_01) | Serhii Khromov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow sofa pillows |
+| [power_box_01](https://polyhaven.com/a/power_box_01) | Rico Cilliers, Yann Kervran | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow basement power box |
+| [bench_vice_01](https://polyhaven.com/a/bench_vice_01) | Yann Kervran, Antanas Kep | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow workbench vice |
+| [fabric_pattern_05](https://polyhaven.com/a/fabric_pattern_05) | Rob Tuytel | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow upholstery textures |
+| [dirty_carpet](https://polyhaven.com/a/dirty_carpet) | Rohit Seervi | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow rug textures |
 
 ## Licence notes
 
