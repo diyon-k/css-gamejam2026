@@ -123,7 +123,7 @@ namespace Blink.Effects
         static void Spray(Look look, int count, Vector3 point, Vector3 normal, float spread, float speed,
             float minSize, float maxSize, float minLife, float maxLife, Color a, Color b)
         {
-            var ps = System(look);
+            var ps = For(look);
             for (int i = 0; i < count; i++)
             {
                 var dir = (normal + Random.insideUnitSphere * spread).normalized;
@@ -135,7 +135,7 @@ namespace Blink.Effects
         /// <summary>Droplets thrown outward along the surface, for a splash ring.</summary>
         static void Ring(int count, Vector3 point, Vector3 normal, float speed, float size, float minLife, float maxLife, Color color)
         {
-            var ps = System(Look.Streaks);
+            var ps = For(Look.Streaks);
             var tangent = Vector3.Cross(normal, Mathf.Abs(normal.y) < 0.99f ? Vector3.up : Vector3.forward).normalized;
             for (int i = 0; i < count; i++)
             {
@@ -161,7 +161,7 @@ namespace Blink.Effects
         }
 
         // ponytail: MaxParticles per look; past that Unity drops new particles, raise it if heavy fire looks thin.
-        static ParticleSystem System(Look look)
+        static ParticleSystem For(Look look)
         {
             int i = (int)look;
             if (_systems[i] == null) _systems[i] = Create(look);
@@ -171,7 +171,7 @@ namespace Blink.Effects
         /// <summary>Lazily builds the root, texture and materials. False (with one warning) if the shader is missing.</summary>
         static bool Ready()
         {
-            if (_unavailable) return false;
+            if (_unavailable || !Application.isPlaying) return false; // effects only; edit-mode tests skip them
             if (_root != null) return true;
 
             var shader = Shader.Find(ShaderName);
