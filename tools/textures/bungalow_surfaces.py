@@ -5,6 +5,7 @@ outside the repo, one fresh folder per asset:
 
   python -I tools/textures/bungalow_surfaces.py fetch <cache_dir>
   python -I tools/textures/bungalow_surfaces.py build <cache_dir> [--unity <Unity/Assets/Art/Environment/Bungalow>]
+  add --rev3 to either to fetch / build only the revision-3 material (M_Wall_Parlour)
 
 `fetch` pulls the 1K maps listed in SOURCES (Poly Haven PNG via api.polyhaven.com/files, ambientCG 1K-PNG zips) and
 writes <cache>/sources.json (authors, real-world tile size, URLs) for the credits and the tiling table.
@@ -38,6 +39,9 @@ UA = {"User-Agent": "blink-gamejam-bungalow/1.0 (CC0 asset fetch)"}
 PH = ["dark_wooden_planks", "herringbone_parquet", "old_linoleum_flooring_01", "concrete_floor_damaged_01",
       "decrepit_wallpaper", "white_plaster_02", "whitewashed_brick"]
 ACG = ["Wallpaper002C", "Tiles133D", "Fabric032", "Leaking013A", "Leaking017B"]
+# revision 3 (north wing): M_Wall_Parlour. `--rev3` fetches / builds only this.
+ACG_REV3 = ["Wallpaper001C"]
+ACG = ACG + ACG_REV3
 PH_MAPS = {"Diffuse": "diff", "nor_gl": "nor_gl", "arm": "arm"}
 
 
@@ -47,10 +51,11 @@ def _get(url, binary=True):
     return data if binary else json.loads(data)
 
 
-def fetch(cache):
+def fetch(cache, ph=PH, acg=ACG):
     os.makedirs(cache, exist_ok=True)
-    meta = {}
-    for aid in PH:
+    sj = os.path.join(cache, "sources.json")
+    meta = json.load(open(sj)) if os.path.exists(sj) else {}
+    for aid in ph:
         d = os.path.join(cache, aid)
         os.makedirs(d, exist_ok=True)
         info = _get(f"https://api.polyhaven.com/info/{aid}", False)
@@ -66,7 +71,7 @@ def fetch(cache):
                          dimensions_mm=info.get("dimensions"), page=f"https://polyhaven.com/a/{aid}", files=urls,
                          licence="CC0 1.0")
         print("ph", aid, meta[aid]["authors"], meta[aid]["dimensions_mm"])
-    for aid in ACG:
+    for aid in acg:
         d = os.path.join(cache, aid)
         os.makedirs(d, exist_ok=True)
         info = _get(f"https://ambientcg.com/api/v2/full_json?id={aid}&include=downloadData,dimensionsData", False)
@@ -83,7 +88,7 @@ def fetch(cache):
                          dimensions_cm=dims, page=f"https://ambientcg.com/view?id={aid}", files={"zip": u},
                          licence="CC0 1.0", files_in_zip=sorted(os.listdir(d)))
         print("acg", aid, dims, os.listdir(d))
-    json.dump(meta, open(os.path.join(cache, "sources.json"), "w"), indent=1)
+    json.dump(meta, open(sj, "w"), indent=1)
 
 
 # ------------------------------------------------------------------ image helpers (float32 arrays, 0..1)
@@ -580,7 +585,68 @@ def build(cache, unity_root):
 
     # --- decal atlas
     rep["decals"] = decal_atlas(cache, out)
+    build_rev3(cache, out)
     return rep
+
+
+def fleur(cv, cx, cy, s):
+    """Small fleur-de-lis (centre petal, two curled side petals, band, foot) centred at cx, cy; s = height px."""
+    f = _xf(cx, cy, s)
+    cv.poly(leaf_pts(f, (0.0, 0.05), (0.0, -0.45), 0.0, 0.11), 255)
+    for m in (1.0, -1.0):
+        g = _xf(cx, cy, s, m)
+        cv.poly(leaf_pts(g, (0.04, 0.02), (0.30, -0.22), -0.10, 0.07), 255)
+        cv.line(spiral_pts(g, 0.30, -0.12, 0.10, 0.02, 0.8, -1.6), 0.035 * s, 255)
+        cv.poly(leaf_pts(g, (0.03, 0.12), (0.16, 0.36), 0.04, 0.05), 255)
+    cv.poly([f(-0.16, 0.06), f(0.16, 0.06), f(0.16, 0.13), f(-0.16, 0.13)], 255)
+    cv.poly(leaf_pts(f, (0.0, 0.12), (0.0, 0.40), 0.0, 0.05), 255)
+
+
+def pattern_parlour(periods=8):
+    """Regency stripe: per 25 cm period a broad stripe edged by pinstripes, and a half-drop column of fleurs-de-lis
+    in the ground band. Returns (stripe, gold) masks; the pinstripes and fleurs are the gold layer."""
+    stripe, gold = Canvas(), Canvas()
+    P = RES / periods
+    for k in range(periods):
+        x0 = k * P
+        stripe.poly([(x0, -2), (x0 + 0.34 * P, -2), (x0 + 0.34 * P, RES + 2), (x0, RES + 2)], 255)
+        for px in (x0 - 0.05 * P, x0 + 0.39 * P):
+            gold.poly([(px, -2), (px + 0.025 * P, -2), (px + 0.025 * P, RES + 2), (px, RES + 2)], 255)
+        cx = x0 + 0.67 * P
+        for r in range(periods):
+            fleur(gold, cx, (r + 0.5 * (k % 2)) * P + P / 2, 0.42 * P)
+    return stripe.get(), gold.get()
+
+
+def build_rev3(cache, out):
+    """Revision 3: M_Wall_Parlour. ambientCG Wallpaper001C (torn paper: peels show the grey backing) carries a
+    self-authored faded duck-egg Regency stripe with ochre pinstripes and fleurs-de-lis, plus seeded tea stains."""
+    paper = load(A(cache, "Wallpaper001C", "Color"))
+    pl = lum(s2l(paper))
+    intact = np.clip((pl - np.percentile(pl, 8)) / max(1e-4, np.percentile(pl, 60) - np.percentile(pl, 8)), 0, 1)
+    intact = intact ** 2           # 0 where the print layer has torn away (pattern gone, backing shows)
+    stain = pnoise(401, 2.3) * 0.7 + pnoise(402, 1.6) * 0.3
+    tide = np.exp(-((stain - 0.62) / 0.025) ** 2) * 0.15          # darker tide edges of the water stains
+    wet = np.clip((stain - 0.55) * 3.0, 0, 1)
+    var = np.clip(1.0 - 0.3 * wet - tide, 0.35, 1.0)
+    var *= paper_variation(paper) ** 0.5
+    stripe, gold = pattern_parlour()
+    stripe, gold = np.clip(blur_wrap(stripe, 0.7), 0, 1), np.clip(blur_wrap(gold, 0.6), 0, 1)
+    sun = 0.75 + 0.25 * pnoise(403, 1.2)                          # uneven fading of the print
+    col = colorize([(stripe * 0.85 * intact * sun, (84, 98, 102)), (gold * 0.8 * intact * sun, (150, 132, 92))],
+                   (116, 128, 126), var, paper, stain_mix=0.35, var_pow=1.0)
+    backing = grade(paper, (150, 142, 124), sat=0.6)            # yellowed backing paper where the print tore off
+    col = s2l(col) * intact[..., None] + s2l(backing) * var[..., None] * (1 - intact[..., None])
+    tea = np.clip(wet * 0.7 + tide * 3.0, 0, 1)[..., None]           # brown tea-stain tint in the water marks
+    col = l2s(np.clip(col * (1 + (np.array([1.0, 0.82, 0.55], np.float32) - 1) * tea), 0.008, 0.86))
+    d = os.path.join(out, "M_Wall_Parlour")
+    save(col, os.path.join(d, "M_Wall_Parlour_Base.png"))
+    save(load(A(cache, "Wallpaper001C", "NormalGL")), os.path.join(d, "M_Wall_Parlour_Normal.png"))
+    disp = load(A(cache, "Wallpaper001C", "Displacement"), "L")
+    ao = 0.78 + 0.22 * (disp - disp.min()) / max(1e-4, disp.max() - disp.min())
+    save(mask_from(load(A(cache, "Wallpaper001C", "Roughness"), "L"), ao), os.path.join(d, "M_Wall_Parlour_Mask.png"),
+         "RGBA")
+    return col
 
 
 # ------------------------------------------------------------------ decal atlas (alpha-blended mesh decals)
@@ -797,12 +863,14 @@ def decal_atlas(cache, out):
 
 
 if __name__ == "__main__":
+    rev3 = "--rev3" in sys.argv     # only the revision-3 material(s); leaves the Phase 4 textures untouched
     if len(sys.argv) > 2 and sys.argv[1] == "fetch":
-        fetch(sys.argv[2])
+        fetch(sys.argv[2], *(([], ACG_REV3) if rev3 else ()))
     elif len(sys.argv) > 2 and sys.argv[1] == "build":
         root = sys.argv[sys.argv.index("--unity") + 1] if "--unity" in sys.argv else os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "..", "..", "Unity", "Assets", "Art", "Environment", "Bungalow")
-        build(sys.argv[2], os.path.normpath(root))
+        (build_rev3(sys.argv[2], os.path.join(os.path.normpath(root), "Textures")) if rev3 else
+         build(sys.argv[2], os.path.normpath(root)))
         print("built textures under", os.path.normpath(os.path.join(root, "Textures")))
     else:
         print(__doc__)
