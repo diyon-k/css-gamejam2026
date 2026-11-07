@@ -8,11 +8,13 @@ namespace Blink.Player
     /// <summary>
     /// First-person walk/sprint/look on a CharacterController, driven by the project-wide input
     /// actions (Player/Move, Player/Look, Player/Sprint). No jumping by design.
-    /// During a blink skip the player keeps moving with their current velocity, so blinking
-    /// mid-sprint covers ground.
+    ///
+    /// The player stands outside world time: it is deliberately NOT an <see cref="ISkippable"/>, so a
+    /// blink skip leaves it where it is while the zombies jump, and movement runs on real time, so
+    /// eyes-shut fast-forward doesn't speed it up either.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
-    public sealed class PlayerController : MonoBehaviour, ISkippable
+    public sealed class PlayerController : MonoBehaviour
     {
         [SerializeField] Transform cameraPivot;
 
@@ -21,8 +23,6 @@ namespace Blink.Player
         [SerializeField] float sprintSpeed = 5.5f;
         [SerializeField] float acceleration = 20f;
         [SerializeField] float gravity = -20f;
-        [Tooltip("Keep moving on the current velocity during a blink skip.")]
-        [SerializeField] bool moveDuringSkip = true;
 
         [Header("Look")]
         [SerializeField] float mouseSensitivity = 0.1f;
@@ -62,13 +62,11 @@ namespace Blink.Player
             _move?.Enable();
             _look?.Enable();
             _sprint?.Enable();
-            TimeSkipController.Register(this);
             if (_health != null) _health.Died += OnDied;
         }
 
         void OnDisable()
         {
-            TimeSkipController.Unregister(this);
             if (_health != null) _health.Died -= OnDied;
         }
 
@@ -85,12 +83,13 @@ namespace Blink.Player
             Move();
         }
 
-        public void Skip(float seconds)
-        {
-            if (!moveDuringSkip || !_controller.enabled) return;
-            var horizontal = new Vector3(_velocity.x, 0f, _velocity.z);
-            _controller.Move(horizontal * seconds);
-        }
+        /// <summary>
+        /// Converts a scaled frame delta back to real seconds, so fast-forward (timeScale &gt; 1)
+        /// doesn't speed the player up. Unlike Time.unscaledDeltaTime it keeps Unity's
+        /// maximumDeltaTime clamp after a hitch and stays 0 when the game is paused (timeScale 0).
+        /// </summary>
+        public static float RealDeltaTime(float scaledDeltaTime, float timeScale) =>
+            timeScale > 0f ? scaledDeltaTime / timeScale : 0f;
 
         void Look()
         {
@@ -111,12 +110,15 @@ namespace Blink.Player
             IsSprinting = _sprint != null && _sprint.IsPressed() && input.y > 0.1f;
             float speed = IsSprinting ? sprintSpeed : walkSpeed;
 
-            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
-            Vector3 horizontal = Vector3.MoveTowards(new Vector3(_velocity.x, 0f, _velocity.z), wish, acceleration * Time.deltaTime);
+            // Real time, not world time: the player must not gain ground from time skipping.
+            float dt = RealDeltaTime(Time.deltaTime, Time.timeScale);
 
-            float vertical = _controller.isGrounded ? -2f : _velocity.y + gravity * Time.deltaTime;
+            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
+            Vector3 horizontal = Vector3.MoveTowards(new Vector3(_velocity.x, 0f, _velocity.z), wish, acceleration * dt);
+
+            float vertical = _controller.isGrounded ? -2f : _velocity.y + gravity * dt;
             _velocity = new Vector3(horizontal.x, vertical, horizontal.z);
-            _controller.Move(_velocity * Time.deltaTime);
+            _controller.Move(_velocity * dt);
         }
 
         void HandleCursor()

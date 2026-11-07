@@ -21,7 +21,9 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 | F1 | Toggle the blink debug overlay |
 | Esc | Free the cursor (click to lock again) |
 
-3. To test the webcam path without a webcam, run `python blink_server/send_test_blinks.py demo` while in Play mode.
+3. **Real webcam:** run `powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1` once. After that, pressing Play starts the webcam sidecar automatically (Editor on Windows; the model downloads itself on first run).
+   - **Tuning:** to see the camera and blink score, untick `launchSidecar` on the `UdpEyeStateSource` in GameSystems (so there aren't two senders), then run `blink_server/.venv/Scripts/python blink_server/blink_server.py --preview` while in Play mode. Too twitchy or not triggering? Tune `--close` / `--open`.
+4. **No webcam:** run `python blink_server/send_test_blinks.py demo` while in Play mode.
 
 ## Data flow
 
@@ -34,7 +36,7 @@ flowchart LR
     UDP --> BD
     KEY --> BD
     BD["BlinkDetector<br/>Blinked · EyesShutBegan · EyesShutEnded"] --> TS
-    TS["TimeSkipController<br/>Skip(0.5 s) · timeScale 3x"] -- "ISkippable.Skip(s)" --> W["PlayerController · MobController · Gun<br/>(anything with a WorldTimer)"]
+    TS["TimeSkipController<br/>Skip(0.5 s) · timeScale 3x"] -- "ISkippable.Skip(s)" --> W["MobController · Gun<br/>(anything with a WorldTimer)"]
     TS -- "Skipped · FastForwardStarted/Ended" --> FX["SkipFX · EyesShutView · Audio<br/>(to build)"]
     BD -- "SecondsSinceLastBlink · BlinkCount" --> UI["StareFX · HUD · end screen<br/>(to build)"]
 ```
@@ -70,7 +72,7 @@ Unity/Assets/
   ```json
   {"t": 1731000000123, "present": true, "closed": false}
   ```
-  The sidecar does the open/close hysteresis; Unity does the blink-vs-hold timing. If packets stop for 0.5 s, the webcam source goes inactive and the keyboard still works.
+  The sidecar does the open/close hysteresis; Unity does the blink-vs-hold timing. With several people in view, the sidecar tracks the closest (largest) face. If packets stop for 0.5 s, the webcam source goes inactive and the keyboard still works.
 
 ### Time (`Blink.TimeSkip`)
 - **`TimeSkipController`** (singleton)
@@ -86,20 +88,25 @@ Unity/Assets/
   ```
 - **`WorldTimer`**: serializable countdown for anything blinking can speed up (reload, bandage, door, generator). `Start / Pause / Resume / Cancel / Advance(seconds)`, `Progress01`, `Completed` event. Call `Advance(Time.deltaTime)` in Update and `Advance(seconds)` in Skip.
 
-**Time rule:** world things (zombies, timers, player movement) use **scaled** time, so fast-forward speeds them up for free. Camera, UI, effects, eyelids and audio cues that must not speed up use **unscaled** time (`Time.unscaledDeltaTime`).
+**Time rule:** world things (zombies, timers) use **scaled** time, so fast-forward speeds them up for free. The **player stays out of world time**: `PlayerController` is not an `ISkippable` and moves on real time, so neither a blink nor fast-forward moves the player. Camera, UI, effects, eyelids and audio cues that must not speed up also use **unscaled** time (`Time.unscaledDeltaTime`).
 
 ### Combat (`Blink.Combat`)
 - **`IDamageable`**: `IsDead`, `TakeDamage(amount, point, direction)`. Bullets find it with `GetComponentInParent`.
 - **`Health`**: `Damaged(amount, point)`, `Healed(amount)`, `Died`; `Current`, `Max`, `Fraction`, `Heal()`, `ResetHealth()`.
-- **`Gun`**: hitscan from screen centre. Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster.
+- **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead.
+- **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
+  - `GunHud` (on Player): crosshair with a hit marker (red on a kill), ammo count and reload bar, player HP.
+  - `DamageFlash` (on Zombie): tints the renderers red for a moment on `Health.Damaged` via a MaterialPropertyBlock (`_BaseColor`).
+  - `HealthBar` (on Zombie): bar above the head once hurt; hidden when dead, far away or behind a wall.
 
 ### Player (`Blink.Player`)
-- **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Keeps moving through a blink skip. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
+- **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
   - On a skip it jumps along its navmesh path by speed × seconds, and can land a hit if it was already in range.
   - Events `StateChanged(State)`, `Attacked`.
+  - On death: agent and colliders off, then it falls over (procedural, only when there's no `Dead` animator param) and the body is removed after `corpseLifetime` world seconds (6 s). It stays an `ISkippable`, so blinking makes bodies vanish sooner.
   - Animation hook: if the Animator has a float `Speed`, a trigger `Attack` or a bool `Dead`, they're set automatically. Build an Animator Controller with those parameters and it just works.
 - Levels need a **NavMeshSurface** (AI Navigation package, already installed) baked over the floor.
 

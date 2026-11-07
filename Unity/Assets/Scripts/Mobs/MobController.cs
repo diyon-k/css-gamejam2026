@@ -11,6 +11,8 @@ namespace Blink.Mobs
     /// Zombie brain: chase the player on the navmesh, attack in range, die when its Health runs out.
     /// On a blink skip it jumps along its navmesh path by speed x seconds (and can land a hit if it
     /// was already in range). Hitting the player while their eyes are shut interrupts fast-forward.
+    /// On death it falls over (unless the Animator plays a "Dead" clip) and the body is removed after
+    /// <see cref="corpseLifetime"/> world seconds, which skips also count towards.
     ///
     /// Animation is optional: if the Animator has a float "Speed", a trigger "Attack" or a bool
     /// "Dead", they're driven automatically.
@@ -37,6 +39,12 @@ namespace Blink.Mobs
         [Tooltip("World seconds between reaching the player and the first hit.")]
         [SerializeField] float attackWindup = 0.5f;
 
+        [Header("Death")]
+        [Tooltip("World seconds the body stays before it's removed (blinking speeds this up). 0 = keep forever.")]
+        [SerializeField, Min(0f)] float corpseLifetime = 6f;
+        [Tooltip("Seconds to fall over when there's no Animator \"Dead\" parameter to play a death clip.")]
+        [SerializeField, Min(0.01f)] float toppleDuration = 0.45f;
+
         [Header("Optional")]
         [SerializeField] Animator animator;
 
@@ -58,6 +66,13 @@ namespace Blink.Mobs
         float _repathTimer;
         bool _hasSpeedParam, _hasAttackParam, _hasDeadParam;
         bool _warnedOffMesh;
+
+        // Death: procedural fall-over (placeholder until there's a death clip) and corpse removal.
+        WorldTimer _corpseTimer;
+        bool _toppling;
+        float _toppleElapsed;
+        Quaternion _toppleFrom, _toppleTo;
+        Vector3 _toppleFromPos, _toppleToPos;
 
         void Awake()
         {
@@ -89,7 +104,11 @@ namespace Blink.Mobs
 
         void Update()
         {
-            if (CurrentState == State.Dead) return;
+            if (CurrentState == State.Dead)
+            {
+                AdvanceDeath(Time.deltaTime);
+                return;
+            }
             if (!EnsureOnNavMesh()) return;
 
             _attackCooldown -= Time.deltaTime;
@@ -132,7 +151,12 @@ namespace Blink.Mobs
 
         public void Skip(float seconds)
         {
-            if (CurrentState == State.Dead || target == null || !_agent.isOnNavMesh) return;
+            if (CurrentState == State.Dead)
+            {
+                AdvanceDeath(seconds);
+                return;
+            }
+            if (target == null || !_agent.isOnNavMesh) return;
             if (_targetHealth != null && _targetHealth.IsDead) return;
 
             _attackCooldown -= seconds;
@@ -180,7 +204,44 @@ namespace Blink.Mobs
             if (_agent.isOnNavMesh) _agent.isStopped = true;
             _agent.enabled = false;
             foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
+
             if (_hasDeadParam) animator.SetBool(DeadParam, true);
+            else StartTopple();
+
+            if (corpseLifetime > 0f)
+            {
+                _corpseTimer = new WorldTimer(corpseLifetime);
+                _corpseTimer.Completed += () => Destroy(gameObject);
+                _corpseTimer.Start();
+            }
+        }
+
+        /// <summary>No death clip yet: tip over backwards around the feet, away from the player.</summary>
+        void StartTopple()
+        {
+            if (target != null) FaceTarget(360f);
+            _toppling = true;
+            _toppleElapsed = 0f;
+            _toppleFrom = transform.rotation;
+            _toppleTo = transform.rotation * Quaternion.Euler(-90f, 0f, 0f);
+            // Lift a little so the lying body sits on the floor instead of half inside it.
+            _toppleFromPos = transform.position;
+            _toppleToPos = transform.position + Vector3.up * 0.2f;
+        }
+
+        void AdvanceDeath(float seconds)
+        {
+            if (_toppling)
+            {
+                _toppleElapsed += seconds;
+                float t = Mathf.Clamp01(_toppleElapsed / toppleDuration);
+                float eased = t * t; // accelerates like falling
+                transform.SetPositionAndRotation(
+                    Vector3.Lerp(_toppleFromPos, _toppleToPos, eased),
+                    Quaternion.Slerp(_toppleFrom, _toppleTo, eased));
+                if (t >= 1f) _toppling = false;
+            }
+            _corpseTimer?.Advance(seconds);
         }
 
         void SetState(State next)
