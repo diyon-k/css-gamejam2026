@@ -48,12 +48,12 @@ flowchart LR
 
 ```
 blink_server/                  Python webcam sidecar (send_test_blinks.py = fake sender)
-docs/                          GAME_PLAN.md, ARCHITECTURE.md
+docs/                          GAME_PLAN.md, ARCHITECTURE.md, FEEL_KIT.md (sounds, music, haptics, VFX to use)
 Unity/Assets/
   Scripts/                     Blink.Runtime assembly (namespace Blink.*)
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
     TimeSkip/                  TimeSkipController, ISkippable, IBlinkTransition, WorldTimer
-    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer
+    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer, Blood*, GamepadHaptics
     Player/                    PlayerController
     Mobs/                      MobController, NavPathUtility, ZombieRagdoll, RagdollSkipper
     Combat/                    Health, IDamageable, Hitbox, Gun
@@ -107,6 +107,8 @@ Unity/Assets/
 
 ### Player (`Blink.Player`)
 - **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
+- **`GamepadHaptics`** (on Player): controller rumble for blinks, shots, dry fire, reload, damage, the grab QTE (biggest jolt, when `GrabQte.Active` turns on), forcing and bursting the jammed door, and an eyes-shut heartbeat that speeds up as zombies close in. Unscaled time; one-shot pulses with a priority override the background layer. **Strength** (0–2) scales everything. DualSense/DS4 rumble only over USB. Patterns: [FEEL_KIT.md](FEEL_KIT.md#controller-haptics).
+- **`JammedDoor`** (World): hold Interact to force it on a `WorldTimer`. Exposes `IsForcing`, `Progress01` and an `Opened` event for sound, rumble and dust.
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
@@ -120,7 +122,7 @@ Unity/Assets/
 
 ## Workstreams
 
-Each workstream owns its folder and builds against the contracts above. Integration happens through the three prefabs.
+Each workstream owns its folder and builds against the contracts above. Integration happens through the three prefabs. Asset picks (with licences and hooks) for workstreams 2–4 are in [FEEL_KIT.md](FEEL_KIT.md).
 
 | # | Workstream | Owns | First tasks | Hooks into |
 |---|---|---|---|---|
