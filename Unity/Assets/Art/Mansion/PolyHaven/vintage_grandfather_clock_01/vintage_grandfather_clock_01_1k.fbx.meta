@@ -3,7 +3,17 @@ guid: 8948a491a7c92ee4ba529df8cbaef746
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: vintage_grandfather_clock_01
+    second: {fileID: 2100000, guid: 49da2804fae20f04995cbec3ab37f748, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: vintage_grandfather_clock_01_glass
+    second: {fileID: 2100000, guid: 5c987412e865ea843a3832693cd855ca, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

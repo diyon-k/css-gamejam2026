@@ -3,7 +3,12 @@ guid: 542b2d910c9dc8c419710086f264ec52
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rockingchair_01
+    second: {fileID: 2100000, guid: 7df74a7126d3b0542b652852dea0e8cb, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

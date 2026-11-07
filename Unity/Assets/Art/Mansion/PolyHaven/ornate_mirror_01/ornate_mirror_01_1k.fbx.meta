@@ -3,7 +3,12 @@ guid: ae1c303ac0ad98143bac425355644191
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ornate_mirror_01
+    second: {fileID: 2100000, guid: de767c5b539a6a244afeaaa499e79f2a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

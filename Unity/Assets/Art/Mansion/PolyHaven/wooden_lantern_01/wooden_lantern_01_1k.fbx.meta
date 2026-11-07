@@ -3,7 +3,17 @@ guid: 25ac47ca58294ad42bec1ade89557824
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wooden_lantern_01
+    second: {fileID: 2100000, guid: abbf282d089abea49997304520ecd812, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wooden_lantern_01_glass
+    second: {fileID: 2100000, guid: 5459c6740a3c26b479284244c2d5b62e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

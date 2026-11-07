@@ -3,7 +3,22 @@ guid: 679b908b28f5c6245a615affa18c6f5a
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: vintage_oil_lamp
+    second: {fileID: 2100000, guid: b505f89415521144d824a4703e835560, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: vintage_oil_lamp_flame
+    second: {fileID: 2100000, guid: 110f3333845f22a4cb387b51697907a7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: vintage_oil_lamp_glass
+    second: {fileID: 2100000, guid: 5459c6740a3c26b479284244c2d5b62e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,12 @@ guid: e2d88fda3b9d4334e93531ca0c8f52af
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wooden_candlestick
+    second: {fileID: 2100000, guid: 568a8fb211859034ebf2790c930bd06f, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

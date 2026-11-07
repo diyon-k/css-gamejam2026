@@ -3,7 +3,12 @@ guid: 4a8bec996a852614891632f0d6ed6b07
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wooden_bookshelf_worn
+    second: {fileID: 2100000, guid: 67376a573a751dd41810af1e94cc7f6f, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

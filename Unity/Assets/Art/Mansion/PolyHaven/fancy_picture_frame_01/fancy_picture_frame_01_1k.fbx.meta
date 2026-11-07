@@ -3,7 +3,17 @@ guid: b029dc76c20f83140af8305ab850fa7f
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: fancy_picture_frame_01
+    second: {fileID: 2100000, guid: c5975bb3e9d732341b7fc7f21969f878, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: fancy_picture_frame_01_canvas
+    second: {fileID: 2100000, guid: dd844729a7da05940890c52ecc10cb9d, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

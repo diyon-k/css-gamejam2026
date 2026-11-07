@@ -3,7 +3,12 @@ guid: c34b3a27bd9bfbe40b5cba377eb7b75c
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: marble_bust_01
+    second: {fileID: 2100000, guid: 3680cdf0cbc50594eaf7dd9172f12a01, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
