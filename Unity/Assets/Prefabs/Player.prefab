@@ -168,8 +168,8 @@ MonoBehaviour:
     m_Bits: 4294967295
   magazineSize: 8
   reserveAmmo: 32
-  reloadTimer:
-    duration: 2
+  reloadSeconds: 2.3333335
+  emptyReloadSeconds: 3.0333335
 --- !u!1 &1861278722185175209
 GameObject:
   m_ObjectHideFlags: 0
@@ -460,6 +460,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 20945c7c6f8f85445a74ed9f6be84db2, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1739648026885616213}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 20945c7c6f8f85445a74ed9f6be84db2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6186463862664932691}
   m_SourcePrefab: {fileID: 100100000, guid: 20945c7c6f8f85445a74ed9f6be84db2, type: 3}
 --- !u!4 &5797510796737681976 stripped
 Transform:
@@ -493,6 +496,24 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &6186463862664932691
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6575033315952869506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5cd84e571dff68e439cf7434ae7ae637, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.GunViewModelAnimator
+  gun: {fileID: 9013984708963151249}
+  animator: {fileID: 1739648026885616213}
+  fireLastClip: {fileID: -4266056895879807154, guid: 20945c7c6f8f85445a74ed9f6be84db2, type: 3}
+  fireBlend: 0.02
+  reloadBlend: 0.08
+  returnToIdleBlend: 0.15
 --- !u!4 &8414602620126500687 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2538042991029906076, guid: 20945c7c6f8f85445a74ed9f6be84db2, type: 3}

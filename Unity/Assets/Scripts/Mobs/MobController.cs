@@ -9,8 +9,8 @@ namespace Blink.Mobs
 {
     /// <summary>
     /// Zombie brain: chase the player on the navmesh, attack in range, die when its Health runs out.
-    /// On a blink skip it jumps along its navmesh path by speed x seconds (and can land a hit if it
-    /// was already in range). Hitting the player while their eyes are shut interrupts fast-forward.
+    /// On a blink skip it jumps along its navmesh path by speed x seconds x skipDistanceMultiplier,
+    /// keeps running without a hitch, and can land a hit if it was already in range. Hitting the player while their eyes are shut interrupts fast-forward.
     /// On death it falls over (unless the Animator plays a "Dead" clip) and the body is removed after
     /// <see cref="corpseLifetime"/> world seconds, which skips also count towards.
     ///
@@ -30,6 +30,8 @@ namespace Blink.Mobs
         [SerializeField] float turnSpeed = 360f;
         [SerializeField] float detectionRange = 40f;
         [SerializeField] float repathInterval = 0.25f;
+        [Tooltip("How much further than its normal pace a zombie lurches on a blink skip (2 = twice as far).")]
+        [SerializeField, Min(0f)] float skipDistanceMultiplier = 2f;
 
         [Header("Attack")]
         [SerializeField] float attackRange = 1.6f;
@@ -146,13 +148,17 @@ namespace Blink.Mobs
                 }
             }
 
-            if (_hasSpeedParam) animator.SetFloat(SpeedParam, _agent.velocity.magnitude);
+            // While chasing, animate at the intended pace: the measured velocity drops to zero for a
+            // moment after a skip warps the agent, which would flick the Animator back to Idle.
+            if (_hasSpeedParam)
+                animator.SetFloat(SpeedParam, CurrentState == State.Chase ? moveSpeed : _agent.velocity.magnitude);
         }
 
         public void Skip(float seconds)
         {
             if (CurrentState == State.Dead)
             {
+                AdvanceAnimation(seconds);
                 AdvanceDeath(seconds);
                 return;
             }
@@ -160,6 +166,7 @@ namespace Blink.Mobs
             if (_targetHealth != null && _targetHealth.IsDead) return;
 
             _attackCooldown -= seconds;
+            AdvanceAnimation(seconds);
             float distance = FlatDistanceToTarget();
 
             if (distance <= attackRange)
@@ -174,13 +181,27 @@ namespace Blink.Mobs
             if (_skipPath.status == NavMeshPathStatus.PathInvalid) return;
 
             var corners = _skipPath.corners;
-            float travel = Mathf.Min(moveSpeed * seconds, NavPathUtility.PathLength(corners) - attackRange * 0.9f);
+            float travel = Mathf.Min(moveSpeed * seconds * skipDistanceMultiplier,
+                                     NavPathUtility.PathLength(corners) - attackRange * 0.9f);
             if (travel <= 0f) return;
 
-            _agent.Warp(NavPathUtility.AdvanceAlongPath(corners, travel));
-            FaceTarget(1f);
+            Vector3 landing = NavPathUtility.AdvanceAlongPath(corners, travel);
+            Vector3 heading = NavPathUtility.AdvanceAlongPath(corners, travel + 0.5f) - landing;
+            heading.y = 0f;
+
+            _agent.Warp(landing);
+            if (heading.sqrMagnitude > 0.0001f) transform.rotation = Quaternion.LookRotation(heading);
             _agent.SetDestination(target.position);
+            // Warp zeroes the agent's velocity; keep the momentum so it doesn't restart from a standstill.
+            _agent.velocity = heading.normalized * moveSpeed;
             _repathTimer = repathInterval;
+        }
+
+        /// <summary>Moves the animation on by the skipped time so the pose jumps with the body.</summary>
+        void AdvanceAnimation(float seconds)
+        {
+            if (animator != null && animator.isActiveAndEnabled && animator.runtimeAnimatorController != null)
+                animator.Update(seconds);
         }
 
         void Attack()

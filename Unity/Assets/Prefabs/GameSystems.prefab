@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2084506978649631558}
   - component: {fileID: 42009090297751718}
   - component: {fileID: 8742776031231881677}
+  - component: {fileID: 2109156320880567613}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -51,6 +52,7 @@ MonoBehaviour:
   port: 5065
   timeoutSeconds: 0.5
   logConnectionChanges: 1
+  launchSidecar: 1
 --- !u!114 &8317930169537313389
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -108,3 +110,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.BlinkDebugOverlay
   visible: 1
+--- !u!114 &2109156320880567613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7633161bb5e7ed741b9e4c1b5e9fac4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.BulletTracer
+  gun: {fileID: 0}
+  aimCamera: {fileID: 0}
+  missDistance: 60
+  tracerMaterial: {fileID: 2100000, guid: 2239a65c8e7a9bc4bb558063cac97411, type: 2}
+  tracerTint: {r: 1, g: 0.82, b: 0.58, a: 1}
+  speed: 700
+  lifetimeRange: {x: 0.06, y: 0.1}
+  streakFraction: 0.6
+  streakLengthRange: {x: 0.5, y: 12}
+  angularWidth: 0.0045
+  widthRange: {x: 0.003, y: 0.08}
+  tailWidth: 0.25
+  smoke: 1
+  smokeMaterial: {fileID: 2100000, guid: d6e47959b8277b0418fcaa3cfd56fb15, type: 2}
+  smokeColor: {r: 0.35, g: 0.35, b: 0.35, a: 0.09}
+  smokeLifetime: 0.45
+  smokeLength: 0.5
+  smokeWidth: {x: 0.025, y: 0.1}
+  smokeRise: 0.25
+  poolSize: 4
