@@ -7,7 +7,6 @@ namespace Blink.Interaction
     /// A loose physics prop the player can pick up (Interact), carry in front of the camera, drop (Interact again)
     /// or throw (Attack). Held by velocity, not parenting, so it still bumps into walls; it drops if it snags
     /// too far behind. Weapons don't fire while something is carried (<see cref="Held"/>).
-    /// With a <see cref="SwingableProp"/> it's held by the handle and Attack swings it instead of throwing.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     [DefaultExecutionOrder(100)] // after PlayerWeapons, so the throw click doesn't also fire the gun
@@ -34,7 +33,6 @@ namespace Blink.Interaction
         Transform _eye;
         InputAction _throw;
         float _grabbedAt;
-        SwingableProp _swing; // optional: held like a club and swung on Attack instead of thrown
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() => Held = null;
@@ -44,7 +42,6 @@ namespace Blink.Interaction
             _body = GetComponent<Rigidbody>();
             _colliders = GetComponentsInChildren<Collider>();
             _throw = InputSystem.actions?.FindAction("Player/Attack");
-            _swing = GetComponent<SwingableProp>();
         }
 
         public string Prompt(Interactor who) => Held == this ? "Drop" : "Pick up " + displayName;
@@ -80,18 +77,12 @@ namespace Blink.Interaction
             _body.useGravity = true;
             _body.linearVelocity = velocity;
             _eye = null;
-            if (_swing != null) _swing.Cancel();
         }
 
         void Update()
         {
             if (Held == this && _throw != null && _throw.WasPressedThisFrame())
             {
-                if (_swing != null)
-                {
-                    _swing.TrySwing(_eye);
-                    return;
-                }
                 Release(_eye.forward * throwSpeed);
                 _body.angularVelocity = Random.insideUnitSphere * throwSpin;
                 if (FindAnyObjectByType<Combat.HandsViewModel>() is { } hands) hands.Reach(); // shove the arms forward
@@ -101,12 +92,6 @@ namespace Blink.Interaction
         void FixedUpdate()
         {
             if (Held != this) return;
-            if (_swing != null)
-            {
-                float grabEase = Mathf.SmoothStep(0.1f, 1f, (Time.unscaledTime - _grabbedAt) / grabSeconds);
-                if (!_swing.Follow(_body, _eye, grabEase, breakDistance)) Release(Vector3.zero);
-                return;
-            }
             var target = _eye.position + _eye.forward * holdDistance;
             var toTarget = target - _body.position;
             if (toTarget.magnitude > breakDistance) { Release(Vector3.zero); return; }
