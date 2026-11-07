@@ -155,6 +155,9 @@ namespace Blink.EditorTools
             player.transform.SetPositionAndRotation(playerPos, Quaternion.Euler(0f, playerYaw, 0f));
             Prefab("Assets/Prefabs/GameSystems.prefab", scene);
             Prefab("Assets/Prefabs/Effects.prefab", scene);
+            var spawner = new SerializedObject(new GameObject("ClownSpawner").AddComponent<Blink.Mobs.ClownSpawner>());
+            spawner.FindProperty("clownPrefab").objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Zombie.prefab");
+            spawner.ApplyModifiedPropertiesWithoutUndo();
 
             // ---- temporary neutral light (grey-box only; the lighting pass replaces it)
             var lightGo = new GameObject(TempLightName);
