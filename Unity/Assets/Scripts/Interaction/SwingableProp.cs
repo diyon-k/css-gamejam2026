@@ -1,216 +1,131 @@
-using System.Collections.Generic;
-using Blink.Audio;
 using Blink.Combat;
-using Blink.Mobs;
-using Blink.Player;
-using Blink.World;
 using UnityEngine;
 
 namespace Blink.Interaction
 {
     /// <summary>
-    /// Makes a <see cref="Carryable"/> a blunt melee weapon (golf club, plank, candlestick). While carried it's held
-    /// by one end in the right hand instead of floating in front of you, and Attack swings it instead of throwing it.
-    /// The swing reuses the axe's timing and pose blending (<see cref="AxeSwingTimeline"/>, <see cref="AxePose"/>,
-    /// poses relative to the camera); at the apex a sphere sweep from the eye picks the nearest zombie
-    /// (<see cref="MeleeTargeting"/>). A hit barely hurts: it knocks the zombie flying as a ragdoll and stuns it
-    /// (<see cref="MobController.KnockDown"/>). A corpse just gets launched again. Damage skips the hitboxes, so a
-    /// blow to the head doesn't count as a headshot kill.
+    /// A melee weapon lying in the world (golf club, plank, candlestick, or the axe once dropped). Interact puts it
+    /// in the melee slot in place of the axe model: it hangs off the axe view model's grip and swings with the axe's
+    /// animation (<see cref="MeleeWeapon"/>). One melee item at a time: while one is in hand the prompt says to drop it
+    /// first (<see cref="PlayerWeapons"/>' Drop key), and dropping lets it fall from the hands as a physics prop.
     ///
-    /// The prop is still a physics body pulled to its pose by velocity, so it bumps into the level, but during a
-    /// swing it's pulled almost rigidly so it keeps up.
+    /// A blunt item (<see cref="KnocksDown"/>) barely hurts: it knocks a zombie flying as a ragdoll and stuns it
+    /// (<see cref="Mobs.MobController.KnockDown"/>). The axe isn't blunt and keeps its own damage.
     /// </summary>
-    [RequireComponent(typeof(Carryable))]
-    public sealed class SwingableProp : MonoBehaviour
+    [RequireComponent(typeof(Rigidbody))]
+    public sealed class SwingableProp : MonoBehaviour, IInteractable
     {
-        const int MaxHits = 32;
+        // Where the item's grip sits in the axe view model's Grip space: between the hands on the haft (+Y up the haft).
+        static readonly Vector3 HandPoint = new(0f, -0.05f, 0f);
 
-        [Header("Grip (prop's local space)")]
-        [Tooltip("The point on the prop held in the hand, e.g. the end of the handle.")]
+        [SerializeField] string displayName = "plank";
+
+        [Header("Grip (item's local space)")]
+        [Tooltip("The point on the item held in the hand, e.g. the end of the handle.")]
         [SerializeField] Vector3 grip = new(0f, -0.4f, 0f);
         [Tooltip("Local direction from the grip to the striking end.")]
         [SerializeField] Vector3 lengthAxis = Vector3.up;
 
-        [Header("Poses, relative to the camera (the striking end points along the grip's +Z)")]
-        [SerializeField] AxePose idlePose = new(Vector3.zero, new Vector3(0.3f, -0.38f, 0.5f), new Vector3(-55f, -12f, 0f));
-        [SerializeField] AxePose windUpPose = new(new Vector3(0f, 35f, 0f), new Vector3(0.3f, -0.2f, 0.3f), new Vector3(-95f, 40f, 0f));
-        [SerializeField] AxePose apexPose = new(Vector3.zero, new Vector3(0.05f, -0.28f, 0.55f), new Vector3(-5f, -25f, 0f));
-        [SerializeField] AxePose followThroughPose = new(new Vector3(0f, -45f, 0f), new Vector3(-0.2f, -0.3f, 0.4f), new Vector3(15f, -95f, 0f));
-        [SerializeField] AxeSwingTimeline timeline = new(0.14f, 0.16f, 0.5f, 0.35f);
-        [Tooltip("How hard it's pulled to its pose while not swinging (1/s). Higher is stiffer.")]
-        [SerializeField, Min(1f)] float holdStiffness = 18f;
-
         [Header("Hit")]
+        [Tooltip("Knocks zombies flying instead of cutting them (off for the axe).")]
+        [SerializeField] bool knocksDown = true;
         [Tooltip("Barely hurts: these knock zombies away rather than kill them.")]
         [SerializeField, Min(0f)] float damage = 8f;
-        [SerializeField, Min(0.1f)] float reach = 2.1f;
-        [Tooltip("Radius of the sweep, metres. Forgiving aim.")]
-        [SerializeField, Min(0.01f)] float radius = 0.45f;
         [Tooltip("Speed (m/s) a hit gives every limb, flat along your view.")]
         [SerializeField, Min(0f)] float launchSpeed = 10f;
         [Tooltip("Upward speed (m/s) on top, so it flies instead of sliding.")]
         [SerializeField, Min(0f)] float launchLift = 4.5f;
-        [Tooltip("Sideways speed (m/s) along the swing (it sweeps right to left).")]
+        [Tooltip("Sideways speed (m/s) along the swing (the chop sweeps right to left).")]
         [SerializeField] float launchSideways = 2.5f;
         [Tooltip("World seconds a zombie lies stunned before getting back up (longer if it's still tumbling).")]
         [SerializeField, Min(0f)] float stunSeconds = 2.5f;
-        [Tooltip("Impulse (N·s) given to a loose physics prop the swing hits.")]
-        [SerializeField, Min(0f)] float propImpulse = 6f;
-        [Tooltip("Audible range of a hit, metres.")]
-        [SerializeField, Min(0f)] float hitLoudness = 6f;
-        [Tooltip("Camera jolt on a hit (1 = a full axe hit).")]
-        [SerializeField, Min(0f)] float cameraImpact = 1.2f;
 
-        [Header("Sound (optional)")]
-        [SerializeField] SoundCue swingCue;
-        [SerializeField] SoundCue fleshHitCue;
-        [SerializeField] SoundCue surfaceHitCue;
+        public string DisplayName => displayName;
+        public bool KnocksDown => knocksDown;
+        public float Damage => damage;
+        public float StunSeconds => stunSeconds;
+        public bool IsHeld { get; private set; }
 
-        /// <summary>True from the start of a swing until it's back at rest.</summary>
-        public bool IsSwinging => _swing.IsSwinging;
+        Rigidbody _body;
+        Collider[] _colliders;
+        bool _customPose;
+        Vector3 _heldPosition;
+        Quaternion _heldRotation = Quaternion.identity;
 
-        readonly AxeSwingState _swing = new();
-        readonly RaycastHit[] _hits = new RaycastHit[MaxHits];
-        readonly List<MeleeCandidate> _candidates = new(MaxHits);
-        readonly List<RaycastHit> _candidateHits = new(MaxHits);
-        readonly RaycastHit[] _blockers = new RaycastHit[8];
-        Quaternion _align;
-        Transform _eye, _player;
-        CameraFeel _feel;
+        // Lazy: the axe is wrapped on an inactive slot, so Awake may not have run when it's first held.
+        Rigidbody Body => _body != null ? _body : _body = GetComponent<Rigidbody>();
+        Collider[] Colliders => _colliders ??= GetComponentsInChildren<Collider>(true);
 
-        void Awake()
+        public string Prompt(Interactor who)
         {
-            // Turns the prop so its striking end points along +Z; the poses aim +Z.
-            _align = lengthAxis.sqrMagnitude > 1e-6f ? Quaternion.FromToRotation(lengthAxis.normalized, Vector3.forward) : Quaternion.identity;
+            var inHand = Weapons(who) is { Axe: { } melee } ? melee.Equipped : null;
+            return inHand != null ? $"Drop the {inHand.DisplayName} first ({PlayerWeapons.DropKeyName})" : "Pick up " + displayName;
         }
 
-        /// <summary>Starts a swing (Carryable calls this on Attack). False if one is running.</summary>
-        public bool TrySwing(Transform eye)
+        public bool CanInteract(Interactor who) =>
+            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: { Equipped: null } };
+
+        public void Interact(Interactor who) => Weapons(who).EquipMelee(this);
+
+        static PlayerWeapons Weapons(Interactor who) => who.GetComponent<PlayerWeapons>();
+
+        /// <summary>The speed a hit gives a zombie's limbs: along the view, up, and across with the swing.</summary>
+        public Vector3 LaunchVelocity(Transform eye)
         {
-            Bind(eye);
-            if (!_swing.TryStart()) return false;
-            if (swingCue != null && AudioService.Instance != null) AudioService.Instance.Play(swingCue);
-            if (FindAnyObjectByType<HandsViewModel>() is { } hands) hands.Reach();
-            return true;
+            Vector3 flat = Vector3.ProjectOnPlane(eye.forward, Vector3.up).normalized;
+            Vector3 side = Vector3.ProjectOnPlane(-eye.right, Vector3.up).normalized;
+            return flat * launchSpeed + side * launchSideways + Vector3.up * launchLift;
         }
 
-        /// <summary>Stops a swing early (dropped mid-swing).</summary>
-        public void Cancel() => _swing.Cancel();
+        /// <summary>Into the hands: parented to the view model's grip, physics and colliders off.</summary>
+        public void Hold(Transform viewModelGrip)
+        {
+            IsHeld = true;
+            Body.isKinematic = true;
+            Body.interpolation = RigidbodyInterpolation.None;
+            foreach (var col in Colliders) col.enabled = false;
+            transform.SetParent(viewModelGrip, false);
+            if (!_customPose)
+            {
+                _heldRotation = lengthAxis.sqrMagnitude > 1e-6f ? Quaternion.FromToRotation(lengthAxis.normalized, Vector3.up) : Quaternion.identity;
+                _heldPosition = HandPoint - _heldRotation * Vector3.Scale(grip, transform.localScale);
+            }
+            transform.SetLocalPositionAndRotation(_heldPosition, _heldRotation);
+        }
+
+        /// <summary>Out of the hands where it is, falling with <paramref name="velocity"/>. Never bumps <paramref name="holder"/>.</summary>
+        public void Release(Vector3 velocity, Collider holder)
+        {
+            IsHeld = false;
+            transform.SetParent(null, true);
+            foreach (var col in Colliders)
+            {
+                col.enabled = true;
+                if (holder != null) Physics.IgnoreCollision(holder, col, true); // dropped inside the player's capsule
+            }
+            Body.isKinematic = false;
+            Body.interpolation = RigidbodyInterpolation.Interpolate;
+            Body.linearVelocity = velocity;
+            Body.angularVelocity = Random.insideUnitSphere * 3f;
+        }
 
         /// <summary>
-        /// Pulls <paramref name="body"/> to where the hand holds it this physics step. <paramref name="ease"/> (0..1)
-        /// softens the pull just after a grab. Returns false if the prop is snagged too far away and should drop.
+        /// Turns a view model's built-in weapon mesh (the axe) into an item, held where it already sits, so it can
+        /// be dropped and picked up like any other.
         /// </summary>
-        public bool Follow(Rigidbody body, Transform eye, float ease, float breakDistance)
+        public static SwingableProp Wrap(GameObject mesh, string name, float mass)
         {
-            Bind(eye);
-            var s = timeline.Sample(_swing.Elapsed);
-            AxePose.Blend(PoseOf(s.From), PoseOf(s.To), s.Weight, out var pivot, out var hand, out var gripRotation);
-
-            Quaternion rotation = eye.rotation * pivot * gripRotation * _align;
-            Vector3 handWorld = eye.TransformPoint(pivot * hand);
-            Vector3 target = handWorld - rotation * Vector3.Scale(grip, transform.lossyScale);
-            Vector3 toTarget = target - body.position;
-            // Never snaps while swinging or still rising into the hand from the floor.
-            if (!IsSwinging && ease >= 1f && toTarget.magnitude > breakDistance) return false;
-
-            // Swinging: close nearly all the gap each step, or the prop lags behind the fast strike.
-            float gain = IsSwinging ? 0.9f / Time.fixedDeltaTime : holdStiffness * ease;
-            body.maxAngularVelocity = 60f;
-            body.linearVelocity = toTarget * gain;
-            (rotation * Quaternion.Inverse(body.rotation)).ToAngleAxis(out float angle, out Vector3 axis);
-            if (angle > 180f) angle -= 360f;
-            body.angularVelocity = float.IsFinite(axis.x) ? axis * (angle * Mathf.Deg2Rad * gain) : Vector3.zero;
-            return true;
-        }
-
-        void Update()
-        {
-            if (!_swing.IsSwinging) return;
-            var step = _swing.Advance(Time.deltaTime, timeline);
-            if (step.CrossedApex) Strike();
-        }
-
-        AxePose PoseOf(AxeKeyPose key) => key switch
-        {
-            AxeKeyPose.WindUp => windUpPose,
-            AxeKeyPose.Apex => apexPose,
-            AxeKeyPose.FollowThrough => followThroughPose,
-            _ => idlePose,
-        };
-
-        void Bind(Transform eye)
-        {
-            if (_eye == eye) return;
-            _eye = eye;
-            _player = eye.root;
-            _feel = eye.GetComponentInParent<CameraFeel>();
-            if (_feel == null) _feel = FindAnyObjectByType<CameraFeel>();
-        }
-
-        /// <summary>The hit check at the apex: nearest zombie the eye can see, else the nearest surface (a thud).</summary>
-        void Strike()
-        {
-            if (_eye == null) return;
-            Vector3 origin = _eye.position, dir = _eye.forward;
-            int count = Physics.SphereCastNonAlloc(origin, radius, dir, _hits, reach, ~0, QueryTriggerInteraction.Ignore);
-
-            _candidates.Clear();
-            _candidateHits.Clear();
-            for (int i = 0; i < count; i++)
-            {
-                var hit = _hits[i];
-                var col = hit.collider;
-                if (col == null || col.transform.IsChildOf(_player) || col.transform.IsChildOf(transform)) continue;
-                if (hit.distance <= 0f && hit.point == Vector3.zero) hit.point = col.bounds.ClosestPoint(origin); // started inside it
-                var mob = col.GetComponentInParent<MobController>();
-                // Corpses count as targets too (they get launched again), so "alive" here means "a body to hit".
-                _candidates.Add(new MeleeCandidate(hit.distance, mob != null, true, mob == null || CanSee(origin, hit.point, mob.transform)));
-                _candidateHits.Add(hit);
-            }
-
-            int pick = MeleeTargeting.Choose(_candidates, out bool isSurface);
-            if (pick < 0) return;
-            var chosen = _candidateHits[pick];
-            Noise.Make(chosen.point, hitLoudness);
-
-            if (isSurface)
-            {
-                var loose = chosen.rigidbody;
-                if (loose != null && !loose.isKinematic) loose.AddForceAtPosition(dir * propImpulse, chosen.point, ForceMode.Impulse);
-                Play(surfaceHitCue, chosen.point);
-                if (_feel != null) _feel.AddImpact(cameraImpact * 0.5f);
-                return;
-            }
-
-            var target = chosen.collider.GetComponentInParent<MobController>();
-            Vector3 flat = Vector3.ProjectOnPlane(dir, Vector3.up).normalized;
-            Vector3 side = Vector3.ProjectOnPlane(-_eye.right, Vector3.up).normalized;
-            target.KnockDown(flat * launchSpeed + side * launchSideways + Vector3.up * launchLift, chosen.point, stunSeconds);
-            // Straight to Health, not the hitbox: a knock on the head is not a headshot kill.
-            if (target.TryGetComponent(out Health health)) health.TakeDamage(damage, chosen.point, dir);
-            Play(fleshHitCue, chosen.point);
-            if (_feel != null) _feel.AddImpact(cameraImpact);
-        }
-
-        // Nothing solid that isn't part of the target (or the player) between the eye and the hit point.
-        bool CanSee(Vector3 origin, Vector3 point, Transform target)
-        {
-            Vector3 to = point - origin;
-            float distance = to.magnitude;
-            if (distance < 0.05f) return true;
-            int n = Physics.RaycastNonAlloc(origin, to / distance, _blockers, distance - 0.02f, ~0, QueryTriggerInteraction.Ignore);
-            for (int i = 0; i < n; i++)
-            {
-                var t = _blockers[i].collider.transform;
-                if (!t.IsChildOf(target) && !t.IsChildOf(_player) && !t.IsChildOf(transform)) return false;
-            }
-            return true;
-        }
-
-        static void Play(SoundCue cue, Vector3 at)
-        {
-            if (cue != null && AudioService.Instance != null) AudioService.Instance.PlayAt(cue, at);
+            mesh.AddComponent<BoxCollider>(); // fits the mesh
+            var body = mesh.AddComponent<Rigidbody>();
+            body.mass = mass;
+            body.isKinematic = true;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+            var item = mesh.AddComponent<SwingableProp>();
+            item.displayName = name;
+            item.knocksDown = false;
+            item._customPose = true;
+            mesh.transform.GetLocalPositionAndRotation(out item._heldPosition, out item._heldRotation);
+            return item;
         }
     }
 }

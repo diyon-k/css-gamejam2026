@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Blink.Interaction;
+using Blink.Mobs;
 using Blink.World;
 using UnityEngine;
 
@@ -11,6 +13,11 @@ namespace Blink.Combat
     /// the camera picks one target: the nearest living hitbox the eye can see, or failing that the nearest wall
     /// (a thud). The target takes <see cref="damage"/> once per swing; a head hitbox kills outright (see
     /// <see cref="Hitbox"/>). No ammo.
+    ///
+    /// The slot holds one melee item at a time (<see cref="Equipped"/>): the axe model it starts with, or a
+    /// <see cref="SwingableProp"/> picked up in its place (golf club, plank...), which hangs off the same grip and
+    /// swings the same way. A blunt item knocks the zombie flying and stuns it instead of dealing the axe's damage.
+    /// With nothing equipped the slot can't be used (<see cref="PlayerWeapons"/> skips it).
     ///
     /// No input of its own: <see cref="PlayerWeapons"/> calls <see cref="TrySwing"/> while the axe is out. The swing
     /// is world time (the view model handles skips and fast-forward).
@@ -53,6 +60,9 @@ namespace Blink.Combat
         public float Reach => reach;
         public AxeViewModel ViewModel => viewModel;
 
+        /// <summary>The melee item in hand (the axe, a plank...), or null after dropping it.</summary>
+        public SwingableProp Equipped { get; private set; }
+
         /// <summary>True from the start of a swing until the axe is back at rest.</summary>
         public bool IsSwinging => viewModel != null && viewModel.IsSwinging;
 
@@ -61,12 +71,48 @@ namespace Blink.Combat
         readonly List<RaycastHit> _candidateHits = new(MaxHits);
         IDamageable _owner;
         Collider _forcedTarget;
+        bool _initialised;
 
-        void Awake()
+        void Awake() => Init();
+
+        /// <summary>
+        /// Finds the camera and view model and turns the view model's own axe mesh into the equipped item. Safe to
+        /// call twice; <see cref="PlayerWeapons"/> calls it at start because this slot may begin inactive.
+        /// </summary>
+        public void Init()
         {
-            if (aimCamera == null) aimCamera = GetComponentInParent<Camera>();
+            if (_initialised) return;
+            _initialised = true;
+            if (aimCamera == null) aimCamera = GetComponentInParent<Camera>(true);
             if (viewModel == null) viewModel = GetComponentInChildren<AxeViewModel>(true);
             _owner = GetComponentInParent<IDamageable>();
+            if (viewModel == null || viewModel.Grip == null) return;
+            foreach (Transform child in viewModel.Grip)
+            {
+                if (!child.TryGetComponent<MeshRenderer>(out _)) continue; // the hand IK targets
+                Equip(child.TryGetComponent(out SwingableProp item) ? item : SwingableProp.Wrap(child.gameObject, "axe", 1.5f));
+                break;
+            }
+        }
+
+        /// <summary>Puts <paramref name="item"/> in the hands. Drop the current one first.</summary>
+        public void Equip(SwingableProp item)
+        {
+            if (item == null || Equipped != null || viewModel == null || viewModel.Grip == null) return;
+            Equipped = item;
+            item.Hold(viewModel.Grip);
+        }
+
+        /// <summary>Lets go of the item in hand (it falls, a little forward). Returns it, or null if the hands were empty.</summary>
+        public SwingableProp Drop(Collider holder)
+        {
+            var item = Equipped;
+            if (item == null) return null;
+            if (viewModel != null) viewModel.CancelSwing();
+            Equipped = null;
+            Vector3 toss = aimCamera != null ? aimCamera.transform.forward * 2f : Vector3.zero;
+            item.Release(toss, holder);
+            return item;
         }
 
         void OnEnable()
@@ -83,7 +129,7 @@ namespace Blink.Combat
         public bool TrySwing()
         {
             _forcedTarget = null;
-            if (_owner != null && _owner.IsDead) return false;
+            if (Equipped == null || (_owner != null && _owner.IsDead)) return false;
             if (viewModel == null || !viewModel.PlaySwing()) return false;
             Swung?.Invoke();
             return true;
@@ -157,7 +203,15 @@ namespace Blink.Combat
         void Land(IDamageable target, Vector3 point, Vector3 normal, Vector3 dir, Collider collider)
         {
             bool killed = false;
-            if (target != null)
+            if (target != null && !target.IsDead && Equipped is { KnocksDown: true } blunt &&
+                collider.GetComponentInParent<MobController>() is { } mob)
+            {
+                // Knocked flying; the damage goes straight to Health, so a knock on the head isn't a headshot kill.
+                mob.KnockDown(blunt.LaunchVelocity(aimCamera.transform), point, blunt.StunSeconds);
+                if (mob.TryGetComponent(out Health health)) health.TakeDamage(blunt.Damage, point, dir);
+                killed = target.IsDead;
+            }
+            else if (target != null)
             {
                 target.TakeDamage(damage, point, dir);
                 killed = target.IsDead;

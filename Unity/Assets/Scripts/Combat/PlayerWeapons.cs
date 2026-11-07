@@ -17,7 +17,9 @@ namespace Blink.Combat
     /// its weapon is put away; a swing in progress finishes before the switch starts.
     ///
     /// Controls: 1–3 pick a slot, the mouse wheel and the gamepad shoulders or d-pad left/right cycle,
-    /// Attack (left click / right trigger) uses the weapon, R / gamepad West reloads.
+    /// Attack (left click / right trigger) uses the weapon, R / gamepad West reloads, G / d-pad down drops the melee
+    /// item in hand. The melee slot holds one item at a time (the axe, or a golf club, plank...: see
+    /// <see cref="MeleeWeapon.Equipped"/>); with nothing in it the slot is skipped.
     ///
     /// The pistol keeps its own <see cref="Gun"/> events (the pistol view model animator listens to those);
     /// this only turns off its input and calls it.
@@ -27,6 +29,9 @@ namespace Blink.Combat
     {
         /// <summary>The player's weapons (the last one enabled).</summary>
         public static PlayerWeapons Instance { get; private set; }
+
+        /// <summary>The keyboard key that drops the melee item, for prompts.</summary>
+        public const string DropKeyName = "G";
 
         [Header("Slots")]
         [SerializeField] Gun pistol;
@@ -104,7 +109,7 @@ namespace Blink.Combat
         float _restoreAt = float.PositiveInfinity;
         bool _subscribed;
 
-        InputAction _fire, _reload, _next, _previous, _scroll;
+        InputAction _fire, _reload, _next, _previous, _scroll, _drop;
         InputAction[] _slotKeys = Array.Empty<InputAction>();
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -116,6 +121,7 @@ namespace Blink.Combat
             if (aimCamera == null) aimCamera = GetComponentInChildren<Camera>();
             if (holster != null) holster.GetLocalPositionAndRotation(out _holsterPosition, out _holsterRotation);
             if (pistol != null) pistol.ReadsInput = false; // driven from here
+            if (axe != null) axe.Init(); // its slot may start inactive, but it must know what it's holding
 
             BuildSlots();
             int start = Mathf.Max(0, IndexOf(startWeapon));
@@ -135,6 +141,7 @@ namespace Blink.Combat
             _next.Enable();
             _previous.Enable();
             _scroll.Enable();
+            _drop.Enable();
             foreach (var key in _slotKeys) key.Enable();
         }
 
@@ -146,6 +153,7 @@ namespace Blink.Combat
             _next.Disable();
             _previous.Disable();
             _scroll.Disable();
+            _drop.Disable();
             foreach (var key in _slotKeys) key.Disable();
         }
 
@@ -155,6 +163,7 @@ namespace Blink.Combat
             _next?.Dispose();
             _previous?.Dispose();
             _scroll?.Dispose();
+            _drop?.Dispose();
             foreach (var key in _slotKeys) key.Dispose();
         }
 
@@ -175,6 +184,7 @@ namespace Blink.Combat
 
             if (!inputFree || _switch.IsSwitching || _slots.Count == 0) return;
             if (Interaction.Carryable.Held != null) return; // hands are full: Attack throws the prop instead
+            if (_drop.WasPressedThisFrame()) DropMelee();
             var slot = _slots[_switch.Active];
             if (_fire != null && _fire.WasPressedThisFrame()) Use(slot);
             if (_reload.WasPressedThisFrame()) Reload(slot);
@@ -190,13 +200,42 @@ namespace Blink.Combat
         /// <summary>Switches to slot <paramref name="index"/> (0-based, loadout order).</summary>
         public bool SelectSlot(int index)
         {
-            if (index < 0 || index >= _slots.Count) return false;
+            if (index < 0 || index >= _slots.Count || !Usable(_slots[index])) return false;
             return _switch.Request(index);
         }
 
-        /// <summary>Selects the next (+1) or previous (-1) slot, wrapping around, from the one already asked for.</summary>
-        public bool Cycle(int direction) =>
-            _slots.Count > 1 && SelectSlot(WeaponSwitchState.Cycle(_switch.Target, direction >= 0 ? 1 : -1, _slots.Count));
+        /// <summary>
+        /// Selects the next (+1) or previous (-1) slot, wrapping around, from the one already asked for. Skips the
+        /// melee slot while it's empty.
+        /// </summary>
+        public bool Cycle(int direction)
+        {
+            int step = direction >= 0 ? 1 : -1, index = _switch.Target;
+            for (int n = 1; n < _slots.Count; n++)
+            {
+                index = WeaponSwitchState.Cycle(index, step, _slots.Count);
+                if (Usable(_slots[index])) return SelectSlot(index);
+            }
+            return false;
+        }
+
+        /// <summary>Puts a picked-up melee item in the melee slot and brings it out. The slot must be empty.</summary>
+        public void EquipMelee(Interaction.SwingableProp item)
+        {
+            if (axe == null || axe.Equipped != null) return;
+            axe.Equip(item);
+            Select(WeaponKind.Axe);
+        }
+
+        /// <summary>Drops the melee item in hand (only while it's out and not mid-swing), then puts the hands up.</summary>
+        public void DropMelee()
+        {
+            if (axe == null || ActiveKind != WeaponKind.Axe || _switch.IsSwitching || axe.IsSwinging) return;
+            if (axe.Drop(GetComponent<Collider>()) == null) return;
+            if (!Select(WeaponKind.Hands)) Cycle(1);
+        }
+
+        bool Usable(Slot slot) => slot.Kind != WeaponKind.Axe || axe.Equipped != null;
 
         /// <summary>True if <paramref name="kind"/> is in the loadout.</summary>
         public bool Has(WeaponKind kind) => IndexOf(kind) >= 0;
@@ -324,6 +363,8 @@ namespace Blink.Combat
             _previous.AddBinding("<Gamepad>/leftShoulder");
             _previous.AddBinding("<Gamepad>/dpad/left");
             _scroll = new InputAction("WeaponScroll", InputActionType.PassThrough, "<Mouse>/scroll/y");
+            _drop = new InputAction("WeaponDrop", InputActionType.Button, "<Keyboard>/" + DropKeyName.ToLowerInvariant());
+            _drop.AddBinding("<Gamepad>/dpad/down");
             _slotKeys = new InputAction[Mathf.Min(_slots.Count, 9)];
             for (int i = 0; i < _slotKeys.Length; i++)
                 _slotKeys[i] = new InputAction("WeaponSlot" + (i + 1), InputActionType.Button, "<Keyboard>/" + (i + 1));
