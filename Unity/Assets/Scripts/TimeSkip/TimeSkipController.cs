@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Blink.Detection;
+using Blink.Player;
 using UnityEngine;
 
 namespace Blink.TimeSkip
@@ -117,10 +118,15 @@ namespace Blink.TimeSkip
             StopFastForward(interrupted: true);
         }
 
-        void OnBlinked() => SkipWorld(blinkSkipSeconds);
+        // Space doubles as the keyboard blink key, so blinks during/just after a grab QTE are ignored.
+        void OnBlinked()
+        {
+            if (!GrabQte.BlocksInput) SkipWorld(blinkSkipSeconds);
+        }
 
         void OnEyesShutBegan()
         {
+            if (GrabQte.BlocksInput) return;
             _interruptedWhileShut = false;
             IsFastForwarding = true;
             Time.timeScale = fastForwardScale;
@@ -129,7 +135,7 @@ namespace Blink.TimeSkip
 
         void OnEyesShutEnded(float closedSeconds)
         {
-            if (_interruptedWhileShut)
+            if (_interruptedWhileShut || !IsFastForwarding) // also: shut began during a QTE and was ignored
             {
                 _interruptedWhileShut = false;
                 return;

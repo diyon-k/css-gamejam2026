@@ -1,4 +1,5 @@
 using System;
+using Blink.Player;
 using Blink.TimeSkip;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -86,6 +87,7 @@ namespace Blink.Combat
         {
             _reloadTimer.Advance(Time.deltaTime);
 
+            if (GrabQte.BlocksInput) return; // clicks belong to the grab QTE
             if (_fireAction != null && _fireAction.WasPressedThisFrame()) TryFire();
             if (_reloadAction.WasPressedThisFrame()) TryStartReload();
         }
