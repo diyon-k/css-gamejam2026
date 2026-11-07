@@ -323,7 +323,14 @@ FIXTURE_TUNING = {
 }
 # Global look (SPEC 5.2). fog: Exponential / ExponentialSquared.
 # fog 0.11 (SPEC start 0.15): a zombie must still read as a silhouette 10-15 m down the SPEC 1.6 sightlines
-GLOBAL = dict(ambient="#0A0B08", fog="#141408", fogMode="Exponential", fogDensity=0.11)
+# sky = what the cameras clear to = what shows through the windows. NOT the fog colour: the room volumes expose the
+# frame up 1.4-2.45 stops, which turned the olive fog colour into a bright mustard pane. Very dark cool blue instead.
+GLOBAL = dict(ambient="#0A0B08", fog="#141408", fogMode="Exponential", fogDensity=0.11, sky="#04060B",
+              # Blink/Sky colours (raw linear floats) NightSky applies at runtime, where the camera is Skybox, not
+              # SolidColor. The prefab defaults (horizon .045/.06/.095, ground = fog colour, bright moon) turned into a
+              # bright pale pane once the room volumes added 1.4-2.45 EV; these are ~10x darker and cool.
+              skyZenith=(0.002, 0.004, 0.012), skyHorizon=(0.012, 0.022, 0.050),
+              skyGround=(0.003, 0.005, 0.012), moon=(0.05, 0.065, 0.1), stars=0.35)
 
 
 def post(rooms=(), exposure=0.0, filt="#FFFFFF", sat=0.0, contrast=0.0, temp=0.0, tint=0.0, vignette=-1.0,

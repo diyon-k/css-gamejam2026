@@ -6070,7 +6070,29 @@
    "ambient": "#0A0B08",
    "fog": "#141408",
    "fogMode": "Exponential",
-   "fogDensity": 0.11
+   "fogDensity": 0.11,
+   "sky": "#04060B",
+   "skyZenith": [
+    0.002,
+    0.004,
+    0.012
+   ],
+   "skyHorizon": [
+    0.012,
+    0.022,
+    0.05
+   ],
+   "skyGround": [
+    0.003,
+    0.005,
+    0.012
+   ],
+   "moon": [
+    0.05,
+    0.065,
+    0.1
+   ],
+   "stars": 0.35
   },
   "post": {
    "name": "Global",

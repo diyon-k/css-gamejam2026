@@ -289,7 +289,7 @@ Built by script, re-runnable:
 | 10 | `M_Tile` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 1.5, 1 | ambientCG `Tiles133D` (Color, NormalGL, Roughness, AO). Shown at 1.5 m per tile repeat: ~11.5 cm period tiles (changed from 1.0 in Phase 3) |
 | 11 | `M_Trim` | SG_BungalowLit | from `Textures/Trim/` (Phase 3) | sheet, 1 | Material asset built. Until the trim sheet lands it is a flat dark-varnish placeholder: base (62, 42, 30), smoothness 0.42 |
 | 12 | `M_Shade` | URP Lit, opaque, both faces, emission | `_Base` (also the emission map), `_Normal`, `_Mask` | 0.5, 2 (props: metric UVs assumed) | ambientCG `Fabric032`, tinted aged parchment (226, 212, 186). Emission #FFD9A0 × 1.5, GI flag None (the point lights carry the light). Per-fixture colour and strength (§5.1) is a Phase 6 job |
-| 13 | `M_Glass` | URP Lit, transparent alpha, preserve specular, both faces | `_Base` (RGB tint, A = dirt cover 0.10–0.65), `_Mask` | 1.0, 1 | Self-authored: tiling fBm smudge, finger smears, specks. Smoothness 0.96 drops to 0.4 on the smudges |
+| 13 | `M_Glass` | URP Lit, transparent alpha, preserve specular, both faces; base colour tinted cool (0.38, 0.48, 0.62) so panes read blue at night | `_Base` (RGB tint, A = dirt cover 0.10–0.65), `_Mask` | 1.0, 1 | Self-authored: tiling fBm smudge, finger smears, specks. Smoothness 0.96 drops to 0.4 on the smudges |
 | 14 | `M_Water` | URP Lit, transparent alpha, preserve specular | `_Normal`, `_Mask` | 4.0, 1 | Self-authored tiling ripple (periodic spectral noise + 3 wave trains → GL normal), scum patches in the mask. Base colour (34, 32, 22, α 0.86), normal 0.55 |
 | 15 | `M_Decals` | URP Lit, transparent alpha (queue −20, before glass and water) | `_Base` (RGBA), `_Normal`, `_Mask`, plus `M_Decals_atlas.json` (cell UV rects) | atlas, 1 | Cells: `leak_streaks` (ambientCG `Leaking017B` displacement as the streak mask), `ceiling_stain`, `mould_bloom` (cut from `Wallpaper002C`), `floor_stain`, `scuffs`, `rust_streaks` (`Leaking013A` displacement), `paper_scraps` (4 sheets), `plaster_crumbs`, `peel_edge`, `tide_line` and `grime_band` (both seamless left to right). All self-authored except the noted scan cuts |
 
@@ -898,7 +898,7 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
   - `areaLights`: size and facing of the window lights, which aren't in `bungalow_layout.json`.
   - `stairWell`.
   - `water`: y −2.77, over B1 and B2.
-  - `tuning`: the per-fixture overrides (colour, intensity, shade glow, emission fizz) and the global and per-room grades below. **Tune here, not in the scene.**
+  - `tuning`: the per-fixture overrides (colour, intensity, shade glow, emission fizz), the global and per-room grades below, and `globals.sky*`: the night-sky colours NightSky uses in this scene (see "Window view" below). **Tune here, not in the scene.**
 - **BLINK/Bungalow/Build Lighting** (`Editor/BungalowLightingBuilder.cs` + `Editor/BungalowAtmosphereBuilder.cs`) builds a `Lighting` root in the active scene. Each run replaces its own output. The root holds:
   - **`Fixtures`:** one light per §5.1 row (25 lights; H5 is a dark fixture with no light).
     - Each light has a `PracticalLight` (`Scripts/Visuals/PracticalLight.cs`) that makes its shade glow through a per-renderer emission override. One `M_Shade` therefore serves every fixture: lit lamps glow; H5 doesn't, and C2 doesn't until it's switched on.
@@ -907,7 +907,7 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
     - Fixtures with a `cone` in `tuning` are downward spot lights, not points: E1, K1, K2 (domes) and L1 (the fan's light kit), 150° outer and 110° inner. Their emitters sit 0.08–0.45 m under the ceiling, so as points they burnt a ring into it.
     - C1 has `LightFlicker` (dying).
     - **C2 starts off.** The generator beat calls `PracticalLight.Find("C2").SetOn(true)`, which switches on the light and the bulb glow.
-  - **`Probes`** (1,712 light probes in 8 groups, plus 9 reflection probes):
+  - **`Probes`** (1,616 light probes in 8 groups after the props went in, 136 positions inside geometry skipped; plus 9 reflection probes):
     - Light-probe groups on a ~1 m grid per room, in 3–4 layers kept 0.3 m off the floor and ceiling.
     - Columns over the stair well run down the flight to the basement.
     - Probes inside colliders are dropped.
@@ -920,12 +920,12 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
   - ambient Color #0A0B08, no skybox, black default reflection, global fog;
   - lighting settings `Lighting/LS_Bungalow.lighting`;
   - the grey-box temporary light removed;
-  - `DayNightCycle` disabled **in this scene only** (a prefab-instance override);
-  - the Player camera clears to the fog colour, since there is no sky without DayNightCycle.
+  - `NightSky` (GameSystems) tuned and **enabled** in this scene only (prefab-instance overrides): zenith (0.002, 0.004, 0.012), horizon (0.012, 0.022, 0.050), ground (0.003, 0.005, 0.012), moon (0.05, 0.065, 0.10), stars 0.35, all from `globals.sky*`. An earlier build had disabled the `DayNightCycle` that sat on this component; main replaced it with `NightSky`, and the stale `m_Enabled` override had kept the sky off in this scene (see "Window view" below).
+  - the Player camera clears to `globals.sky` **#04060B** (a very dark cool blue, matching the sky's ground colour) until NightSky switches it to Skybox in play. Not the fog colour: the room volumes expose the frame up 1.4–2.45 stops, which turned #141408 into a mustard pane.
 - Builder helpers:
   - `NormalizeLightmapDensity`: run after a bake. It raises `scaleInLightmap` on renderers whose measured texel density is under 60% of the target.
     - The shell's rect-per-mesh UV2 left mouldings, arches, radiators, balustrades and pipes at 1.2–5 texels/m instead of 10.
-    - 40 shell renderers were rescaled.
+    - 40 shell renderers were rescaled (0 more after the November riser rebake: the scene is at the normalised state).
   - `RenderMatchCameras` / `Render`: player-eye renders with the Player camera's post, and optionally the flashlight.
   - `RefreshLook`: re-applies the grade and fog without a rebake.
 - **BLINK/Bungalow/Build Shell Scene** (`BungalowGreyboxBuilder.Build(bake, shell: true)`) builds `House_Bungalow.unity` from `Kit/Bungalow_Shell.fbx` and its colliders JSON, opens the door leaves (§6.5) and keeps them in the navmesh build.
@@ -1043,6 +1043,14 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
 - After the props went in, every exposure went up 0.3–0.4 (furniture absorbs light): global +1.5, Hall +1.4, Living +2.3, Bedroom +2.45, Kitchen +1.4, Bathroom +1.7, Basement +1.6.
 - A zombie placed 10.6–12.6 m down each §1.6 sightline (D1–A2 hall, bedroom–D2–A1–living, living–O1–kitchen, B1–D5–B2) reads as a silhouette with the flashlight in all four, and without it in the hall and the living→kitchen view; the basement needs the flashlight.
 
+**Window view and the top stair riser (fixes after the first playable build, 7 Nov 2026):**
+- **Windows read as bright mustard panes.** Two causes, both in what the camera clears to. (1) The builder set the Player camera to clear to the fog colour #141408; under the room volumes' +1.4 to +2.45 EV that olive became a bright pane. (2) `NightSky` (the whole game's night, on GameSystems) was disabled in this scene by a prefab override that originally disabled the `DayNightCycle` on the same component; the override survived main's swap to `NightSky`. With it enabled, the sky's prefab defaults (horizon 0.045/0.06/0.095, fog-coloured ground, a full moon) would have been brighter still.
+  - Fix: `globals.sky*` in `bungalow_decals.py` (tuned colours about 10× darker and cool), `TuneNightSky` in the lighting builder applies them to the scene's `NightSky` and enables it, `NightCameras` clears to `globals.sky` #04060B, `NightSky.groundColor` (new, alpha 0 = fog colour) replaces the fog-coloured ground, and `M_Glass` is tinted (0.38, 0.48, 0.62). `BungalowLightingBuilder.PreviewSkyMode` renders the old clear (2) and the untuned sky (1) for comparisons; 0 is the sky as in play.
+  - Pane centres (mean sRGB of the central 120 px of a player-eye render, before → after): bedroom WR1 (41, 39, 19) → (19, 20, 10); living WL2 (14, 8, 1) → (4, 2, 0); living WL1 (9, 5, 0) → (4, 2, 0); kitchen WK1 (19, 10, 2) → (15, 4, 2); kitchen WK2 (21, 14, 4) → (16, 5, 2); bathroom WB1 (16, 14, 3) → (7, 6, 2); basement BW1 (30, 22, 11) → (28, 21, 10). Interiors unchanged: hall sightline (28, 21, 14) → (28, 21, 14); living → kitchen (19, 13, 8) → (19, 13, 8).
+  - Match cameras with the as-built lights, before → after: CAM-1 (26, 20, 13) → (27, 20, 14); CAM-2 (14, 9, 6) → (14, 9, 6); CAM-3 (30, 27, 18) → (30, 27, 18).
+- **The committed scene predated the balance pass.** `House_Bungalow.unity` and the committed `bungalow_atmosphere.json` still had E1, K1, K2 and L1 as point lights and H4 1.8, L2 3.0, R1 2.2, KW1 0.8; `bungalow_decals.py` already had the table above. Regenerating the JSON and running Build Lighting applied the documented values, so against the committed scene CAM-2 drops from (24, 18, 13) to (14, 9, 6) and the living → kitchen view from (29, 23, 17) to (19, 13, 8); CAM-1 and the hall sightline are within 1 unit. Zombie readability on that sightline is the balance pass's 2.1 ratio above, not a new change.
+- **Top riser showed tan plaster with a diagonal seam.** Riser 0's front face was coplanar with the hall slab's plaster hole edge (both at z = 6.0) and z-fought with it. `bungalow_kit.py` now builds riser 0 as a 12 mm box in front of that edge (§6.5); the other 14 risers sit under their tread's nose, and the bottom riser and the B1 landing edge share z = 9.92 but not a height band, so neither needed a change. Shell re-exported (door-leaf names, pivots and transforms unchanged), wear atlas rebaked, then bake → `NormalizeLightmapDensity` (0 rescaled) → bake: 3 × 1024² lightmaps, 1,616 light probes in 8 groups (136 inside geometry skipped), 9 reflection probes.
+
 ## 6. Pipeline plan (`tools/blender/`)
 
 ### 6.1 What exists and can be reused
@@ -1145,7 +1153,7 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 
 **Phase 3 (implemented): modular kit, trim sheet, wear bakes**
 - `bungalow_layout.py`: new kit tables. `SURFACE_TILE_M` (also in the JSON as `surfaceTiles`), `FLOOR_PLANK_SEAMS_PX`, `TRIM_STYLE`, `ROOM_FINISH` (floor / wall / ceiling materials, board direction, trim style, mouldings, wall bands), `MOULDING_Y`, `DOOR_LEAVES`, `RADIATORS`, `PIPES`, `DECAY` (sag zones, missing balusters, cracked newel, chip rate, water level). `check()` validates them. A new room needs a `ROOM_FINISH` row; new radiators, pipes, leaves and decay spots are rows too.
-- `bungalow_kit.py`: the shell from those tables (`Bungalow_Shell`, see §4.1), the piece library (`Bungalow_Kit`), and `Kit/Bungalow_Shell_colliders.json` (grey-box boxes plus leaf boxes).
+- `bungalow_kit.py`: the shell from those tables (`Bungalow_Shell`, see §4.1), the piece library (`Bungalow_Kit`), and `Kit/Bungalow_Shell_colliders.json` (grey-box boxes plus leaf boxes). Riser 0 (the top riser) is a 12 mm box standing **in front of** the hall slab's hole edge at z = 6.0 (faces at z = 6.000 and 6.012); the other risers sit 20 mm behind their tread's nose. Its face used to be coplanar with the plaster hole edge and z-fought with it (a tan, diagonally split quad in play).
 - `bungalow_trim.py`: the trim sheet (§3.0.4).
 - `bungalow_wear.py`: the UV2 atlas packing and the four-channel wear bake (§3.0.4), plus `preview_materials()` for Blender before / after renders.
 - `build_all.py --target bungalow [Bungalow_Shell] [Bungalow_Kit] [--no-wear]`; the mansion target is unchanged.
@@ -1159,7 +1167,7 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 - **Rebuild order** (each step is re-runnable):
   1. **BLINK/Bungalow/Build Shell Scene**: shell, colliders, door leaves opened (below), markers, prefabs.
   2. **BLINK/Bungalow/Place Props**, then rebake the navmesh (`BungalowGreyboxBuilder.Bake`). Props sit under the NavMeshSurface, so the furniture carves the navmesh.
-  3. **BLINK/Bungalow/Build Lighting**: lights attach to the `FX_<id>` emitters (18 of 18).
+  3. **BLINK/Bungalow/Build Lighting**: lights attach to the `FX_<id>` emitters (18 of 18); NightSky is tuned and enabled and the cameras clear to `globals.sky`.
   4. Bake, `NormalizeLightmapDensity`, bake again, save.
 - **Door leaves** (shell-scene step in `BungalowGreyboxBuilder`; the FBX is unchanged):
   - Every unlocked leaf hung less than fully open is swung to 90° about its hinge, in the direction it already swings: D1 left 84→90°, D1 right 18→90°, D2 78→90°, D3 62→90°. D5 (96°) is kept, and D4 stays closed (locked).

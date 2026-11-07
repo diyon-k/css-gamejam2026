@@ -53,7 +53,7 @@ namespace Blink.EditorTools
         [Serializable] public class Box { public string id; public float[] min, max; }
         [Serializable] public class Water { public float y; public string[] rooms; }
         [Serializable] public class FixtureTune { public string id, col; public float glow, fizz, i, range, cone; }
-        [Serializable] public class Globals { public string ambient, fog, fogMode; public float fogDensity; }
+        [Serializable] public class Globals { public string ambient, fog, fogMode, sky; public float fogDensity, stars; public float[] skyZenith, skyHorizon, skyGround, moon; }
         [Serializable] public class Post
         {
             public string name, filter, splitShadows, splitHighlights, bloomTint;
@@ -105,7 +105,7 @@ namespace Blink.EditorTools
             report.AppendLine(BuildVolumes(root, layout, atmo));
             report.AppendLine(BungalowAtmosphereBuilder.Build(scene, root, layout, atmo));
             report.AppendLine(ApplyEnvironment(atmo, provisional));
-            report.AppendLine(DisableDayNight(scene));
+            report.AppendLine(TuneNightSky(scene));
             report.AppendLine(NightCameras(scene));
             EditorSceneManager.MarkSceneDirty(scene);
             return report.ToString();
@@ -254,8 +254,9 @@ namespace Blink.EditorTools
             var atmo = LoadAtmosphere();
             if (atmo.tuning?.post != null) Profile("VP_Bungalow_Global", atmo.tuning.post, true);
             if (atmo.tuning?.rooms != null) foreach (var p in atmo.tuning.rooms) Profile("VP_Room_" + p.name, p, false);
+            TuneNightSky(scene);
             Lightmapping.TryGetLightingSettings(out var ls);
-            var r = ApplyEnvironment(atmo, ls != null && ls.lightmapResolution < 15f);
+            var r = ApplyEnvironment(atmo, ls != null && ls.lightmapResolution < 15f) + System.Environment.NewLine + NightCameras(scene);
             EditorSceneManager.MarkSceneDirty(scene);
             return r;
         }
@@ -627,28 +628,81 @@ namespace Blink.EditorTools
             return ls;
         }
 
-        /// <summary>NightSky (formerly DayNightCycle) off in this scene only (prefab-instance override), keeping the night look.</summary>
-        static string DisableDayNight(Scene scene)
+        /// <summary>
+        /// NightSky (GameSystems) is the whole game's night: in play it sets RenderSettings.skybox and switches the main
+        /// camera to a Skybox clear, so what shows through the windows is decided by its colours. The prefab defaults
+        /// (horizon 0.045/0.06/0.095, fog-coloured ground, a bright moon) are for an unexposed game; the room volumes
+        /// lift this level 1.4-2.45 stops, so they read as a bright pane. This overrides them on the scene's instance
+        /// only, from globals.sky* in the atmosphere JSON, and re-enables the component: an earlier build disabled the
+        /// DayNightCycle that used to sit on this component, and that m_Enabled override survived main's swap to NightSky.
+        /// </summary>
+        static string TuneNightSky(Scene scene)
         {
+            var g = LoadAtmosphere()?.tuning?.globals;
+            if (g == null) return "night sky: no globals";
             int n = 0;
             foreach (var go in scene.GetRootGameObjects())
                 foreach (var c in go.GetComponentsInChildren<Blink.DayNight.NightSky>(true))
                 {
-                    if (c.enabled)
-                    {
-                        Undo.RecordObject(c, "Disable NightSky");
-                        c.enabled = false;
-                    }
+                    var so = new SerializedObject(c);
+                    so.FindProperty("m_Enabled").boolValue = true;
+                    SetColor(so, "nightZenith", g.skyZenith);
+                    SetColor(so, "nightHorizon", g.skyHorizon);
+                    SetColor(so, "groundColor", g.skyGround);
+                    SetColor(so, "moonDiscColor", g.moon);
+                    if (g.stars > 0f) so.FindProperty("stars").floatValue = g.stars;
+                    so.ApplyModifiedProperties();
                     if (PrefabUtility.IsPartOfPrefabInstance(c)) PrefabUtility.RecordPrefabInstancePropertyModifications(c);
                     n++;
                 }
-            return $"NightSky disabled in this scene: {n}";
+            return $"night sky tuned and enabled in this scene: {n}";
+        }
+
+        static void SetColor(SerializedObject so, string prop, float[] v)
+        {
+            if (v == null || v.Length < 3) return;
+            so.FindProperty(prop).colorValue = new Color(v[0], v[1], v[2], 1f);
         }
 
         /// <summary>
-        /// With NightSky off there is no sky: the scene's cameras (the Player instance) clear to the fog colour
-        /// instead of Skybox, so windows show a dark night rather than the camera's default blue. Scene override only.
+        /// Editor-render sky: 0 = the tuned sky (as in play), 1 = NightSky's untouched prefab defaults, 2 = the old
+        /// solid fog-colour clear (both only for before/after comparisons).
         /// </summary>
+        public static int PreviewSkyMode;
+
+        /// <summary>A Skybox material with the same values NightSky applies at runtime, for the editor renders.</summary>
+        static Material PreviewSky()
+        {
+            var g = PreviewSkyMode == 1 ? new Globals() : LoadAtmosphere()?.tuning?.globals;
+            var src = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Sky/BlinkSky.mat");
+            if (g == null || src == null) return null;
+            var m = new Material(src) { hideFlags = HideFlags.HideAndDontSave };
+            Color C(float[] v, Color d) => v != null && v.Length >= 3 ? new Color(v[0], v[1], v[2], 1f) : d;
+            m.SetColor("_ZenithColor", C(g.skyZenith, new Color(0.008f, 0.012f, 0.03f)));
+            m.SetColor("_HorizonColor", C(g.skyHorizon, new Color(0.045f, 0.06f, 0.095f)));
+            m.SetColor("_GroundColor", C(g.skyGround, RenderSettings.fogColor));
+            if (PreviewSkyMode == 1) m.SetColor("_MoonColor", new Color(0.85f, 0.9f, 1f));
+            m.SetVector("_SunDir", Vector3.down);
+            m.SetColor("_SunColor", Color.clear);
+            m.SetVector("_MoonDir", new Vector3(0f, 0.5f, 0.85f).normalized);
+            m.SetColor("_MoonColor", C(g.moon, new Color(0.85f, 0.9f, 1f)));
+            m.SetFloat("_StarIntensity", g.stars > 0f ? g.stars : 1f);
+            return m;
+        }
+
+        /// <summary>
+        /// What the cameras clear to before NightSky takes over (edit mode, and the first frame), i.e. the fallback that
+        /// shows through the windows. Deliberately not the fog colour: the room post volumes expose the frame up by
+        /// 1.4-2.45 stops, so the olive fog colour read as a bright mustard pane. From globals.sky in the atmosphere
+        /// JSON (a very dark cool blue, matching the tuned sky's ground).
+        /// </summary>
+        public static Color NightSkyColor()
+        {
+            var g = LoadAtmosphere()?.tuning?.globals;
+            return Hex(g?.sky, RenderSettings.fogColor);
+        }
+
+        /// <summary>The scene's cameras (the Player instance) clear to NightSkyColor; scene override only.</summary>
         static string NightCameras(Scene scene)
         {
             int n = 0;
@@ -656,11 +710,11 @@ namespace Blink.EditorTools
                 foreach (var cam in go.GetComponentsInChildren<Camera>(true))
                 {
                     cam.clearFlags = CameraClearFlags.SolidColor;
-                    cam.backgroundColor = RenderSettings.fogColor;
+                    cam.backgroundColor = NightSkyColor();
                     if (PrefabUtility.IsPartOfPrefabInstance(cam)) PrefabUtility.RecordPrefabInstancePropertyModifications(cam);
                     n++;
                 }
-            return $"cameras clearing to the fog colour: {n}";
+            return $"cameras clearing to #{ColorUtility.ToHtmlStringRGB(NightSkyColor())}: {n}";
         }
 
         /// <summary>
@@ -783,7 +837,10 @@ namespace Blink.EditorTools
                 cam.transform.SetPositionAndRotation(pos, rot);
                 cam.fieldOfView = fov;
                 cam.clearFlags = CameraClearFlags.SolidColor;
-                cam.backgroundColor = RenderSettings.fogColor;
+                cam.backgroundColor = NightSkyColor();
+                var sky = PreviewSkyMode == 2 ? null : PreviewSky();
+                if (PreviewSkyMode == 2) cam.backgroundColor = RenderSettings.fogColor;
+                if (sky != null) { cam.clearFlags = CameraClearFlags.Skybox; go.AddComponent<Skybox>().material = sky; } // as in play
                 var data = cam.GetUniversalAdditionalCameraData();
                 data.renderPostProcessing = true;
                 data.antialiasing = AntialiasingMode.SubpixelMorphologicalAntiAliasing;

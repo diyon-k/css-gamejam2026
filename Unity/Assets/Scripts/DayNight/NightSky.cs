@@ -21,6 +21,8 @@ namespace Blink.DayNight
         [SerializeField] Color nightHorizon = new(0.045f, 0.06f, 0.095f);
         [SerializeField] Color moonDiscColor = new(0.85f, 0.9f, 1f);
         [SerializeField, Range(0f, 3f)] float stars = 1f;
+        [Tooltip("What shows below the horizon (the ground seen through a window). Alpha 0 = use the fog colour.")]
+        [SerializeField] Color groundColor = new(0f, 0f, 0f, 0f);
 
         Material _sky;
         Camera _cam;
@@ -61,7 +63,7 @@ namespace Blink.DayNight
             if (moonDir.y < 0.1f) moonDir.y = 0.1f; // keep the disc above the horizon
             _sky.SetColor(ZenithId, nightZenith);
             _sky.SetColor(HorizonId, nightHorizon);
-            _sky.SetColor(GroundId, RenderSettings.fogColor);
+            _sky.SetColor(GroundId, groundColor.a > 0f ? groundColor : RenderSettings.fogColor);
             _sky.SetVector(SunDirId, Vector3.down);
             _sky.SetColor(SunColorId, Color.clear);
             _sky.SetVector(MoonDirId, moonDir.normalized);
