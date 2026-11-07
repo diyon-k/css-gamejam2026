@@ -61,7 +61,8 @@ namespace Blink.Effects
         [SerializeField, Min(1)] int maxMarks = 96;
         [Tooltip("How deep the projector box reaches into and out of the surface, in metres.")]
         [SerializeField, Min(0.01f)] float depth = 0.12f;
-        [SerializeField] float bulletSize = 0.11f;
+        [Tooltip("Projector size for a bullet mark; the hole itself is about a fifth of its atlas cell.")]
+        [SerializeField] float bulletSize = 0.3f;
         [Tooltip("Length x width of an axe gash or a prying scrape, along the swing.")]
         [SerializeField] Vector2 gashSize = new(0.38f, 0.12f);
         [SerializeField] float dentSize = 0.16f;
@@ -142,7 +143,7 @@ namespace Blink.Effects
             var cell = SurfaceTable.BulletMark(surface);
             if (cell.HasValue)
             {
-                float s = bulletSize * (cell == MarkCell.GlassCrack ? 3f : 1f);
+                float s = bulletSize * (cell == MarkCell.GlassCrack ? 1.5f : 1f);
                 Place(cell.Value, info.point, info.normal, RandomAlong(info.normal), new Vector2(s, s), info.collider.transform);
             }
             Raise(new WorldImpact(info.point, info.normal, dir, info.collider, surface, shot.Weapon, false, MeleeTool.Blade), 1f);
