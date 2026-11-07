@@ -222,8 +222,8 @@ namespace Blink.UI
         public static float AmmoBlockHeight => PxText(98f);
 
         /// <summary>
-        /// Weapon readout, bottom-right: a small-caps name (or "reloading" with a filling ring), and for guns the loaded
-        /// count large with the reserve small and muted. "no ammo" in the accent when both are empty.
+        /// Weapon readout, bottom-right: a small-caps name (or "reloading" with a filling ring), and for guns a row of
+        /// bullet icons, one per magazine slot. "no ammo" in the accent when magazine and reserve are both empty.
         /// </summary>
         public static void Ammo(string weaponName, bool usesAmmo, int loaded, int capacity, int reserve, bool reloading, float reloadProgress, float alpha)
         {
@@ -245,19 +245,11 @@ namespace Blink.UI
             }
             if (!usesAmmo) return;
 
-            string reserveText = "/ " + reserve;
-            var numRect = new Rect(right - PxText(400f), bottom - PxText(62f), PxText(400f), PxText(62f));
-            float reserveW = Measure(reserveText, NumberSmall);
-            Text(new Rect(numRect.x, numRect.y - PxText(6f), numRect.width, numRect.height), reserveText, NumberSmall, Fade(Muted, alpha));
-            var loadedRect = new Rect(numRect.x - reserveW - PxText(10f), numRect.y, numRect.width, numRect.height);
-            Text(loadedRect, loaded.ToString(), Number, Fade(Bone, alpha * (reloading ? 0.55f : 1f)));
-
-            // One bullet per magazine slot, left of the count: loaded ones solid, spent ones a faint outline.
-            float bx = loadedRect.xMax - Measure(loaded.ToString(), Number) - PxText(18f);
-            float bw = PxText(7f), bh = PxText(22f), step = bw + PxText(5f), by = bottom - PxText(30f) - bh * 0.5f;
+            // One bullet per magazine slot, right-aligned: loaded ones solid, spent ones a faint outline.
+            float bw = PxText(9f), bh = PxText(28f), step = bw + PxText(6f), by = bottom - PxText(30f) - bh * 0.5f;
             for (int i = 0; i < capacity; i++)
             {
-                var r = new Rect(bx - (i + 1) * step + PxText(5f), by, bw, bh);
+                var r = new Rect(right - bw - i * step, by, bw, bh);
                 bool full = capacity - 1 - i < loaded;
                 var col = full ? Fade(Bone, alpha * (reloading ? 0.55f : 0.9f)) : Fade(Muted, alpha * 0.35f);
                 float tip = bw * 0.5f, edge = full ? 0f : Mathf.Max(1f, PxText(1.2f));
