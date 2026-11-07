@@ -17,35 +17,13 @@ Scope: the intro video, the wake-up, and Act 1 only (the whole demo, 2-3 minutes
 
 ---
 
-## Intro video (about 56 seconds, one continuous shot)
+## Opening: Blink to begin
 
-**Look:** first-person, handheld, like a horror film. Night, fog, a torch beam as the main light, muted colours, film grain. The camera never cuts. The only "cuts" are the courier's blinks, which also hide the seams between generated clips.
+No intro video. The game opens on black with **BLINK to begin**, and the world stays frozen.
 
-**Making it with Kie:** video models give us about 8 seconds per clip, so we generate 7 clips and chain them. The last frame of each clip becomes the start image of the next. Seams sit on blinks or on dark frames so the join doesn't show. For clip 5, use a screenshot of our in-game entrance hall as the start image so the video matches the level.
-
-**Style prefix for every prompt:**
-> First-person POV, handheld camera, cinematic horror film, night, thick fog, cold blue moonlight, warm torch beam, film grain, muted desaturated colours, 35mm, slow deliberate movement, no text, no on-screen captions.
-
-| # | Time | Shot (prompt body) | Sound |
-|---|---|---|---|
-| 1 | 0-8 s | Inside a delivery van on a narrow forest road at night. Headlights on fog and pine trunks. A small brown parcel on the passenger seat. The dashboard clock flickers to **11:58** and freezes. The engine sputters and dies and the headlights fade. | Engine, radio static, then silence. One clock tick. |
-| 2 | 8-16 s | The driver's door opens. Walking into the forest with a torch in one hand and the parcel in the other. Pale human figures stand perfectly still between the trees at the edge of the beam. | Footsteps on leaves, breathing. The ticking speeds up. |
-| 3 | 16-24 s | Rusted iron gates hang open. Beyond them, a decaying Victorian mansion swallowed by ivy, and one warm lit window at the top of a clock tower. Walking up the overgrown path. | Wind, a gate creaking, a distant bell. |
-| 4 | 24-32 s | The porch. A gloved hand knocks three times on a heavy wooden door. The door creaks open on its own, showing a dark hall. Stepping inside. | Three knocks. Long creak. The door slams shut behind. |
-| 5 | 32-40 s | The entrance hall: dust sheets over furniture, a grandfather clock stopped at 11:58. The torch drifts up the grand staircase. Four figures stand at the top: a woman, two children and a servant, perfectly still, faces in shadow. | Total silence. Then a ticking sound coming from the parcel. |
-| 6 | 40-48 s | A blink (one black frame): the figures are halfway down the stairs, still frozen. Another blink: they're at the foot of the stairs, a few metres away. The torch shakes. | A sharp skip sound on each blink, a heartbeat rising. |
-| 7 | 48-56 s | Spinning back towards the front door. A tall, gaunt old man in a waistcoat stands inches away, holding a heavy brass clock weight. He swings it. The view jolts, tilts to the floor, the torch rolls away, and everything fades to black. | Impact, the torch clattering, a ringing in the ears. A whisper: *"Forgive me."* Ticking in the dark. |
-
-**Clip 6 teaches the mechanic.** The family only moves while the courier blinks. Players have already seen the rule before they play.
-
----
-
-## Waking up (in-engine, about 10 seconds)
-
-- Black screen with ticking. The eyes open slowly, blurry, and the vision blinks clear twice. (Use the existing eyelid effect from `feat/blink-eyelids`.)
-- The player is lying in the bed in the **upstairs bedroom** (Area 1 in the blockout) and sits up. Control starts.
-- The parcel is gone. A note on the bedside table is the first thing in view (**Note 1**).
-- The jammed bedroom door works as before: force it with eyes shut.
+- The first blink (or Space) starts the wake-up: the eyelids open slowly with two heavy-eyed flutters, and the player sits up from lying on the bed (camera rises from the ceiling to level). About 6.5 seconds, then control and world time start.
+- How you got here is never shown. The player pieces it together from the delivery docket on the nightstand and Ambrose's note on the floor.
+- Code: `Scripts/Player/WakeUpSequence.cs` on GameSystems. Timing, lid curve and lying pose are all inspector fields.
 
 ---
 
@@ -67,50 +45,32 @@ This follows the current house blockout: bedroom → landing / side room → bro
 
 ## Story notes
 
-Pick up with E to read full screen. Time **keeps running while you read**: reading is an eyes-open action, so it's a risk, not a pause.
+Notes **hint** at the story; none of them explains it outright. Read with E, time keeps running while you read. The text lives in `Editor/StoryProps.cs` (menu **BLINK > Place Story Props**), which places them in the House scene.
 
-**Note 1 (bedside, handwritten, shaky)**
-> Courier,
-> Forgive the blow. You would have run, and I need what you carried.
-> Whatever you see in this house, do not close your eyes for long. They only move when you aren't looking.
-> Come down to me. I will explain everything.
-> — A. H.
+| Note | Where | Hints at |
+|---|---|---|
+| Delivery docket | Bedroom nightstand | Why you came: a courier job, a pocket watch from Kerr's estate, "before midnight" |
+| Note in shaky handwriting (A.) | Bedroom floor | Who knocked you out, that you brought something back, the blink rule |
+| Child's drawing (Lily) | Nursery floor | Staying still to beat the sickness; a man with a clock for a face |
+| Torn diary page (E.) | Hallway floor | Ambrose not sleeping, clocks going wrong, something in the tower |
+| Kitchen list (Mrs Pell) | Kitchen floor | Time has stopped: bread won't stale, kettle won't boil |
+| Workshop scrap | On the generator | The "heart" was stolen by S.; someone will bring it home |
+| Newspaper clipping | By the exit gate | Kerr's auction, the watch with Hale's mark, an anonymous buyer |
 
-**Note 2 (nursery, Eleanor's diary page)**
-> 3rd March 1946
-> Lily's fever broke at noon and came back by supper. Tom keeps asking why Father is in the tower all night. I told him Father is making time. I do not know what else to call it.
-
-**Note 3 (hallway, Butler's ledger)**
-> 11th March. Dr. Ashby has given the mistress and the children until midnight. The master has asked all staff to remain in the house tonight and to stop every clock but his own.
-> 11:58. The house has gone very quiet.
-
-**Note 4 (kitchen, a note from the cook, Mrs. Pell)**
-> I have been stirring this pot for what feels like a hundred years and it has not boiled. The bread will not go stale. My hands will not stop being cold.
-> If anyone reads this, do not let him wind it again.
-
-**Note 5 (basement, Ambrose's workshop notes)**
-> The clock holds. They do not die. But they do not wake either, and when I shut my eyes they move. Closer each time.
-> Samuel has taken the heart and run. Without it I cannot start it again and I cannot let them go.
-> I will wait. Someone will bring it back.
-
-**Note 6 (by the exit gate, newspaper clipping, 2026)**
-> **AUCTION: Estate of the late Samuel Kerr.** Lot 14: Victorian brass pocket watch, maker's mark "A. Hale." Note from the seller: *the watch has never stopped ticking, though it has no spring.*
+**Puzzle-hint notes:** not written yet. They will use the same `Readable` component once the puzzles are decided.
 
 ---
 
 ## Family photos
 
-Framed photos the player can inspect. Each one has two versions: **clean** (1946) and **decayed** (water-damaged, faces scratched out or blurred). Optional extra: the photo swaps to the decayed version after enough blinks, using the existing decay system.
+Generated with Kie (Nano Banana 2), in `Unity/Assets/Art/Story/Photos/`, each with a clean and a `_decayed` version. They hang in frames and can be inspected (E) for a caption that hints at the story.
 
-**Style prefix for image prompts:**
-> Authentic 1940s black and white photograph, silver gelatin print, slight sepia, soft focus, vignette, film grain, worn edges, English country house.
-
-| Photo | Where | Prompt body | Text on inspect |
+| Photo | Hung where | Version | Caption hints at |
 |---|---|---|---|
-| Wedding photo | Bedroom | Formal wedding portrait of a tall thin man with a neat moustache and a smiling woman with pinned dark hair, standing in front of a stone doorway. | *"Ambrose & Eleanor, June 1934."* |
-| The children | Nursery | A boy of nine in shorts holding a toy soldier and a girl of six holding a porcelain doll, sitting on garden steps, squinting at the sun. | *"Tom and Lily, summer 1945."* |
-| Family portrait | Stairs (hanging crooked) | Formal family portrait of a father, mother, son and daughter in a wood-panelled hall, with a tall grandfather clock behind them. | *"The Hales."* Decayed version: the four faces scratched out. |
-| The staff | Hallway | Five household servants in uniform lined up outside a large country house: butler, cook, two maids, a young apprentice in a leather apron. | *"Staff, 1945. Samuel (far right) joined in the spring."* |
+| Wedding | Bedroom, above the nightstand | Clean | "Forever is a promise I intend to keep" |
+| The children | Nursery, north wall | Decayed (faces run) | Tom and Lily |
+| Family portrait | Stairwell wall | Decayed (faces scratched out) | Something went wrong with the Hales |
+| The staff | Ground floor hallway | Clean | The apprentice, circled in ink: Samuel |
 
 ---
 
@@ -139,20 +99,16 @@ Inspectable 3D objects: E to pick up and turn, with one line of text. Story only
 
 ## Start screen
 
-- **Background:** a looping video of the mansion in fog with the tower window lit and a slow push-in (one more Kie clip, using the clip 3 look).
-- **Buttons:** **New Game** and **Continue**. Continue only appears if a save exists.
-- **New Game:** plays the intro video (any key skips), then loads the House scene with the player in bed and the wake-up sequence playing.
-- **Continue:** loads the House scene at the last checkpoint, skipping the intro.
+**Blink to begin** (see Opening). New Game / Continue menu is dropped for the jam: a judge plays one 2-3 minute run.
 
 ---
 
 ## What needs building
 
-| Item | Notes |
+| Item | Status |
 |---|---|
-| `Readable` (note) | A new `IInteractable`. Shows the note text full screen until E / Esc. Time keeps running. |
-| `Inspectable` (photo / heirloom) | A new `IInteractable`. Holds the object up to the camera so you can rotate it, with a caption. Could share code with `Readable`. |
-| Intro scene | A `VideoPlayer` on a black canvas, skip on any key, then load House. |
-| Wake-up | A short camera move plus eyelid effect at the start of House. |
-| Start menu scene | Background video, New Game / Continue. Save = last checkpoint in `PlayerPrefs`. |
-| Art | 7 intro clips + 1 menu loop (Kie), 4 photos × 2 versions (image gen), note paper textures. |
+| Wake-up (`WakeUpSequence`) | Done, needs a play test |
+| `Readable` (notes and photos) | Done, needs a play test. Depends on the uncommitted Interaction folder (`IInteractable`, `Interactor`) |
+| Story props placement (`StoryProps` menu) | Done. Run **BLINK > Place Story Props** in House.unity and check positions |
+| Heirlooms | Not started |
+| Puzzles, puzzle notes, keys | To be decided |
