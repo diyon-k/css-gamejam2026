@@ -271,9 +271,9 @@ namespace Blink.Mobs
             var hide = Interaction.HidingSpot.Occupant;
             _hidingIn = KnownHidingSpot(hide, _hidingIn, _seesTarget && targetAlive);
             if (!targetAlive) _seesTarget = false;
-            else if (hide != null)
+            else if (hide != null || Interaction.Vent.Inside != null)
             {
-                if (_hidingIn != hide)
+                if (hide == null || _hidingIn != hide) // in a vent nobody follows you: under the floor, off the navmesh
                 {
                     _seesTarget = false;
                     _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
