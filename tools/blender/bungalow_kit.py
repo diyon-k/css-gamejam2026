@@ -38,6 +38,7 @@ from mathutils import Matrix, Vector
 import bungalow_layout as L
 import bungalow_trim as T
 import lib
+from bungalow_greybox import FOOTPRINT
 
 BUILDERS = {}
 SUBDIR = {}
@@ -387,7 +388,6 @@ def surface_mat(c, n):
     q = c + n.normalized() * 0.06
     rid = room_at(q)
     if rid is None:
-        fp = L.FOOTPRINT
         return L.EXTERIOR_FINISH
     fin = L.ROOM_FINISH[rid]
     side = side_of_normal(n)
@@ -501,7 +501,7 @@ PREVIEW_COL = {"M_FloorPlank": (0.30, 0.22, 0.15), "M_Parquet": (0.45, 0.30, 0.1
                "M_Wall_Floral": (0.36, 0.45, 0.33), "M_Plaster": (0.78, 0.77, 0.72), "M_BrickWhite": (0.80, 0.78, 0.74),
                "M_Plaster_Kitchen": (0.70, 0.75, 0.78),
                "M_Tile": (0.85, 0.85, 0.82), "M_Trim": (0.25, 0.15, 0.09), "M_Glass": (0.5, 0.6, 0.65),
-               "M_Water": (0.12, 0.13, 0.10)}
+               "M_Water": (0.12, 0.13, 0.10), "M_Wall_Parlour": (0.30, 0.33, 0.24)}
 
 
 def emit(mb, name=None):
@@ -543,7 +543,7 @@ def collide(name, x, y, z, r=(0.0, 0.0, 0.0)):
 
 # ------------------------------------------------------------------ walls
 def outside_footprint(p):
-    return not (0.0 < p.x < L.FOOTPRINT[0] and 0.0 < p.z < L.FOOTPRINT[1])
+    return not (0.0 < p.x < FOOTPRINT[0] and 0.0 < p.z < FOOTPRINT[1])
 
 
 def build_walls():
@@ -643,8 +643,8 @@ def plank_floor(mb, rid, r):
     # seams in metres across the room (v = c / tile for boards along x; v = -c / tile for boards along z)
     sgn = 1.0 if along_x else -1.0
     seams = []
-    k0 = math.floor(sgn * acr[0] / tile) - 2
-    for k in range(k0, k0 + int((acr[1] - acr[0]) / tile) + 6):
+    lo, hi = sorted((sgn * acr[0] / tile, sgn * acr[1] / tile))   # rev 3 fix: boards along z lost seams at high x
+    for k in range(math.floor(lo) - 2, math.ceil(hi) + 2):
         for sv in SEAMS_V:
             c = sgn * (k + sv - ov) * tile
             if acr[0] < c < acr[1]:
@@ -1160,6 +1160,7 @@ def build_window(oid):
     tm = (w["t"][0] + w["t"][1]) / 2
     # interior face = the face that looks into a room
     side_in = 0 if face_room(w, 0, (a0 + a1) / 2, (y0 + y1) / 2) else 1
+    borrowed = face_room(w, 1 - side_in, (a0 + a1) / 2, (y0 + y1) / 2) is not None   # a room on both faces
     t_in, W_in = face_info(w, side_in)
     rid = face_room(w, side_in, (a0 + a1) / 2, (y0 + y1) / 2)
     strip = style_of(rid, "window")
@@ -1178,8 +1179,13 @@ def build_window(oid):
         ta = sorted((t_in, t_in + (W_in.x + W_in.z) * 0.02))
         x, z = ((a0 - 0.08, a1 + 0.08), ta) if w["axis"] == "x" else (ta, (a0 - 0.08, a1 + 0.08))
         trim_box(mb, x, (y0 - 0.18, y0 - 0.03), z, strip, bev=0.004)
-        # outside sill
         t_out, W_out = face_info(w, 1 - side_in)
+        if borrowed:     # borrowed light: the far face gets a casing too, styled for its own room
+            rid_o = face_room(w, 1 - side_in, (a0 + a1) / 2, (y0 + y1) / 2)
+            sweep(mb, casing_path(w, path, t_out), W_out, [(s * 0.8, t) for s, t in CASE_PROF], "M_Trim",
+                  style_of(rid_o, "window"), away=wp(w, (a0 + a1) / 2, (y0 + y1) / 2, t_out), back=True)
+    if not hopper and not borrowed:
+        # outside sill
         to = sorted((t_out - (W_out.x + W_out.z) * 0.06, t_out + (W_out.x + W_out.z) * 0.06))
         x, z = ((a0 - 0.06, a1 + 0.06), to) if w["axis"] == "x" else (to, (a0 - 0.06, a1 + 0.06))
         bm = bm_box(x, (y0 - 0.06, y0), z, 0.008)
@@ -1653,14 +1659,14 @@ def ground_hidden(c, n):
         return True
     if abs(n.y) < 0.7:
         rim = not (g["x"][0] + 0.01 < c.x < g["x"][1] - 0.01 and g["z"][0] + 0.01 < c.z < g["z"][1] - 0.01)
-        house = -0.01 <= c.x <= L.FOOTPRINT[0] + 0.01 and -0.01 <= c.z <= L.FOOTPRINT[1] + 0.01
+        house = -0.01 <= c.x <= FOOTPRINT[0] + 0.01 and -0.01 <= c.z <= FOOTPRINT[1] + 0.01
         return rim or house
     return False
 
 
 def build_exterior():
     ex = L.EXTERIOR
-    holes = [((0.0, L.FOOTPRINT[0]), (0.0, L.FOOTPRINT[1]))]
+    holes = [((0.0, FOOTPRINT[0]), (0.0, FOOTPRINT[1]))]
     for o in L.OPENINGS.values():
         if o.get("well"):
             holes.append((o["well"]["x"], o["well"]["z"]))
@@ -1772,9 +1778,9 @@ KIT_PIECES = [("Kit_Wall_Ext_S", "Wall_Ext_S"), ("Kit_Floor_PlankRoom", "Floor_C
               ("Kit_DoorLeaf_Panel4", "D2_Leaf"), ("Kit_DoorLeaf_DoubleSagged", "D1_LeafR"),
               ("Kit_DoorLeaf_Ledged", "D5_Leaf"), ("Kit_Arch", "A1"), ("Kit_Arch_Overhead", "A4"),
               ("Kit_CasedOpening", "O1"), ("Kit_Window", "WR1"), ("Kit_Window_Glass", "WR1_Glass"),
-              ("Kit_Window_Hopper", "BW1"), ("Kit_Stair", "Stair"), ("Kit_StairRail", "Stair_Rail"),
+              ("Kit_Window_Hopper", "BW2"), ("Kit_Stair", "Stair"), ("Kit_StairRail", "Stair_Rail"),
               ("Kit_Balustrade", "Stairwell_Balustrade"), ("Kit_Gate", "G1_Gate"), ("Kit_Joists", "Joists_B2"),
-              ("Kit_Radiator", "Radiator_Hall"), ("Kit_Pipes", "Basement_Pipes"),
+              ("Kit_Radiator", "Radiator_Living"), ("Kit_Pipes", "Basement_Pipes"),
               ("Kit_Fireplace_Front", "Fireplace_Front"), ("Kit_Mantel", "Fireplace_Mantel")]
 
 

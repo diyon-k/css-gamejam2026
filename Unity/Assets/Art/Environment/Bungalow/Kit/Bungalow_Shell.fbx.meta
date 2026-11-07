@@ -72,6 +72,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Wall_Parlour
+    second: {fileID: 2100000, guid: 8d27cfa7fa5145c1860662ebc6852f9f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Water
     second: {fileID: 2100000, guid: 165214a3fa11ba44fb7a6cdee650b395, type: 2}
   materials:

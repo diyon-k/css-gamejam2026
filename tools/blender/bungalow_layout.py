@@ -34,7 +34,7 @@ REVISION = 3   # revision 3: north wing (Corridor, MasterBedroom, Parlour), see 
 GRID = 0.5
 EXT = 0.30            # exterior wall thickness (outer faces on the grid)
 INT = 0.15            # interior partitions, centred on grid lines
-FOOTPRINT = (20.0, 15.0)
+FOOTPRINT = (20.0, 26.0)   # rev 3: the north wing takes the building to z 26
 CEILING = 3.00        # finished ceiling, whole ground floor
 CEILING_TOP = 3.20    # top of the ceiling slab = top of every ground-floor wall
 SLAB = 0.25           # ground-floor slab: -0.25 .. 0.00 (basement ceiling = slab underside)
@@ -355,7 +355,7 @@ DOOR_LEAVES = {
     "D3": dict(style="panel4", open=62.0),
     "D4": dict(style="panel4", open=0.0, note="locked, closed"),
     "D5": dict(style="ledged", open=96.0),
-    "DC1": dict(style="panel4", open=90.0),
+    "DC1": dict(style="panel4", open=170.0, note="folds flat on the corridor S wall: at 90 it leaves 0.6 m of corridor"),
     "DC2": dict(style="panel4", open=90.0),
     "DC3": dict(style="panel4", open=90.0),
     "DC4": dict(style="panel4", open=90.0),
