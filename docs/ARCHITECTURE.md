@@ -13,7 +13,6 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 |---|---|
 | WASD / left stick | Move |
 | Mouse / right stick | Look |
-| Shift | Sprint |
 | Left click / right trigger | Shoot |
 | R / gamepad West | Reload |
 | **Space: tap** | Blink (world skips 0.5 s) |
