@@ -9,6 +9,7 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | Asset | Author | Source | Licence | Used for |
 |---|---|---|---|---|
 | [animated pistol](https://sketchfab.com/3d-models/animated-pistol-bd896167e7ca44f19597d3afe6a8d83f) | DJMaesen (bumstrum) | Sketchfab | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | First-person arms and pistol, with animations |
+| [Free Blood VFX - URP](https://assetstore.unity.com/packages/vfx/free-blood-vfx-urp-375130) | Vefects | Unity Asset Store | [Standard Unity Asset Store EULA](https://unity.com/legal/as-terms) | Blood splats on zombie hits (trimmed to the files we use) |
 | Zombiegirl W Kurniawan | Adobe Mixamo | [mixamo.com](https://www.mixamo.com) | Mixamo terms: royalty-free, no attribution required | Zombie character |
 
 ## Licence notes
