@@ -18,6 +18,17 @@ namespace Blink.Tests
         }
 
         [Test]
+        public void FarthestCorners_StartsOppositeTheDoor()
+        {
+            var room = new UnityEngine.Bounds();
+            room.SetMinMax(UnityEngine.Vector3.zero, new UnityEngine.Vector3(10f, 3f, 6f));
+            // door in the west wall near its south end: the far corner is north-east, the near one south-west
+            var corners = MobController.FarthestCorners(room, new UnityEngine.Vector3(0f, 0f, 1f), 0.5f);
+            Assert.AreEqual(new UnityEngine.Vector3(9.5f, 0f, 5.5f), corners[0]);
+            Assert.AreEqual(new UnityEngine.Vector3(0.5f, 0f, 0.5f), corners[3]);
+        }
+
+        [Test]
         public void PickRoom_NoneAllowed_ReturnsMinusOne() =>
             Assert.AreEqual(-1, MobController.PickRoom(4, _ => false, (a, b) => a));
     }

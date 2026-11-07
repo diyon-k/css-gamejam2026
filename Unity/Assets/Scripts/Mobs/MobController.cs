@@ -52,6 +52,8 @@ namespace Blink.Mobs
         [SerializeField] float patrolSpeed = 0.8f;
         [Tooltip("World seconds to pause at each waypoint.")]
         [SerializeField, Min(0f)] float patrolWait = 2f;
+        [Tooltip("Room patrol: world seconds (random between x and y) it lurks in a room's far corner, watching the doorway.")]
+        [SerializeField] Vector2 lurkSeconds = new Vector2(6f, 12f);
 
         [Header("Senses")]
         [SerializeField] float sightRange = 15f;
@@ -148,6 +150,7 @@ namespace Blink.Mobs
         int _room = -1;
         bool _claimed;
         NavMeshPath _roomPath;
+        Vector3 _lurkWatch; // the doorway it came in by, which it faces while lurking
         /// <summary>Rooms mobs are heading for; a list, so two claims on one room (when nothing else is free) release cleanly.</summary>
         static readonly System.Collections.Generic.List<int> ClaimedRooms = new();
         bool _seesTarget;
@@ -330,10 +333,13 @@ namespace Blink.Mobs
             {
                 if (_agent.pathPending || _agent.remainingDistance > _agent.stoppingDistance + 0.2f) return;
                 _agent.isStopped = true;
-                _waitTimer = CurrentState == State.Investigate ? searchTime : patrolWait;
+                _waitTimer = CurrentState == State.Investigate ? searchTime
+                           : _rooms is { Length: > 0 } ? UnityEngine.Random.Range(lurkSeconds.x, lurkSeconds.y)
+                           : patrolWait;
             }
 
             if (CurrentState == State.Investigate) transform.Rotate(0f, searchTurnSpeed * dt, 0f);
+            else if (_rooms is { Length: > 0 }) FacePoint(_lurkWatch, dt); // in its corner, staring at the doorway
             if ((_waitTimer -= dt) > 0f) return;
 
             if (CurrentState == State.Investigate) StartPatrol();
@@ -372,7 +378,7 @@ namespace Blink.Mobs
         }
 
         /// <summary>
-        /// Heads for a random point in a random room it can walk to (a locked door cuts the navmesh, so rooms behind one
+        /// Heads for the far corner of a random room it can walk to (a locked door cuts the navmesh, so rooms behind one
         /// drop out). Skips the room it's in and rooms other mobs are heading for, unless nothing else is reachable.
         /// </summary>
         bool GoToRandomRoom()
@@ -387,7 +393,7 @@ namespace Blink.Mobs
                     int room = PickRoom(_rooms.Length, i => i != last && !failed.Contains(i) && (pass == 1 || !ClaimedRooms.Contains(i)),
                                         UnityEngine.Random.Range);
                     if (room < 0) break;
-                    if (!TryRoomPoint(_rooms[room], out var point)) { failed.Add(room); continue; }
+                    if (!TryLurkCorner(_rooms[room], out var point, out _lurkWatch)) { failed.Add(room); continue; }
                     _room = room;
                     ClaimedRooms.Add(room);
                     _claimed = true;
@@ -406,24 +412,65 @@ namespace Blink.Mobs
             return options.Count == 0 ? -1 : options[random(0, options.Count)];
         }
 
-        /// <summary>A walkable point inside the room with a complete path to it (a few random tries, so furniture doesn't rule a room out).</summary>
-        bool TryRoomPoint(Bounds room, out Vector3 point)
+        /// <summary>
+        /// Where to lurk in the room: the corner farthest from where its path comes in (the doorway it'll use), with a
+        /// complete path to it. Also gives that entry point, so it can stand there watching the door.
+        /// </summary>
+        bool TryLurkCorner(Bounds room, out Vector3 point, out Vector3 entry)
         {
+            point = entry = default;
             _roomPath ??= new NavMeshPath();
-            for (int i = 0; i < 4; i++)
+            if (!TryRoomFloor(room, room.center, 2.5f, out var middle)) return false;
+            if (!NavMesh.CalculatePath(transform.position, middle, _agent.areaMask, _roomPath) || _roomPath.status != NavMeshPathStatus.PathComplete) return false;
+            entry = PathEntry(_roomPath.corners, room);
+            foreach (var corner in FarthestCorners(room, entry, 0.7f))
             {
-                var guess = new Vector3(UnityEngine.Random.Range(room.min.x + 0.5f, room.max.x - 0.5f), room.min.y,
-                                        UnityEngine.Random.Range(room.min.z + 0.5f, room.max.z - 0.5f));
-                if (!NavMesh.SamplePosition(guess, out var floor, 1.5f, _agent.areaMask)) continue;
-                var p = floor.position;
-                // must land in this room, not snapped through a wall into the next one or onto the storey below
-                if (p.x < room.min.x || p.x > room.max.x || p.z < room.min.z || p.z > room.max.z || Mathf.Abs(p.y - room.min.y) > 0.5f) continue;
+                if (!TryRoomFloor(room, corner, 1.2f, out var p)) continue; // furniture in that corner: next one
                 if (!NavMesh.CalculatePath(transform.position, p, _agent.areaMask, _roomPath) || _roomPath.status != NavMeshPathStatus.PathComplete) continue;
                 point = p;
                 return true;
             }
-            point = default;
-            return false;
+            point = middle; // every corner blocked: the middle of the room will do
+            return true;
+        }
+
+        /// <summary>Nearest navmesh point to <paramref name="guess"/> (at floor height) that lands inside this room, not through a wall or a storey down.</summary>
+        bool TryRoomFloor(Bounds room, Vector3 guess, float radius, out Vector3 point)
+        {
+            guess.y = room.min.y;
+            point = NavMesh.SamplePosition(guess, out var floor, radius, _agent.areaMask) ? floor.position : default;
+            return point != default && InRoom(room, point);
+        }
+
+        static bool InRoom(Bounds room, Vector3 p) =>
+            p.x >= room.min.x && p.x <= room.max.x && p.z >= room.min.z && p.z <= room.max.z && Mathf.Abs(p.y - room.min.y) <= 0.5f;
+
+        /// <summary>Where a path first crosses into the room (its start if it begins inside).</summary>
+        static Vector3 PathEntry(Vector3[] corners, Bounds room)
+        {
+            for (int i = 0; i < corners.Length; i++)
+            {
+                if (!InRoom(room, corners[i])) continue;
+                if (i == 0) return corners[0];
+                Vector3 outside = corners[i - 1], inside = corners[i];
+                for (int step = 0; step < 8; step++) // home in on the wall crossing
+                {
+                    var mid = (outside + inside) * 0.5f;
+                    if (InRoom(room, mid)) inside = mid; else outside = mid;
+                }
+                return inside;
+            }
+            return corners.Length > 0 ? corners[^1] : room.center;
+        }
+
+        /// <summary>The room's four floor corners, <paramref name="inset"/> in from the walls, farthest from <paramref name="from"/> first.</summary>
+        public static Vector3[] FarthestCorners(Bounds room, Vector3 from, float inset)
+        {
+            float x0 = room.min.x + inset, x1 = room.max.x - inset, z0 = room.min.z + inset, z1 = room.max.z - inset, y = room.min.y;
+            var corners = new[] { new Vector3(x0, y, z0), new Vector3(x1, y, z0), new Vector3(x0, y, z1), new Vector3(x1, y, z1) };
+            Vector2 f = new Vector2(from.x, from.z);
+            Array.Sort(corners, (a, b) => Vector2.Distance(f, new Vector2(b.x, b.z)).CompareTo(Vector2.Distance(f, new Vector2(a.x, a.z))));
+            return corners;
         }
 
         /// <summary>Drops its claim (once). _room stays as "the room it was last in" so the next pick skips it.</summary>
@@ -799,9 +846,11 @@ namespace Blink.Mobs
             StateChanged?.Invoke(next);
         }
 
-        void FaceTarget(float deltaTime)
+        void FaceTarget(float deltaTime) => FacePoint(target.position, deltaTime);
+
+        void FacePoint(Vector3 point, float deltaTime)
         {
-            Vector3 flat = target.position - transform.position;
+            Vector3 flat = point - transform.position;
             flat.y = 0f;
             if (flat.sqrMagnitude < 0.0001f) return;
             var goal = Quaternion.LookRotation(flat);
