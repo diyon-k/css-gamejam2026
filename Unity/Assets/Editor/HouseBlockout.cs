@@ -128,6 +128,7 @@ public static partial class HouseBlockout
         DressRooms(house);
         AddDecay(house);
         BakeNavMesh(house);
+        StoryProps.Place(); // photos + notes (story workstream), placed by raycast against the built house
 
         EditorSceneManager.SaveScene(scene, ScenePath);
         AssetDatabase.SaveAssets();
@@ -723,6 +724,8 @@ public static partial class HouseBlockout
             Shot(top, Path.Combine(dir, $"overview_{label}.png"));
         }
         Debug.Log("[HouseBlockout] Screenshots written to " + dir);
+        // The shots move the player, hide upper floors and brighten the lighting: throw all of that away.
+        EditorSceneManager.OpenScene(ScenePath);
     }
 
     static void Shot(Camera cam, string path, int w = 1600, int h = 1000)
