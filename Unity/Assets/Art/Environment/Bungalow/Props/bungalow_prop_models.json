@@ -1,0 +1,2395 @@
+{
+ "source": "tools/blender/bungalow_prop_build.py",
+ "units": "m, Unity model space (front +Z)",
+ "models": {
+  "FX_CeilingFan": {
+   "tris": 2076,
+   "pivot": "ceiling",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.7049,
+    -0.706,
+    -0.7049
+   ],
+   "hi": [
+    0.7049,
+    0.0,
+    0.7049
+   ],
+   "size": [
+    1.41,
+    0.706,
+    1.41
+   ],
+   "top": -0.4,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Atlas_Wood",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    -0.45,
+    -0.0
+   ],
+   "emissive": "FX_CeilingFan_Emissive"
+  },
+  "FX_Chandelier3": {
+   "tris": 1776,
+   "pivot": "ceiling",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.2898,
+    -0.63,
+    -0.3285
+   ],
+   "hi": [
+    0.2898,
+    0.0,
+    0.1785
+   ],
+   "size": [
+    0.58,
+    0.63,
+    0.507
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    -0.55,
+    -0.0
+   ],
+   "emissive": "FX_Chandelier3_Emissive"
+  },
+  "FX_SconceBrass": {
+   "tris": 508,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.055,
+    -0.0536,
+    -0.0
+   ],
+   "hi": [
+    0.055,
+    0.055,
+    0.1285
+   ],
+   "size": [
+    0.11,
+    0.109,
+    0.129
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emissive": "FX_SconceBrass_Emissive"
+  },
+  "FX_SconceBroken": {
+   "tris": 428,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.055,
+    -0.0536,
+    -0.0
+   ],
+   "hi": [
+    0.055,
+    0.055,
+    0.1285
+   ],
+   "size": [
+    0.11,
+    0.109,
+    0.129
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emissive": "FX_SconceBroken_Emissive"
+  },
+  "FX_SconceTulip": {
+   "tris": 532,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.055,
+    -0.0608,
+    -0.0
+   ],
+   "hi": [
+    0.055,
+    0.0536,
+    0.1292
+   ],
+   "size": [
+    0.11,
+    0.114,
+    0.129
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    0.11,
+    0.12
+   ],
+   "emissive": "FX_SconceTulip_Emissive"
+  },
+  "FX_TableLamp": {
+   "tris": 688,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.0837,
+    0.0,
+    -0.08
+   ],
+   "hi": [
+    0.0837,
+    0.465,
+    0.08
+   ],
+   "size": [
+    0.167,
+    0.465,
+    0.16
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    0.27,
+    -0.0
+   ],
+   "emissive": "FX_TableLamp_Emissive"
+  },
+  "FX_TableLampSmall": {
+   "tris": 688,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.0716,
+    0.0,
+    -0.068
+   ],
+   "hi": [
+    0.0716,
+    0.399,
+    0.068
+   ],
+   "size": [
+    0.143,
+    0.399,
+    0.136
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    0.2295,
+    -0.0
+   ],
+   "emissive": "FX_TableLampSmall_Emissive"
+  },
+  "FX_Dome": {
+   "tris": 384,
+   "pivot": "ceiling",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.19,
+    -0.155,
+    -0.19
+   ],
+   "hi": [
+    0.19,
+    0.0,
+    0.19
+   ],
+   "size": [
+    0.38,
+    0.155,
+    0.38
+   ],
+   "top": 0.0,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    -0.08,
+    -0.0
+   ],
+   "emissive": "FX_Dome_Emissive"
+  },
+  "FX_BulbPendant": {
+   "tris": 248,
+   "pivot": "ceiling",
+   "collider": "none",
+   "kind": "fixture",
+   "lo": [
+    -0.04,
+    -0.385,
+    -0.04
+   ],
+   "hi": [
+    0.04,
+    0.0,
+    0.04
+   ],
+   "size": [
+    0.08,
+    0.385,
+    0.08
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Shade"
+   ],
+   "emitter": [
+    -0.0,
+    -0.42,
+    -0.0
+   ],
+   "emissive": "FX_BulbPendant_Emissive"
+  },
+  "Rug_Oriental": {
+   "tris": 118,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "rug",
+   "lo": [
+    -1.35,
+    0.0,
+    -0.925
+   ],
+   "hi": [
+    1.35,
+    0.058,
+    0.925
+   ],
+   "size": [
+    2.7,
+    0.058,
+    1.85
+   ],
+   "top": 0.02,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Rug_OrientalSmall": {
+   "tris": 88,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "rug",
+   "lo": [
+    -0.8,
+    0.0,
+    -0.5
+   ],
+   "hi": [
+    0.8,
+    0.008,
+    0.5
+   ],
+   "size": [
+    1.6,
+    0.008,
+    1.0
+   ],
+   "top": 0.01,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Rug_Geo": {
+   "tris": 76,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "rug",
+   "lo": [
+    -1.0,
+    0.0,
+    -0.7
+   ],
+   "hi": [
+    1.0,
+    0.048,
+    0.7
+   ],
+   "size": [
+    2.0,
+    0.048,
+    1.4
+   ],
+   "top": 0.02,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Runner_Hall": {
+   "tris": 196,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "rug",
+   "lo": [
+    -2.6,
+    0.0,
+    -0.4
+   ],
+   "hi": [
+    2.6,
+    0.008,
+    0.4
+   ],
+   "size": [
+    5.2,
+    0.008,
+    0.8
+   ],
+   "top": 0.01,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Runner_Entrance": {
+   "tris": 112,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "rug",
+   "lo": [
+    -1.3,
+    0.0,
+    -0.4
+   ],
+   "hi": [
+    1.3,
+    0.038,
+    0.4
+   ],
+   "size": [
+    2.6,
+    0.038,
+    0.8
+   ],
+   "top": 0.03,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Sofa_01": {
+   "tris": 2600,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.7858,
+    0.0,
+    -0.3292
+   ],
+   "hi": [
+    0.7858,
+    0.7963,
+    0.3292
+   ],
+   "size": [
+    1.572,
+    0.796,
+    0.658
+   ],
+   "top": 0.38,
+   "levels": [
+    0.23,
+    0.37,
+    0.38
+   ],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "ArmChair_01": {
+   "tris": 2000,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.4249,
+    0.0,
+    -0.3824
+   ],
+   "hi": [
+    0.4249,
+    1.0645,
+    0.3824
+   ],
+   "size": [
+    0.85,
+    1.065,
+    0.765
+   ],
+   "top": 0.49,
+   "levels": [
+    0.48,
+    0.49
+   ],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "GothicCommode_01": {
+   "tris": 1600,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.6016,
+    0.0,
+    -0.2907
+   ],
+   "hi": [
+    0.6016,
+    1.212,
+    0.2907
+   ],
+   "size": [
+    1.203,
+    1.212,
+    0.581
+   ],
+   "top": 1.21,
+   "levels": [
+    0.21,
+    0.27,
+    0.58,
+    0.9,
+    1.21
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "ClassicNightstand_01": {
+   "tris": 800,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.2855,
+    -0.0,
+    -0.2137
+   ],
+   "hi": [
+    0.2855,
+    0.7,
+    0.2137
+   ],
+   "size": [
+    0.571,
+    0.7,
+    0.427
+   ],
+   "top": 0.7,
+   "levels": [
+    0.2,
+    0.22,
+    0.69,
+    0.7
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "GothicBed_01": {
+   "tris": 4600,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.7461,
+    0.0,
+    -1.019
+   ],
+   "hi": [
+    0.7461,
+    1.5363,
+    1.019
+   ],
+   "size": [
+    1.492,
+    1.536,
+    2.038
+   ],
+   "top": 0.58,
+   "levels": [
+    0.24,
+    0.43,
+    0.44,
+    0.56,
+    0.57
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "Rockingchair_01": {
+   "tris": 2999,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.3537,
+    0.0,
+    -0.4168
+   ],
+   "hi": [
+    0.3537,
+    0.9945,
+    0.4168
+   ],
+   "size": [
+    0.707,
+    0.995,
+    0.834
+   ],
+   "top": 0.7,
+   "levels": [
+    0.43
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "WoodenTable_01": {
+   "tris": 952,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.8998,
+    -0.0,
+    -0.3286
+   ],
+   "hi": [
+    0.8998,
+    0.5488,
+    0.3286
+   ],
+   "size": [
+    1.8,
+    0.549,
+    0.657
+   ],
+   "top": 0.55,
+   "levels": [
+    0.12,
+    0.55
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "wooden_bookshelf_worn": {
+   "tris": 1499,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.687,
+    0.0,
+    -0.29
+   ],
+   "hi": [
+    0.687,
+    2.0631,
+    0.29
+   ],
+   "size": [
+    1.374,
+    2.063,
+    0.58
+   ],
+   "top": 2.06,
+   "levels": [
+    0.06,
+    0.11,
+    0.39,
+    0.67,
+    0.96,
+    1.28,
+    1.66,
+    2.06
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "vintage_grandfather_clock_01": {
+   "tris": 2000,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.3125,
+    0.0,
+    -0.213
+   ],
+   "hi": [
+    0.3125,
+    2.1934,
+    0.213
+   ],
+   "size": [
+    0.625,
+    2.193,
+    0.426
+   ],
+   "top": 2.18,
+   "levels": [
+    0.45,
+    1.54
+   ],
+   "materials": [
+    "M_Atlas_Wood",
+    "M_Glass"
+   ]
+  },
+  "ClassicConsole_01": {
+   "tris": 1600,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.7691,
+    0.0,
+    -0.299
+   ],
+   "hi": [
+    0.7691,
+    0.9501,
+    0.299
+   ],
+   "size": [
+    1.538,
+    0.95,
+    0.598
+   ],
+   "top": 0.95,
+   "levels": [
+    0.93,
+    0.95
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "GreenChair_01": {
+   "tris": 1500,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.3357,
+    0.0,
+    -0.3321
+   ],
+   "hi": [
+    0.3357,
+    1.0583,
+    0.3321
+   ],
+   "size": [
+    0.671,
+    1.058,
+    0.664
+   ],
+   "top": 0.46,
+   "levels": [
+    0.45
+   ],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "side_table_tall_01": {
+   "tris": 900,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.1918,
+    0.0,
+    -0.1918
+   ],
+   "hi": [
+    0.1918,
+    0.7599,
+    0.1918
+   ],
+   "size": [
+    0.384,
+    0.76,
+    0.384
+   ],
+   "top": 0.76,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "small_wooden_table_01": {
+   "tris": 999,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.4581,
+    0.0,
+    -0.22
+   ],
+   "hi": [
+    0.4581,
+    0.5331,
+    0.22
+   ],
+   "size": [
+    0.916,
+    0.533,
+    0.44
+   ],
+   "top": 0.53,
+   "levels": [
+    0.53
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "painted_wooden_bench": {
+   "tris": 630,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.5825,
+    0.0,
+    -0.2483
+   ],
+   "hi": [
+    0.5825,
+    0.8893,
+    0.2483
+   ],
+   "size": [
+    1.165,
+    0.889,
+    0.497
+   ],
+   "top": 0.89,
+   "levels": [
+    0.21,
+    0.65
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "painted_wooden_cabinet": {
+   "tris": 1500,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.5971,
+    0.0,
+    -0.3083
+   ],
+   "hi": [
+    0.5971,
+    1.1819,
+    0.3083
+   ],
+   "size": [
+    1.194,
+    1.182,
+    0.617
+   ],
+   "top": 1.18,
+   "levels": [
+    0.17,
+    0.91,
+    0.92,
+    1.18
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "painted_wooden_cabinet_02": {
+   "tris": 966,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.4985,
+    0.0,
+    -0.3612
+   ],
+   "hi": [
+    0.4985,
+    2.5686,
+    0.3612
+   ],
+   "size": [
+    0.997,
+    2.569,
+    0.722
+   ],
+   "top": 2.57,
+   "levels": [
+    0.48,
+    0.9,
+    0.92,
+    1.17,
+    1.58,
+    1.89,
+    2.19,
+    2.45
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "painted_wooden_chair_01": {
+   "tris": 724,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.2159,
+    0.0,
+    -0.2699
+   ],
+   "hi": [
+    0.2159,
+    0.9565,
+    0.2699
+   ],
+   "size": [
+    0.432,
+    0.956,
+    0.54
+   ],
+   "top": 0.45,
+   "levels": [
+    0.45
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "KnockedChair": {
+   "tris": 724,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.2159,
+    0.0,
+    -0.4859
+   ],
+   "hi": [
+    0.2159,
+    0.5215,
+    0.4859
+   ],
+   "size": [
+    0.432,
+    0.521,
+    0.972
+   ],
+   "top": 0.5,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "electric_stove": {
+   "tris": 1799,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.2507,
+    0.0,
+    -0.3235
+   ],
+   "hi": [
+    0.2507,
+    0.8534,
+    0.3235
+   ],
+   "size": [
+    0.501,
+    0.853,
+    0.647
+   ],
+   "top": 0.85,
+   "levels": [
+    0.11,
+    0.21,
+    0.36,
+    0.83,
+    0.85
+   ],
+   "materials": [
+    "M_Atlas_Utility",
+    "M_Glass"
+   ]
+  },
+  "steel_frame_shelves_01": {
+   "tris": 1200,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.5487,
+    0.0,
+    -0.2511
+   ],
+   "hi": [
+    0.5487,
+    2.1405,
+    0.2511
+   ],
+   "size": [
+    1.097,
+    2.141,
+    0.502
+   ],
+   "top": 2.14,
+   "levels": [
+    0.13,
+    0.64,
+    1.15,
+    1.65,
+    2.13
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "wooden_crate_01": {
+   "tris": 700,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.4117,
+    0.0,
+    -0.203
+   ],
+   "hi": [
+    0.4117,
+    0.3472,
+    0.203
+   ],
+   "size": [
+    0.823,
+    0.347,
+    0.406
+   ],
+   "top": 0.33,
+   "levels": [
+    0.33
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "wooden_crate_02": {
+   "tris": 800,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.584,
+    0.0,
+    -0.2637
+   ],
+   "hi": [
+    0.584,
+    0.4612,
+    0.2637
+   ],
+   "size": [
+    1.168,
+    0.461,
+    0.527
+   ],
+   "top": 0.46,
+   "levels": [
+    0.46
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "barrel_03": {
+   "tris": 900,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.3169,
+    0.0,
+    -0.3193
+   ],
+   "hi": [
+    0.3169,
+    0.9307,
+    0.3193
+   ],
+   "size": [
+    0.634,
+    0.931,
+    0.639
+   ],
+   "top": 0.9,
+   "levels": [
+    0.9
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "portable_generator": {
+   "tris": 4598,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.4076,
+    0.0,
+    -0.282
+   ],
+   "hi": [
+    0.4076,
+    0.5765,
+    0.282
+   ],
+   "size": [
+    0.815,
+    0.576,
+    0.564
+   ],
+   "top": 0.55,
+   "levels": [
+    0.54,
+    0.55
+   ],
+   "materials": [
+    "M_Atlas_Utility",
+    "M_Glass"
+   ]
+  },
+  "metal_jerrycan_green": {
+   "tris": 900,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.1805,
+    0.0,
+    -0.0855
+   ],
+   "hi": [
+    0.1805,
+    0.4999,
+    0.0855
+   ],
+   "size": [
+    0.361,
+    0.5,
+    0.171
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "wooden_bucket_01": {
+   "tris": 450,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.1819,
+    0.0,
+    -0.172
+   ],
+   "hi": [
+    0.1819,
+    0.5526,
+    0.172
+   ],
+   "size": [
+    0.364,
+    0.553,
+    0.344
+   ],
+   "top": 0.02,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "TrashBags": {
+   "tris": 900,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.7045,
+    0.0,
+    -0.3635
+   ],
+   "hi": [
+    0.2629,
+    0.5747,
+    0.2324
+   ],
+   "size": [
+    0.967,
+    0.575,
+    0.596
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "BoxStack": {
+   "tris": 900,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.8321,
+    0.0,
+    -0.2764
+   ],
+   "hi": [
+    0.194,
+    0.6279,
+    0.2841
+   ],
+   "size": [
+    1.026,
+    0.628,
+    0.56
+   ],
+   "top": 0.61,
+   "levels": [
+    0.32
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "BoxFallen": {
+   "tris": 300,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "debris",
+   "lo": [
+    -0.2646,
+    0.0,
+    -0.2927
+   ],
+   "hi": [
+    0.2646,
+    0.4312,
+    0.2927
+   ],
+   "size": [
+    0.529,
+    0.431,
+    0.585
+   ],
+   "top": 0.42,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "throw_pillows_01": {
+   "tris": 700,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.4687,
+    0.0,
+    -0.2253
+   ],
+   "hi": [
+    0.4687,
+    0.4541,
+    0.2253
+   ],
+   "size": [
+    0.937,
+    0.454,
+    0.451
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "vintage_suitcase": {
+   "tris": 900,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.8019,
+    0.0,
+    -0.1131
+   ],
+   "hi": [
+    0.8019,
+    0.5695,
+    0.1131
+   ],
+   "size": [
+    1.604,
+    0.569,
+    0.226
+   ],
+   "top": 0.53,
+   "levels": [
+    0.53
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "mantel_clock_01": {
+   "tris": 1000,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.1711,
+    0.0,
+    -0.0631
+   ],
+   "hi": [
+    0.1711,
+    0.1608,
+    0.0631
+   ],
+   "size": [
+    0.342,
+    0.161,
+    0.126
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Glass"
+   ]
+  },
+  "ceramic_vase_01": {
+   "tris": 300,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.1028,
+    0.0,
+    -0.1028
+   ],
+   "hi": [
+    0.1028,
+    0.4016,
+    0.1028
+   ],
+   "size": [
+    0.206,
+    0.402,
+    0.206
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "ceramic_vase_03": {
+   "tris": 300,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.0561,
+    0.0,
+    -0.0562
+   ],
+   "hi": [
+    0.0561,
+    0.4142,
+    0.0562
+   ],
+   "size": [
+    0.112,
+    0.414,
+    0.112
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "wall_clock": {
+   "tris": 699,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.1601,
+    -0.1607,
+    -0.0
+   ],
+   "hi": [
+    0.1601,
+    0.1607,
+    0.0473
+   ],
+   "size": [
+    0.32,
+    0.321,
+    0.047
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Glass"
+   ]
+  },
+  "power_box_01": {
+   "tris": 1199,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.1725,
+    -0.2514,
+    -0.0
+   ],
+   "hi": [
+    0.1725,
+    0.2514,
+    0.1059
+   ],
+   "size": [
+    0.345,
+    0.503,
+    0.106
+   ],
+   "top": 0.25,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "bench_vice_01": {
+   "tris": 700,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.0996,
+    0.0,
+    -0.1976
+   ],
+   "hi": [
+    0.0996,
+    0.2844,
+    0.1976
+   ],
+   "size": [
+    0.199,
+    0.284,
+    0.395
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "Pans_Stove": {
+   "tris": 949,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.2153,
+    0.0,
+    -0.1457
+   ],
+   "hi": [
+    0.2308,
+    0.1789,
+    0.2589
+   ],
+   "size": [
+    0.446,
+    0.179,
+    0.405
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Settee_Plaid": {
+   "tris": 1728,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.82,
+    0.0,
+    -0.4165
+   ],
+   "hi": [
+    0.82,
+    0.8152,
+    0.3808
+   ],
+   "size": [
+    1.64,
+    0.815,
+    0.797
+   ],
+   "top": 0.81,
+   "levels": [
+    0.31,
+    0.32,
+    0.44,
+    0.45,
+    0.47
+   ],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Wardrobe_Painted": {
+   "tris": 460,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.8,
+    0.0,
+    -0.29
+   ],
+   "hi": [
+    0.8,
+    2.0,
+    0.4615
+   ],
+   "size": [
+    1.6,
+    2.0,
+    0.751
+   ],
+   "top": 2.0,
+   "levels": [
+    0.1,
+    1.92,
+    2.0
+   ],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "CoffeeTable_Glass": {
+   "tris": 408,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.527,
+    0.0,
+    -0.277
+   ],
+   "hi": [
+    0.527,
+    0.408,
+    0.277
+   ],
+   "size": [
+    1.054,
+    0.408,
+    0.554
+   ],
+   "top": 0.41,
+   "levels": [
+    0.12,
+    0.41
+   ],
+   "materials": [
+    "M_Atlas_Wood",
+    "M_Glass"
+   ]
+  },
+  "CoatStand": {
+   "tris": 1100,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.3396,
+    0.0,
+    -0.2831
+   ],
+   "hi": [
+    0.2569,
+    1.8206,
+    0.2831
+   ],
+   "size": [
+    0.597,
+    1.821,
+    0.566
+   ],
+   "top": 0.06,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Wood"
+   ]
+  },
+  "Workbench": {
+   "tris": 708,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -1.0019,
+    0.0,
+    -0.3054
+   ],
+   "hi": [
+    1.0019,
+    1.08,
+    0.3103
+   ],
+   "size": [
+    2.004,
+    1.08,
+    0.616
+   ],
+   "top": 1.07,
+   "levels": [
+    0.21,
+    0.42,
+    0.9
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "KitchenTable": {
+   "tris": 604,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.8,
+    0.0,
+    -0.45
+   ],
+   "hi": [
+    0.8,
+    0.76,
+    0.45
+   ],
+   "size": [
+    1.6,
+    0.76,
+    0.9
+   ],
+   "top": 0.76,
+   "levels": [
+    0.76
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "SinkUnit": {
+   "tris": 624,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.62,
+    0.0,
+    -0.3
+   ],
+   "hi": [
+    0.62,
+    1.1304,
+    0.31
+   ],
+   "size": [
+    1.24,
+    1.13,
+    0.61
+   ],
+   "top": 0.95,
+   "levels": [
+    0.08,
+    0.77,
+    0.86,
+    0.9,
+    0.95
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "Fridge_Retro": {
+   "tris": 716,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.36,
+    0.0,
+    -0.34
+   ],
+   "hi": [
+    0.36,
+    1.545,
+    0.407
+   ],
+   "size": [
+    0.72,
+    1.545,
+    0.747
+   ],
+   "top": 1.55,
+   "levels": [
+    0.1,
+    1.53,
+    1.55
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "ClawfootTub": {
+   "tris": 1124,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.84,
+    0.0,
+    -0.38
+   ],
+   "hi": [
+    0.84,
+    0.8109,
+    0.38
+   ],
+   "size": [
+    1.68,
+    0.811,
+    0.76
+   ],
+   "top": 0.22,
+   "levels": [
+    0.2
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "Toilet_Old": {
+   "tris": 686,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.23,
+    0.0,
+    -0.31
+   ],
+   "hi": [
+    0.23,
+    0.85,
+    0.3132
+   ],
+   "size": [
+    0.46,
+    0.85,
+    0.623
+   ],
+   "top": 0.85,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "PedestalSink": {
+   "tris": 636,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.3,
+    0.0,
+    -0.037
+   ],
+   "hi": [
+    0.3,
+    0.975,
+    0.425
+   ],
+   "size": [
+    0.6,
+    0.975,
+    0.462
+   ],
+   "top": 0.87,
+   "levels": [
+    0.86
+   ],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "MirrorCabinet": {
+   "tris": 144,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.3,
+    -0.345,
+    -0.0
+   ],
+   "hi": [
+    0.3,
+    0.325,
+    0.17
+   ],
+   "size": [
+    0.6,
+    0.67,
+    0.17
+   ],
+   "top": 0.32,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility",
+    "M_Glass"
+   ]
+  },
+  "Towel_Rail": {
+   "tris": 456,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.312,
+    -0.4155,
+    -0.0
+   ],
+   "hi": [
+    0.312,
+    0.0159,
+    0.1029
+   ],
+   "size": [
+    0.624,
+    0.431,
+    0.103
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Curtains_Window": {
+   "tris": 848,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -1.115,
+    -1.5507,
+    0.0567
+   ],
+   "hi": [
+    1.115,
+    0.022,
+    0.1233
+   ],
+   "size": [
+    2.23,
+    1.573,
+    0.067
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Bed_Blanket": {
+   "tris": 776,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.6559,
+    -0.2726,
+    -0.6009
+   ],
+   "hi": [
+    0.6559,
+    0.0386,
+    0.5407
+   ],
+   "size": [
+    1.312,
+    0.311,
+    1.142
+   ],
+   "top": 0.03,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Soft"
+   ]
+  },
+  "Speaker": {
+   "tris": 56,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.16,
+    0.0,
+    -0.14
+   ],
+   "hi": [
+    0.16,
+    0.62,
+    0.145
+   ],
+   "size": [
+    0.32,
+    0.62,
+    0.285
+   ],
+   "top": 0.62,
+   "levels": [
+    0.62
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "PlantPot": {
+   "tris": 1672,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.5135,
+    0.0,
+    -0.6521
+   ],
+   "hi": [
+    0.5135,
+    1.3548,
+    0.6521
+   ],
+   "size": [
+    1.027,
+    1.355,
+    1.304
+   ],
+   "top": 1.25,
+   "levels": [
+    0.53
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "UmbrellaStand": {
+   "tris": 644,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "prop",
+   "lo": [
+    -0.12,
+    0.0,
+    -0.2386
+   ],
+   "hi": [
+    0.12,
+    0.9497,
+    0.1178
+   ],
+   "size": [
+    0.24,
+    0.95,
+    0.356
+   ],
+   "top": 0.06,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Shoes_Pair": {
+   "tris": 472,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "debris",
+   "lo": [
+    -0.1437,
+    -0.0925,
+    -0.1485
+   ],
+   "hi": [
+    0.1384,
+    0.2055,
+    0.1485
+   ],
+   "size": [
+    0.282,
+    0.298,
+    0.297
+   ],
+   "top": 0.01,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Picture_Oval": {
+   "tris": 496,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.2275,
+    -0.2941,
+    -0.0
+   ],
+   "hi": [
+    0.2275,
+    0.2941,
+    0.0476
+   ],
+   "size": [
+    0.455,
+    0.588,
+    0.048
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Picture_Wide": {
+   "tris": 172,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.45,
+    -0.24,
+    -0.0
+   ],
+   "hi": [
+    0.45,
+    0.24,
+    0.035
+   ],
+   "size": [
+    0.9,
+    0.48,
+    0.035
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Picture_Landscape": {
+   "tris": 900,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.3015,
+    -0.2321,
+    -0.0
+   ],
+   "hi": [
+    0.3015,
+    0.2321,
+    0.02
+   ],
+   "size": [
+    0.603,
+    0.464,
+    0.02
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Picture_Hall": {
+   "tris": 900,
+   "pivot": "wall",
+   "collider": "none",
+   "kind": "wall",
+   "lo": [
+    -0.3759,
+    -0.25,
+    -0.0
+   ],
+   "hi": [
+    0.3759,
+    0.25,
+    0.0329
+   ],
+   "size": [
+    0.752,
+    0.5,
+    0.033
+   ],
+   "top": 0.25,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small",
+    "M_Glass"
+   ]
+  },
+  "Clutter_CoffeeTable": {
+   "tris": 768,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.3553,
+    0.12,
+    -0.1536
+   ],
+   "hi": [
+    0.4061,
+    0.708,
+    0.2475
+   ],
+   "size": [
+    0.761,
+    0.588,
+    0.401
+   ],
+   "top": 0.42,
+   "levels": [
+    0.13
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Clutter_SideTable": {
+   "tris": 188,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.3,
+    0.0,
+    -0.3
+   ],
+   "hi": [
+    0.3,
+    0.126,
+    0.3
+   ],
+   "size": [
+    0.6,
+    0.126,
+    0.6
+   ],
+   "top": 0.13,
+   "levels": [
+    0.09
+   ],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "MantelClutter": {
+   "tris": 388,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.825,
+    0.0,
+    -0.08
+   ],
+   "hi": [
+    0.795,
+    0.29,
+    0.0428
+   ],
+   "size": [
+    1.62,
+    0.29,
+    0.123
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Dishes_Stack": {
+   "tris": 572,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.365,
+    0.0,
+    -0.1141
+   ],
+   "hi": [
+    0.24,
+    0.09,
+    0.1141
+   ],
+   "size": [
+    0.605,
+    0.09,
+    0.228
+   ],
+   "top": 0.01,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Jars_Shelf": {
+   "tris": 564,
+   "pivot": "top",
+   "collider": "none",
+   "kind": "prop",
+   "lo": [
+    -0.4473,
+    0.0,
+    -0.1183
+   ],
+   "hi": [
+    0.4148,
+    0.1948,
+    0.1167
+   ],
+   "size": [
+    0.862,
+    0.195,
+    0.235
+   ],
+   "top": 0.18,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
+  "Debris_Paper": {
+   "tris": 120,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "debris",
+   "lo": [
+    -0.7181,
+    0.003,
+    -0.5463
+   ],
+   "hi": [
+    0.6645,
+    0.0406,
+    0.6448
+   ],
+   "size": [
+    1.383,
+    0.038,
+    1.191
+   ],
+   "top": 0.03,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Debris_PaperFloat": {
+   "tris": 128,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "debris",
+   "lo": [
+    -1.1211,
+    -0.0501,
+    -0.8653
+   ],
+   "hi": [
+    0.4637,
+    0.06,
+    0.9477
+   ],
+   "size": [
+    1.585,
+    0.11,
+    1.813
+   ],
+   "top": 0.03,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Debris_Plaster": {
+   "tris": 236,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "debris",
+   "lo": [
+    -0.3239,
+    -0.0178,
+    -0.3263
+   ],
+   "hi": [
+    0.5349,
+    0.0518,
+    0.3262
+   ],
+   "size": [
+    0.859,
+    0.07,
+    0.653
+   ],
+   "top": 0.03,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  },
+  "Debris_Dishes": {
+   "tris": 584,
+   "pivot": "floor",
+   "collider": "none",
+   "kind": "debris",
+   "lo": [
+    -0.5005,
+    -0.0024,
+    -0.3267
+   ],
+   "hi": [
+    0.4184,
+    0.078,
+    0.3206
+   ],
+   "size": [
+    0.919,
+    0.08,
+    0.647
+   ],
+   "top": null,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Small"
+   ]
+  }
+ }
+}
