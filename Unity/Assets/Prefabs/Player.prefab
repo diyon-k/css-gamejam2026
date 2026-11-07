@@ -33,7 +33,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 545076073471970129}
+  - {fileID: 5671123119074197520}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &2179215392067340665
@@ -86,9 +86,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf6514ec69217f849ac6afd0abb7f137, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Player.PlayerController
-  cameraPivot: {fileID: 545076073471970129}
+  cameraPivot: {fileID: 5671123119074197520}
   walkSpeed: 3.5
-  sprintSpeed: 5.5
   acceleration: 20
   gravity: -20
   mouseSensitivity: 0.1
@@ -201,6 +200,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8414602620126500687}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2396647930659380930
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5671123119074197520}
+  m_Layer: 0
+  m_Name: CameraPivot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5671123119074197520
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2396647930659380930}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.65, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 545076073471970129}
+  m_Father: {fileID: 1696891197522388200}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6233756666962240348
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,8 +243,9 @@ GameObject:
   - component: {fileID: 545076073471970129}
   - component: {fileID: 5087806078031823911}
   - component: {fileID: 7729127041846999074}
+  - component: {fileID: 4057617299083055658}
   m_Layer: 0
-  m_Name: CameraPivot
+  m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -228,12 +260,12 @@ Transform:
   m_GameObject: {fileID: 6233756666962240348}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.65, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4944767842320866942}
-  m_Father: {fileID: 1696891197522388200}
+  m_Father: {fileID: 5671123119074197520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &5087806078031823911
 Camera:
@@ -294,6 +326,49 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6233756666962240348}
   m_Enabled: 1
+--- !u!114 &4057617299083055658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6233756666962240348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe0801c9cc1ab3a48bd08579dcdbe3a2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Player.CameraFeel
+  target: {fileID: 545076073471970129}
+  player: {fileID: 4229830482227302727}
+  gun: {fileID: 9013984708963151249}
+  viewModel: {fileID: 4944767842320866942}
+  intensity: 1
+  maxDeltaTime: 0.1
+  recoilPitch: 1.4
+  recoilYaw: 0.4
+  recoilRoll: 0.8
+  recoilPushBack: 0.015
+  recoilMaxPitch: 5
+  recoilFrequency: 3.5
+  recoilDamping: 0.7
+  pushBackFrequency: 5
+  pushBackDamping: 0.85
+  reloadPitch: 2.5
+  reloadRoll: -2
+  reloadDrop: 0.02
+  reloadEaseIn: 0.15
+  reloadEaseOut: 0.25
+  bobReferenceSpeed: 3.5
+  bobStepLength: 1.6
+  bobFadeSeconds: 0.25
+  bobVertical: 0.022
+  bobLateral: 0.015
+  bobPitch: 0.3
+  bobRoll: 0.5
+  strafeTilt: 1
+  strafeTiltSharpness: 8
+  viewModelBobLateral: -0.004
+  viewModelBobVertical: -0.004
 --- !u!1001 &6340606648422759891
 PrefabInstance:
   m_ObjectHideFlags: 0
