@@ -1,6 +1,7 @@
 using System;
 using Blink.Player;
 using Blink.TimeSkip;
+using Blink.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -23,6 +24,10 @@ namespace Blink.Combat
         [Tooltip("Minimum world seconds between shots.")]
         [SerializeField] float fireInterval = 0.25f;
         [SerializeField] LayerMask hitMask = ~0;
+
+        [Header("Noise (audible range in metres)")]
+        [SerializeField, Min(0f)] float shotLoudness = 35f;
+        [SerializeField, Min(0f)] float dryFireLoudness = 4f;
 
         [Header("Ammo")]
         [SerializeField, Min(1)] int magazineSize = 8;
@@ -101,6 +106,7 @@ namespace Blink.Combat
             if (AmmoInMagazine <= 0)
             {
                 DryFired?.Invoke();
+                Noise.Make(transform.position, dryFireLoudness);
                 TryStartReload();
                 return;
             }
@@ -114,6 +120,7 @@ namespace Blink.Combat
                 target.TakeDamage(damage, info.point, ray.direction);
 
             Fired?.Invoke(hit, info);
+            Noise.Make(transform.position, shotLoudness);
             if (AmmoInMagazine == 0) TryStartReload();
         }
 

@@ -1,5 +1,6 @@
 using Blink.Combat;
 using Blink.TimeSkip;
+using Blink.World;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,6 +25,11 @@ namespace Blink.Player
         [SerializeField] float acceleration = 20f;
         [SerializeField] float gravity = -20f;
 
+        [Header("Noise")]
+        [Tooltip("Audible range in metres of each sprinting footstep. Walking is silent.")]
+        [SerializeField, Min(0f)] float sprintStepLoudness = 8f;
+        [SerializeField, Min(0.05f)] float sprintStepInterval = 0.4f;
+
         [Header("Look")]
         [SerializeField] float mouseSensitivity = 0.1f;
         [SerializeField] float gamepadSensitivity = 180f;
@@ -39,6 +45,7 @@ namespace Blink.Player
         InputAction _move, _look, _sprint;
         Vector3 _velocity;
         float _pitch;
+        float _stepTimer;
 
         void Awake()
         {
@@ -119,6 +126,12 @@ namespace Blink.Player
             float vertical = _controller.isGrounded ? -2f : _velocity.y + gravity * dt;
             _velocity = new Vector3(horizontal.x, vertical, horizontal.z);
             _controller.Move(_velocity * dt);
+
+            if (IsSprinting && (_stepTimer -= dt) <= 0f)
+            {
+                Noise.Make(transform.position, sprintStepLoudness);
+                _stepTimer = sprintStepInterval;
+            }
         }
 
         void HandleCursor()
