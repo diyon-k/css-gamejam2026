@@ -7,9 +7,9 @@ using UnityEngine.SceneManagement;
 namespace Blink.EditorTools
 {
     /// <summary>
-    /// Builds low-poly placeholder art: a rigged humanoid player, a rigged humanoid zombie and a pistol.
-    /// Both characters share one Unity Humanoid skeleton in T-pose, so any humanoid animation
-    /// (e.g. Mixamo clips imported as Humanoid) retargets onto them.
+    /// Builds low-poly placeholder art: a rigged humanoid zombie and a pistol.
+    /// The zombie uses a Unity Humanoid skeleton in T-pose, so any humanoid animation
+    /// (e.g. Mixamo clips imported as Humanoid) retargets onto it.
     /// Re-run from the menu any time; it overwrites the generated assets.
     /// </summary>
     public static class LowPolyPlaceholderGenerator
@@ -30,15 +30,6 @@ namespace Blink.EditorTools
             EnsureFolder(MatDir);
             EnsureFolder(PrefabDir);
 
-            var player = BuildHumanoid("Player", new HumanoidStyle
-            {
-                Skin = new Color(0.85f, 0.68f, 0.55f),
-                Top = new Color(0.25f, 0.30f, 0.38f),
-                Bottom = new Color(0.18f, 0.18f, 0.20f),
-                Shoes = new Color(0.10f, 0.08f, 0.07f),
-                Eyes = new Color(0.05f, 0.05f, 0.05f),
-            });
-
             var zombie = BuildHumanoid("Zombie", new HumanoidStyle
             {
                 Skin = new Color(0.45f, 0.55f, 0.38f),
@@ -55,7 +46,7 @@ namespace Blink.EditorTools
 
             var pistol = BuildPistol();
 
-            BuildPreviewScene(player, zombie, pistol);
+            BuildPreviewScene(zombie, pistol);
             AssetDatabase.SaveAssets();
             Debug.Log($"[BLINK] Low-poly placeholders generated in {RootDir}; preview scene at {PreviewScenePath}");
         }
@@ -252,7 +243,7 @@ namespace Blink.EditorTools
 
         // ---------------------------------------------------------------- preview scene
 
-        static void BuildPreviewScene(GameObject player, GameObject zombie, GameObject pistol)
+        static void BuildPreviewScene(GameObject zombie, GameObject pistol)
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Additive);
 
@@ -261,8 +252,7 @@ namespace Blink.EditorTools
             SceneManager.MoveGameObjectToScene(ground, scene);
             ground.GetComponent<MeshRenderer>().sharedMaterial = CreateMaterial("Preview_Ground", new Color(0.32f, 0.32f, 0.30f));
 
-            Place(player, scene, new Vector3(-1.1f, 0f, 0f), Quaternion.Euler(0f, 180f, 0f));
-            Place(zombie, scene, new Vector3(1.1f, 0f, 0f), Quaternion.Euler(0f, 180f, 0f));
+            Place(zombie, scene, new Vector3(0.8f, 0f, 0f), Quaternion.Euler(0f, 180f, 0f));
             var gun = Place(pistol, scene, new Vector3(0f, 1.2f, -1.6f), Quaternion.Euler(0f, 90f, 0f));
             gun.transform.localScale = Vector3.one * 3f; // enlarged so it reads in the preview shot
 
