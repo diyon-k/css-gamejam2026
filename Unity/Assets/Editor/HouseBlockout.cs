@@ -90,7 +90,9 @@ public static class HouseBlockout
         Wall("Wall_BedroomEast", a1, new Vector3(6, y, 5), new Vector3(6, y, 10), H, plaster);
         Wall("Wall_LandingSouth", a2, new Vector3(0, y, 2), new Vector3(15, y, 2), H, plaster);
 
-        Box("Objective_JammedDoor", a1, new Vector3(3.3f, y + DoorTop / 2, 5), new Vector3(1.4f, DoorTop, 0.08f), wood, new Vector3(0, 0, 1.5f));
+        var jammed = Box("Objective_JammedDoor", a1, new Vector3(3.3f, y + DoorTop / 2, 5), new Vector3(1.4f, DoorTop, 0.08f), wood, new Vector3(0, 0, 1.5f));
+        jammed.isStatic = false; // it swings open
+        jammed.AddComponent<Blink.World.JammedDoor>();
 
         // Boarded west window (opening at z 7..8.6, 1..2.2 above floor).
         for (int i = 0; i < 4; i++)

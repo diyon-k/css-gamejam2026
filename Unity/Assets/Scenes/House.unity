@@ -23119,12 +23119,13 @@ GameObject:
   - component: {fileID: 1649439928}
   - component: {fileID: 1649439927}
   - component: {fileID: 1649439926}
+  - component: {fileID: 1649439929}
   m_Layer: 0
   m_Name: Objective_JammedDoor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 2147483647
+  m_StaticEditorFlags: 0
   m_IsActive: 1
 --- !u!4 &1649439925
 Transform:
@@ -23219,6 +23220,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1649439924}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1649439929
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1649439924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2769b1feeda8d0a4e94866b8e2bd2fe4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.World.JammedDoor
+  forceTimer:
+    duration: 4
+  reach: 2.5
+  openAngle: 100
 --- !u!1 &1654777486
 GameObject:
   m_ObjectHideFlags: 0
