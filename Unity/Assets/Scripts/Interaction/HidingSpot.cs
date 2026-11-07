@@ -9,7 +9,9 @@ namespace Blink.Interaction
     /// <summary>
     /// A wardrobe / cupboard you can climb into. Interact: the doors swing open, the player hops in in an arc,
     /// turns to face out and the doors pull to, left ajar to peek through (mouse look, clamped). Interact or Jump
-    /// hops back out. While someone is inside, <see cref="Occupant"/> is set and zombies can't see the player.
+    /// hops back out. While someone is inside, <see cref="Occupant"/> is set and zombies can't see the player,
+    /// except one that watched you climb in: it comes over and <see cref="DragOut"/>s you into the grab.
+    /// No doors (under a bed) works too: you just slide in and out.
     /// Put it on the furniture root; local +z faces out of the doors, local y 0 is the floor.
     /// </summary>
     public sealed class HidingSpot : MonoBehaviour, IInteractable
@@ -29,9 +31,15 @@ namespace Blink.Interaction
         public float maxYaw = 60f;
         [Tooltip("Noise range (metres) of the doors opening as you get in or out.")]
         public float doorLoudness = 4f;
+        [Tooltip("The gap you peek through once you're in, as a share of the screen (width, height). The rest goes dark. " +
+                 "Tall and thin for a door ajar, wide and low under a bed. Zero = no overlay.")]
+        public Vector2 peekGap = new Vector2(0.14f, 1f);
 
         /// <summary>The spot the player is hiding in, or null. Zombies treat the player as unseen while set.</summary>
         public static HidingSpot Occupant { get; private set; }
+
+        /// <summary>World floor point in front of the spot: where you land getting out, and where a zombie stands to drag you out.</summary>
+        public Vector3 ExitPoint => transform.TransformPoint(exit);
 
         Openable[] _doors;
         PlayerController _player;
@@ -40,6 +48,8 @@ namespace Blink.Interaction
         Coroutine _move;
         InputAction _look, _interact, _jump;
         float _eyeAboveBody, _bodyAboveFloor;
+        float _dark; // 0..1 overlay fade
+        static Texture2D _edge;
 
         void Awake() => _doors = GetComponentsInChildren<Openable>();
 
@@ -110,6 +120,8 @@ namespace Blink.Interaction
 
         void Update()
         {
+            // Dark from the moment you start getting in until you're out: also hides the camera passing through baked doors.
+            _dark = Mathf.MoveTowards(_dark, Occupant == this ? 1f : 0f, Time.unscaledDeltaTime / 0.3f);
             if (Occupant != this || _move != null) return;
             if ((_interact != null && _interact.WasPressedThisFrame()) || (_jump != null && _jump.WasPressedThisFrame()))
             {
@@ -158,6 +170,19 @@ namespace Blink.Interaction
             _move = null;
         }
 
+        /// <summary>Yanked out by <paramref name="by"/>: doors fly open, you're on your feet at the exit facing it. Instant.</summary>
+        public void DragOut(Vector3 by)
+        {
+            if (Occupant != this) return;
+            if (_move != null) StopCoroutine(_move);
+            SetDoors(true);
+            Vector3 face = by - ExitPoint;
+            face.y = 0f;
+            _player.transform.SetPositionAndRotation(ExitPoint + Vector3.up * _bodyAboveFloor,
+                face.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(face) : _player.transform.rotation);
+            Release();
+        }
+
         // Killed inside somehow: hand the body back to the respawn flow, don't leave zombies blind.
         void Abandon()
         {
@@ -168,6 +193,46 @@ namespace Blink.Interaction
         void OnDisable()
         {
             if (Occupant == this) Abandon();
+        }
+
+        /// <summary>Black all round the peek gap, with soft edges. IMGUI like BlinkEyelids, so no Canvas.</summary>
+        void OnGUI()
+        {
+            if (_dark <= 0f || peekGap.x <= 0f || peekGap.y <= 0f || Event.current.type != EventType.Repaint) return;
+            if (_edge == null)
+            {
+                _edge = new Texture2D(32, 1, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+                for (int i = 0; i < 32; i++) _edge.SetPixel(i, 0, new Color(0f, 0f, 0f, 1f - Mathf.SmoothStep(0f, 1f, i / 31f)));
+                _edge.Apply();
+            }
+            float w = Screen.width, h = Screen.height;
+            float gw = w * Mathf.Min(peekGap.x, 1f), gh = h * Mathf.Min(peekGap.y, 1f);
+            float x0 = (w - gw) * 0.5f, x1 = x0 + gw;
+            // A low gap (under a bed) sits at the bottom of the screen; a tall one is centred.
+            float y0 = peekGap.y >= 1f ? 0f : h * 0.62f - gh * 0.5f, y1 = y0 + gh;
+            float soft = Mathf.Min(gw, gh) * 0.35f;
+
+            var old = GUI.color;
+            var white = Texture2D.whiteTexture;
+            GUI.color = new Color(0f, 0f, 0f, _dark);
+            GUI.DrawTexture(new Rect(0f, 0f, x0, h), white);
+            GUI.DrawTexture(new Rect(x1, 0f, w - x1, h), white);
+            GUI.DrawTexture(new Rect(x0, 0f, gw, y0), white);
+            GUI.DrawTexture(new Rect(x0, y1, gw, h - y1), white);
+            GUI.color = new Color(1f, 1f, 1f, _dark);
+            // Soft inner edges: the texture fades from black (u 0) to clear (u 1).
+            GUI.DrawTextureWithTexCoords(new Rect(x0, y0, soft, gh), _edge, new Rect(0f, 0f, 1f, 1f));
+            GUI.DrawTextureWithTexCoords(new Rect(x1 - soft, y0, soft, gh), _edge, new Rect(1f, 0f, -1f, 1f));
+            if (y0 > 0f)
+            {
+                GUIUtility.RotateAroundPivot(90f, new Vector2(x0, y0));
+                GUI.DrawTexture(new Rect(x0, y0 - gw, soft, gw), _edge);
+                GUI.matrix = Matrix4x4.identity;
+                GUIUtility.RotateAroundPivot(-90f, new Vector2(x0, y1));
+                GUI.DrawTexture(new Rect(x0, y1, soft, gw), _edge);
+                GUI.matrix = Matrix4x4.identity;
+            }
+            GUI.color = old;
         }
 
         void OnDrawGizmosSelected()

@@ -14,6 +14,8 @@ namespace Blink.Mobs
     /// - Loses sight for <see cref="loseSightTime"/> => walks to where it last saw you and searches.
     /// - Hears a <see cref="Noise"/> within range (walking distance, so walls muffle it) while it can't
     ///   see you => walks over to the noise and searches. Noise can lure it off a chase.
+    /// - You hide (<see cref="Interaction.HidingSpot"/>) => blind to you, searches where it last saw you. Unless it was
+    ///   watching as you got in: then it walks to the spot and drags you out into the grab.
     /// - Search over => back to the nearest waypoint. No patrol route => stands guard (Idle).
     /// Attacks in range, dies when its Health runs out.
     /// On a blink skip it jumps along its current navmesh path by speed x seconds x skipDistanceMultiplier,
@@ -157,6 +159,8 @@ namespace Blink.Mobs
         float _senseTimer;
         float _lostTimer;
         Vector3 _lastSeen;
+        /// <summary>The hiding spot it watched you climb into, or null.</summary>
+        Interaction.HidingSpot _hidingIn;
         /// <summary>Pause at a waypoint, or search time at an investigated spot. Counts while the agent is stopped.</summary>
         float _waitTimer;
 
@@ -264,11 +268,16 @@ namespace Blink.Mobs
             _attackCooldown -= dt;
             bool targetAlive = TargetAlive();
 
+            var hide = Interaction.HidingSpot.Occupant;
+            _hidingIn = KnownHidingSpot(hide, _hidingIn, _seesTarget && targetAlive);
             if (!targetAlive) _seesTarget = false;
-            else if (Interaction.HidingSpot.Occupant != null)
+            else if (hide != null)
             {
-                _seesTarget = false;
-                _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
+                if (_hidingIn != hide)
+                {
+                    _seesTarget = false;
+                    _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
+                }
             }
             else if ((_senseTimer -= dt) <= 0f)
             {
@@ -286,7 +295,7 @@ namespace Blink.Mobs
             bool hunting = CurrentState is State.Chase or State.Attack;
             bool tracking = targetAlive && (_seesTarget || (hunting && _lostTimer > 0f));
 
-            if (tracking && FlatDistanceToTarget() <= attackRange)
+            if (tracking && DistanceToPrey() <= attackRange)
             {
                 SetState(State.Attack);
                 _agent.isStopped = true;
@@ -301,7 +310,7 @@ namespace Blink.Mobs
                 _agent.isStopped = false;
                 if ((_repathTimer -= dt) <= 0f)
                 {
-                    _agent.SetDestination(target.position);
+                    _agent.SetDestination(PreyPosition);
                     _repathTimer = repathInterval;
                 }
             }
@@ -549,7 +558,7 @@ namespace Blink.Mobs
             bool hunting = CurrentState is State.Chase or State.Attack;
             if (hunting && !TargetAlive()) return;
 
-            if (hunting && FlatDistanceToTarget() <= attackRange)
+            if (hunting && DistanceToPrey() <= attackRange)
             {
                 if (_attackCooldown <= 0f) Attack(grabbed: true);
                 return;
@@ -561,7 +570,7 @@ namespace Blink.Mobs
                 return;
             }
 
-            Vector3 destination = hunting ? target.position : _agent.destination;
+            Vector3 destination = hunting ? PreyPosition : _agent.destination;
             _skipPath ??= new NavMeshPath();
             if (!NavMesh.CalculatePath(transform.position, destination, _agent.areaMask, _skipPath)) return;
             if (_skipPath.status == NavMeshPathStatus.PathInvalid) return;
@@ -585,7 +594,7 @@ namespace Blink.Mobs
             _repathTimer = repathInterval;
 
             // Closed the gap during your blink: it grabs you as your eyes open.
-            if (hunting && _attackCooldown <= 0f && FlatDistanceToTarget() <= attackRange) Attack(grabbed: true);
+            if (hunting && _attackCooldown <= 0f && DistanceToPrey() <= attackRange) Attack(grabbed: true);
         }
 
         /// <summary>Moves the animation on by the skipped time so the pose jumps with the body.</summary>
@@ -605,6 +614,14 @@ namespace Blink.Mobs
             if (timeSkip != null && timeSkip.IsFastForwarding)
             {
                 timeSkip.InterruptFastForward();
+                grabbed = true;
+            }
+
+            // Found you hiding: haul you out and grab you.
+            if (_hidingIn != null && Interaction.HidingSpot.Occupant == _hidingIn)
+            {
+                _hidingIn.DragOut(transform.position);
+                _hidingIn = null;
                 grabbed = true;
             }
 
@@ -855,6 +872,24 @@ namespace Blink.Mobs
             if (flat.sqrMagnitude < 0.0001f) return;
             var goal = Quaternion.LookRotation(flat);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, goal, turnSpeed * deltaTime);
+        }
+
+        /// <summary>
+        /// The hiding spot it knows you're in: the one it was watching you as you got into (its sight is frozen while
+        /// you hide, so <paramref name="sawYou"/> stays true), else none. Cleared once you're out.
+        /// </summary>
+        public static Interaction.HidingSpot KnownHidingSpot(Interaction.HidingSpot occupant, Interaction.HidingSpot known, bool sawYou) =>
+            occupant != null && (sawYou || known == occupant) ? occupant : null;
+
+        /// <summary>Where it heads for you: the front of the hiding spot it saw you get into, else you.</summary>
+        Vector3 PreyPosition => _hidingIn != null ? _hidingIn.ExitPoint : target.position;
+
+        float DistanceToPrey()
+        {
+            if (_hidingIn == null) return FlatDistanceToTarget();
+            Vector3 delta = _hidingIn.ExitPoint - transform.position;
+            delta.y = 0f;
+            return delta.magnitude;
         }
 
         float FlatDistanceToTarget()
