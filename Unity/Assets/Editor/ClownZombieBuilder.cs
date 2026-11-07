@@ -28,10 +28,8 @@ namespace Blink.EditorTools
         const string PrefabPath = "Assets/Prefabs/Zombie.prefab";
         const string ModelChildName = "WhiteClown";
         const string EyeName = "GlowEye";
-        const string EyeLightName = "GlowEyeLight";
         static readonly Color EyeColor = new Color(1f, 0.02f, 0.01f) * 16f; // HDR so Bloom catches it hard; much higher burns out to white
         const float EyeDiameter = 0.034f; // metres
-        const float EyeLightIntensity = 0.375f, EyeLightRange = 2.5f; // red spill on the face and nearby walls
 
         [MenuItem("BLINK/Zombies/Build White Clown Zombie")]
         public static void Build()
@@ -246,24 +244,6 @@ namespace Blink.EditorTools
                 r.receiveShadows = false;
                 r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
             }
-
-            // One shadowless red point light just in front of the eyes, so they light up their surroundings.
-            if (!bones.TryGetValue("Head", out var head) || !bones.TryGetValue("LeftEye", out var le)
-                || !bones.TryGetValue("RightEye", out var re)) return;
-            var oldLight = head.Find(EyeLightName);
-            if (oldLight != null) Object.DestroyImmediate(oldLight.gameObject);
-            var lightGo = new GameObject(EyeLightName, typeof(Light));
-            lightGo.layer = head.gameObject.layer;
-            lightGo.transform.SetParent(head, false);
-            var mid = (le.position + re.position) * 0.5f;
-            lightGo.transform.position = mid + head.root.forward * 0.06f;
-            var light = lightGo.GetComponent<Light>();
-            light.type = LightType.Point;
-            light.color = new Color(1f, 0.05f, 0.03f);
-            light.intensity = EyeLightIntensity;
-            light.range = EyeLightRange;
-            light.shadows = LightShadows.None;
-            light.renderMode = LightRenderMode.ForcePixel;
         }
 
         /// <summary>Human bone name (e.g. "LeftUpperArm") to the transform it maps to under modelRoot.</summary>
