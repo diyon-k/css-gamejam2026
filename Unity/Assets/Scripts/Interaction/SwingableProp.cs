@@ -35,13 +35,13 @@ namespace Blink.Interaction
         [Tooltip("Barely hurts: these knock zombies away rather than kill them.")]
         [SerializeField, Min(0f)] float damage = 8f;
         [Tooltip("Speed (m/s) a hit gives every limb, flat along your view.")]
-        [SerializeField, Min(0f)] float launchSpeed = 2.5f;
+        [SerializeField, Min(0f)] float launchSpeed = 1.25f;
         [Tooltip("Upward speed (m/s) on top, so it flies instead of sliding.")]
-        [SerializeField, Min(0f)] float launchLift = 1.125f;
+        [SerializeField, Min(0f)] float launchLift = 0.5625f;
         [Tooltip("Sideways speed (m/s) along the swing (the chop sweeps right to left).")]
-        [SerializeField] float launchSideways = 0.625f;
+        [SerializeField] float launchSideways = 0.3125f;
         [Tooltip("World seconds a zombie lies stunned before getting back up (longer if it's still tumbling).")]
-        [SerializeField, Min(0f)] float stunSeconds = 2.5f;
+        [SerializeField, Min(0f)] float stunSeconds = 3.5f;
 
         [Header("Sound (empty = the axe's)")]
         [SerializeField] SoundCue swingCue;
