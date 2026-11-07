@@ -4,13 +4,14 @@ using Blink.Detection;
 using Blink.Effects;
 using Blink.Interaction;
 using Blink.TimeSkip;
+using Blink.UI;
 using UnityEngine;
 
 namespace Blink.Player
 {
     /// <summary>
-    /// Game start. Black screen with "BLINK to begin" and the world frozen. The first blink (or Space)
-    /// slowly opens the eyelids on the bedroom while the player sits up from lying on the bed, then hands
+    /// Game start. Black screen with "BLINK to begin" and the world frozen. The first webcam blink (or
+    /// eyes-shut) slowly opens the eyelids on the bedroom while the player sits up from lying on the bed, then hands
     /// over control and starts world time. Lives on GameSystems next to <see cref="BlinkEyelids"/>.
     ///
     /// Also the respawn: when the player dies they slump to the floor as the screen fades to black, then
@@ -34,6 +35,11 @@ namespace Blink.Player
         [Tooltip("Camera offset while lying down, in the player's local space (e.g. down and sideways onto the mattress).")]
         [SerializeField] Vector3 lyingOffset = new(0f, -0.9f, 0f);
         [SerializeField] string prompt = "BLINK to begin";
+        [Tooltip("Large title above a one-line prompt. A two-line prompt uses its first line as the heading instead.")]
+        [SerializeField] string title = "BLINK";
+        [Tooltip("Real seconds for the prompt screen to fade in, and to fade out once you blink.")]
+        [SerializeField, Min(0.01f)] float promptFadeIn = 1.4f;
+        [SerializeField, Min(0.01f)] float promptFadeOut = 0.8f;
 
         [Header("Death")]
         [Tooltip("Real seconds from dying to fully black.")]
@@ -51,7 +57,7 @@ namespace Blink.Player
         Quaternion _camRot;
         BlinkDetector _detector;
         float _startedAt = -1f; // -1 = still waiting for the first blink
-        GUIStyle _style;
+        float _promptAt; // real time the current prompt screen appeared
         Health _health;
         Inventory _inventory;
         Vector3 _bedPos, _diedPos;
@@ -81,6 +87,7 @@ namespace Blink.Player
         void Sleep()
         {
             _startedAt = -1f;
+            _promptAt = Time.unscaledTime;
             enabled = true;
             Time.timeScale = 0f;
             TimeSkipController.Locked = true;
@@ -191,19 +198,22 @@ namespace Blink.Player
 
         void OnGUI()
         {
-            if (_startedAt >= 0f || Event.current.type != EventType.Repaint) return;
+            if (Event.current.type != EventType.Repaint || _diedAt >= 0f) return;
+            float now = Time.unscaledTime;
+            float alpha = _startedAt < 0f
+                ? BlinkTheme.EaseInOut((now - _promptAt) / promptFadeIn)
+                : 1f - BlinkTheme.EaseInOut((now - _startedAt) / promptFadeOut);
+            if (alpha <= 0f) return;
             GUI.depth = -1001; // above the eyelids (-1000)
-            _style ??= new GUIStyle(GUI.skin.label)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = Mathf.RoundToInt(Screen.height * 0.05f),
-                fontStyle = FontStyle.Bold,
-            };
-            float pulse = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 2f);
-            var old = GUI.color;
-            GUI.color = new Color(0.85f, 0.85f, 0.85f, pulse);
-            GUI.Label(new Rect(0f, 0f, Screen.width, Screen.height), prompt, _style);
-            GUI.color = old;
+
+            // One line ("BLINK to begin"): the title over it in small caps. Two lines
+            // ("You were knocked out" / "BLINK to wake up"): the first line is the heading.
+            int nl = prompt.IndexOf('\n');
+            bool large = nl < 0;
+            string heading = large ? title : prompt.Substring(0, nl).Trim();
+            string sub = large ? prompt : prompt.Substring(nl + 1).Replace('\n', ' ').Trim();
+            float breathe = 0.7f + 0.3f * Mathf.Sin(now * 2f); // ~0.3 Hz
+            BlinkWidgets.TitleCard(heading, sub, alpha, breathe, large);
         }
     }
 }

@@ -1,12 +1,14 @@
+using Blink.UI;
 using UnityEngine;
 
 namespace Blink.Combat
 {
     /// <summary>
-    /// Bare-bones combat HUD on the player: a crosshair that flashes a hit marker (red X on a kill, from any
-    /// weapon), the weapon in hand with its ammo and a reload bar (nothing for the hands and the axe), and the
-    /// player's health. Drawn with IMGUI so it needs no Canvas; the HUD workstream can replace it with proper UI
-    /// driven by the same <see cref="PlayerWeapons"/>/<see cref="Health"/> events.
+    /// The combat HUD on the player, in the <see cref="BlinkTheme"/> style: a tiny soft dot in the centre, a thin ring
+    /// that pops around it on a hit from any weapon (red on a kill, larger on a headshot), the weapon in hand with its
+    /// ammo bottom-right (shown after shooting, reloading or switching, then fading; kept up while empty), a
+    /// "[R] reload" prompt when the magazine is empty, and a health ring bottom-left that only shows after damage or when
+    /// low. Drawn with IMGUI; it only listens to <see cref="PlayerWeapons"/> events and reads <see cref="Health"/>.
     /// Timing is unscaled so it doesn't speed up during fast-forward.
     /// </summary>
     public sealed class GunHud : MonoBehaviour
@@ -17,14 +19,27 @@ namespace Blink.Combat
         [SerializeField] Health health;
 
         [Header("Crosshair")]
+        [Tooltip("Use BlinkTheme's palette (bone dot and ring, red on a kill). Untick to use the three colours below.")]
+        [SerializeField] bool themeColors = true;
         [SerializeField] Color crosshairColor = new(1f, 1f, 1f, 0.85f);
         [SerializeField] Color hitColor = new(1f, 1f, 1f, 1f);
         [SerializeField] Color killColor = new(1f, 0.15f, 0.1f, 1f);
+        [Tooltip("How long a plain hit's ring lasts (real seconds); a kill's lasts about twice as long.")]
         [SerializeField, Min(0.01f)] float markerSeconds = 0.2f;
 
-        float _markerUntil;
-        bool _markerWasKill;
-        GUIStyle _ammoStyle, _smallStyle, _smallLeftStyle;
+        [Header("Fading readouts (real seconds)")]
+        [Tooltip("How long the health ring stays up after a change while health isn't low.")]
+        [SerializeField, Min(0f)] float healthLinger = 3f;
+        [Tooltip("At or below this fraction the health ring stays up (and turns red).")]
+        [SerializeField, Range(0f, 1f)] float lowHealth = 0.35f;
+
+        float _markerAt = float.NegativeInfinity;
+        HitKind _markerKind;
+        float _ammoAt = float.NegativeInfinity, _ammoAlpha;
+        float _healthAt = float.NegativeInfinity, _healthAlpha, _lastFraction = -1f;
+        WeaponKind _lastKind;
+        int _lastLoaded = -1, _lastReserve = -1;
+        bool _lastReloading;
 
         void Awake()
         {
@@ -46,105 +61,87 @@ namespace Blink.Combat
             weapons.MeleeHit -= OnMeleeHit;
         }
 
-        void OnRayFired(ShotRay shot) => ShowMarker(shot.Target);
+        void OnRayFired(ShotRay shot) => ShowMarker(shot.Target, shot.IsHead);
 
-        void OnMeleeHit(MeleeHitInfo hit) => ShowMarker(hit.Target);
+        void OnMeleeHit(MeleeHitInfo hit) => ShowMarker(hit.Target, hit.IsHead);
 
-        void ShowMarker(IDamageable target)
+        void ShowMarker(IDamageable target, bool head)
         {
             if (target == null) return;
-            _markerWasKill = target.IsDead; // raised after the damage is applied
-            _markerUntil = Time.unscaledTime + markerSeconds;
+            // Raised after the damage is applied, so IsDead says whether this hit killed.
+            _markerKind = !target.IsDead ? HitKind.Hit : head ? HitKind.Headshot : HitKind.Kill;
+            _markerAt = Time.unscaledTime;
+        }
+
+        float MarkerSeconds => _markerKind == HitKind.Hit ? Mathf.Max(0.18f, markerSeconds * 1.25f) : markerSeconds * 2.2f;
+
+        void LateUpdate()
+        {
+            bool alive = health == null || !health.IsDead;
+            if (weapons != null) TrackWeapon(weapons.ActiveWeapon, alive);
+            if (health != null) TrackHealth();
+        }
+
+        void TrackWeapon(IWeaponStatus weapon, bool alive)
+        {
+            if (weapon == null) return;
+            float now = Time.unscaledTime;
+            if (weapon.Kind != _lastKind || weapon.AmmoLoaded != _lastLoaded || weapon.AmmoReserve != _lastReserve ||
+                weapon.IsReloading != _lastReloading || weapon.IsReloading)
+                _ammoAt = now;
+            _lastKind = weapon.Kind;
+            _lastLoaded = weapon.AmmoLoaded;
+            _lastReserve = weapon.AmmoReserve;
+            _lastReloading = weapon.IsReloading;
+
+            bool empty = weapon.UsesAmmo && weapon.AmmoLoaded == 0;
+            bool show = alive && weapon.Kind != WeaponKind.Hands &&
+                        (empty || now - _ammoAt < BlinkTheme.Asset.linger);
+            _ammoAlpha = BlinkTheme.StepFade(_ammoAlpha, show, -1f, BlinkTheme.Asset.fadeOut * 2f);
+
+            if (_ammoAlpha > 0f)
+                BlinkPrompts.ReserveBottom((weapon.UsesAmmo ? BlinkWidgets.AmmoBlockHeight : BlinkTheme.Px(40f)) * _ammoAlpha);
+            // On a pad X is also Interact: while something is in focus X won't reload, so don't offer it.
+            bool xInteracts = BlinkInput.UsingGamepad && Interaction.Interactor.HasFocus;
+            if (alive && empty && weapon.AmmoReserve > 0 && !weapon.IsReloading && !xInteracts)
+                BlinkPrompts.Show(this, weapons != null ? weapons.ReloadInput : null, "R", "Reload", -1f, 20);
+        }
+
+        void TrackHealth()
+        {
+            float f = health.Fraction;
+            if (_lastFraction >= 0f && !Mathf.Approximately(f, _lastFraction)) _healthAt = Time.unscaledTime;
+            _lastFraction = f;
+            bool show = !health.IsDead && (f <= lowHealth || Time.unscaledTime - _healthAt < healthLinger);
+            _healthAlpha = BlinkTheme.StepFade(_healthAlpha, show, -1f, BlinkTheme.Asset.fadeOut * 2f);
         }
 
         void OnGUI()
         {
             if (Event.current.type != EventType.Repaint) return;
-            EnsureStyles();
 
             if (health == null || !health.IsDead) DrawCrosshair();
             if (weapons != null) DrawWeapon(weapons.ActiveWeapon);
-            if (health != null) DrawHealth();
+            if (health != null && !health.IsDead) BlinkWidgets.HealthCore(health.Fraction, _healthAlpha, lowHealth);
         }
 
         void DrawCrosshair()
         {
-            var c = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-            const float gap = 5f, len = 7f, thick = 2f;
+            var c = BlinkTheme.ScreenCentre;
+            if (themeColors) BlinkWidgets.Reticle(c, 1f);
+            else BlinkWidgets.Reticle(c, 1f, crosshairColor);
 
-            Fill(new Rect(c.x - thick * 0.5f, c.y - gap - len, thick, len), crosshairColor);
-            Fill(new Rect(c.x - thick * 0.5f, c.y + gap, thick, len), crosshairColor);
-            Fill(new Rect(c.x - gap - len, c.y - thick * 0.5f, len, thick), crosshairColor);
-            Fill(new Rect(c.x + gap, c.y - thick * 0.5f, len, thick), crosshairColor);
-
-            if (Time.unscaledTime >= _markerUntil) return;
-
-            // Hit marker: four short diagonal strokes around the centre.
-            var color = _markerWasKill ? killColor : hitColor;
-            float size = _markerWasKill ? 9f : 7f;
-            var old = GUI.matrix;
-            for (int i = 0; i < 4; i++)
-            {
-                GUIUtility.RotateAroundPivot(45f + 90f * i, c);
-                Fill(new Rect(c.x + 6f, c.y - 1f, size, 2f), color);
-                GUI.matrix = old;
-            }
+            float t = (Time.unscaledTime - _markerAt) / MarkerSeconds;
+            if (t >= 1f) return;
+            if (themeColors) BlinkWidgets.HitRing(c, t, _markerKind);
+            else BlinkWidgets.HitRing(c, t, _markerKind, _markerKind == HitKind.Hit ? hitColor : killColor);
         }
 
         void DrawWeapon(IWeaponStatus weapon)
         {
-            const float w = 180f, margin = 24f;
-            var area = new Rect(Screen.width - w - margin, Screen.height - 70f - margin, w, 70f);
-            if (!weapon.UsesAmmo) return; // hands and axe: nothing to count
-
-            GUI.Label(new Rect(area.x, area.y - 18f, w, 18f), weapon.Kind.ToString().ToUpperInvariant(), _smallStyle);
-            string ammo = $"{weapon.AmmoLoaded} <size=18>/ {weapon.AmmoReserve}</size>";
-            GUI.Label(new Rect(area.x, area.y, w, 42f), ammo, _ammoStyle);
-
-            if (weapon.IsReloading)
-            {
-                var bar = new Rect(area.x + w - 120f, area.y + 46f, 120f, 6f);
-                Fill(bar, new Color(0f, 0f, 0f, 0.5f));
-                Fill(new Rect(bar.x, bar.y, bar.width * weapon.ReloadProgress01, bar.height), Color.white);
-                GUI.Label(new Rect(area.x, area.y + 52f, w, 18f), "RELOADING", _smallStyle);
-            }
-            else if (weapon.AmmoLoaded == 0)
-            {
-                GUI.Label(new Rect(area.x, area.y + 46f, w, 18f), weapon.AmmoReserve > 0 ? "R TO RELOAD" : "NO AMMO", _smallStyle);
-            }
-        }
-
-        void DrawHealth()
-        {
-            const float margin = 24f, w = 220f, h = 10f;
-            var back = new Rect(margin, Screen.height - margin - h, w, h);
-            Fill(back, new Color(0f, 0f, 0f, 0.5f));
-            Fill(new Rect(back.x + 1f, back.y + 1f, (w - 2f) * health.Fraction, h - 2f), new Color(0.85f, 0.15f, 0.12f, 0.95f));
-            GUI.Label(new Rect(margin, back.y - 22f, w, 20f), health.IsDead ? "DEAD" : $"HP {Mathf.CeilToInt(health.Current)}", _smallLeftStyle);
-        }
-
-        void EnsureStyles()
-        {
-            if (_ammoStyle != null) return;
-            _ammoStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 34, fontStyle = FontStyle.Bold, alignment = TextAnchor.LowerRight, richText = true,
-                normal = { textColor = Color.white },
-            };
-            _smallStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 13, fontStyle = FontStyle.Bold, alignment = TextAnchor.UpperRight,
-                normal = { textColor = new Color(1f, 1f, 1f, 0.85f) },
-            };
-            _smallLeftStyle = new GUIStyle(_smallStyle) { alignment = TextAnchor.UpperLeft };
-        }
-
-        static void Fill(Rect rect, Color color)
-        {
-            var old = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = old;
+            if (weapon == null || _ammoAlpha <= 0f || weapon.Kind == WeaponKind.Hands) return;
+            BlinkWidgets.Ammo(weapon.Kind.ToString(), weapon.UsesAmmo, weapon.AmmoLoaded, weapon.AmmoReserve,
+                weapon.IsReloading, weapon.ReloadProgress01, BlinkTheme.EaseOut(_ammoAlpha));
         }
     }
 }

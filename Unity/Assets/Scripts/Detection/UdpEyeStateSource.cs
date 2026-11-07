@@ -95,7 +95,7 @@ namespace Blink.Detection
             string python = Path.Combine(root, SidecarPython);
             if (!File.Exists(python))
             {
-                Debug.LogWarning($"[Blink] No webcam sidecar: {python} not found. Run `{SidecarSetup}` once from the repo folder (Space still works).");
+                Debug.LogWarning($"[Blink] No webcam sidecar: {python} not found. Run `{SidecarSetup}` once from the repo folder. Without a webcam, blink with blink_server/send_test_blinks.py.");
                 return;
             }
             // Don't redirect stdout/stderr: nobody reads them, and a full pipe would freeze the sidecar.
@@ -133,7 +133,7 @@ namespace Blink.Detection
 #if UNITY_EDITOR_OSX
                                  ", or is Unity missing camera access (System Settings > Privacy & Security > Camera)" +
 #endif
-                                 $"? Run {SidecarPython} blink_server/blink_server.py --preview to see the error. Space still works.");
+                                 $"? Run {SidecarPython} blink_server/blink_server.py --preview to see the error. Without a webcam, blink with blink_server/send_test_blinks.py.");
                 _sidecar.Dispose();
                 _sidecar = null;
             }

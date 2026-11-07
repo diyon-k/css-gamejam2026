@@ -2,7 +2,7 @@
 
 How the code is split, how the pieces talk to each other, and who owns what. Read [GAME_PLAN.md](GAME_PLAN.md) for the design.
 
-The core is already working end to end: the webcam sidecar's UDP messages (or the `Space` key) drive the blink detector, which drives time skips, which move the zombies and finish reloads. Every workstream below plugs into that core through **events and interfaces**, so people can build in parallel without editing each other's files.
+The core is already working end to end: the webcam sidecar's UDP messages drive the blink detector, which drives time skips, which move the zombies and finish reloads. Every workstream below plugs into that core through **events and interfaces**, so people can build in parallel without editing each other's files.
 
 ## Try it
 
@@ -14,14 +14,17 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 | WASD / left stick | Move |
 | Mouse / right stick | Look |
 | Left click / right trigger | Shoot / swing the axe |
-| R / gamepad West | Reload |
+| R / gamepad X (West) | Reload (on a pad, X interacts instead while something usable is in focus) |
 | 1 / 2 / 3 | Hands / pistol / axe |
-| Mouse wheel, gamepad LB / RB or d-pad left / right | Previous / next weapon |
-| E / gamepad North | Interact (hold to force a door), with any weapon |
-| **Space: tap** | Blink (world skips 0.5 s) |
-| **Space: hold** | Eyes shut (world runs at 3× until released) |
+| Mouse wheel, gamepad LB / RB, d-pad left / right, or Y (North) | Previous / next weapon (Y = next) |
+| E / gamepad X (West) | Interact (hold to force a door), with any weapon. Reading a note: E / X, or B on a pad, puts it down |
+| **Blink** (webcam) | World skips 0.5 s |
+| **Eyes shut** (webcam) | World runs at 3× until you open them; the pad rumbles with your heartbeat the whole time |
+| Look away from the webcam | Nothing: no face counts as eyes open |
 | F1 | Toggle the blink debug overlay |
 | Esc | Free the cursor (click to lock again) |
+
+   There is no keyboard blink any more (`Space` is Jump). Blinking only comes from the webcam; without one, use `blink_server/send_test_blinks.py` (step 4).
 
 3. **Real webcam:** run the setup once from the repo folder. After that, pressing Play starts the webcam sidecar automatically (in the Editor on Windows and macOS; the face model downloads itself on first run).
    - Windows: `powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1`
@@ -29,19 +32,17 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
    - **Tuning:** to see the camera and blink score, untick `launchSidecar` on the `UdpEyeStateSource` in GameSystems (so there aren't two senders), then run the venv's python (`blink_server/.venv/Scripts/python` on Windows, `blink_server/.venv/bin/python` on macOS) with `blink_server/blink_server.py --preview` while in Play mode. Too twitchy or not triggering? Tune `--close` / `--open`.
      - Windows, from the repo root: `cd blink_server` then `.venv\Scripts\python.exe blink_server.py --preview` (`q` / Esc closes it).
      - The preview shows `CLOSED`/`open`, the blink score and `turn` (degrees the head points away from the camera).
-   - **Looking away counts as eyes open:** if your head is turned more than `--max-turn` degrees (default 30) from the camera, the sidecar sends `closed: false` whatever the blink score says. The blink score is unreliable side-on, and you're not looking at the screen anyway. The preview adds `(AWAY)` when this kicks in.
-4. **No webcam:** run `python blink_server/send_test_blinks.py demo` while in Play mode.
+   - **Looking away counts as eyes open:** if your head is turned more than `--max-turn` degrees (default 30) from the camera, the sidecar sends `closed: false` whatever the blink score says. The blink score is unreliable side-on, and you're not looking at the screen anyway. The preview adds `(AWAY)` when this kicks in. If the camera loses your face altogether (`present: false`), Unity also counts the eyes as open: looking away never blinks or fast-forwards (see `BlinkDetector` below).
+4. **No webcam:** this is the only way to blink without one. While in Play mode, run `python blink_server/send_test_blinks.py demo` (or `blink`, `hold 2`, `away 1`, `open 5`). `blink` also gets you past "BLINK to begin".
 
 ## Data flow
 
 ```mermaid
 flowchart LR
     subgraph Sources["Eye-state sources (IEyeStateSource)"]
-        UDP["UdpEyeStateSource<br/>UDP :5065 from Python"]
-        KEY["KeyboardEyeStateSource<br/>Space"]
+        UDP["UdpEyeStateSource<br/>UDP :5065 from Python<br/>(or send_test_blinks.py)"]
     end
     UDP --> BD
-    KEY --> BD
     BD["BlinkDetector<br/>Blinked · EyesShutBegan · EyesShutEnded"] --> TS
     TS["TimeSkipController<br/>Skip(0.5 s) · timeScale 3x"] -- "ISkippable.Skip(s)" --> W["MobController · Gun<br/>(anything with a WorldTimer)"]
     TS -- "IBlinkTransition.Play" --> LID["BlinkEyelids<br/>skip when the lids meet"]
@@ -85,11 +86,16 @@ Unity/Assets/
 ## The contracts
 
 ### Detection (`Blink.Detection`)
-- **`IEyeStateSource`**: `IsActive`, `Current` (`EyeState { Present, Closed }`), `SourceName`. Put any component implementing it on the same GameObject as `BlinkDetector` and it's used automatically. Eyes count as closed if *any* active source says closed.
+- **`IEyeStateSource`**: `IsActive`, `Current` (`EyeState { Present, Closed }`), `SourceName`. Put any component implementing it on the same GameObject as `BlinkDetector` and it's used automatically. Eyes count as closed if *any* active source with a face in view says so. The only source in the game is `UdpEyeStateSource` (the webcam); the keyboard source was removed because `Space` is Jump.
 - **`BlinkDetector`** (singleton: `BlinkDetector.Instance`)
   - Events: `Blinked` (quick blink, fired on reopen), `EyesShutBegan` (closed past 0.35 s), `EyesShutEnded(float closedSeconds)`.
   - State: `EyesClosed`, `EyesShut`, `BlinkCount`, `SecondsSinceLastBlink` (for stare effects), `ActiveSourceName`.
-  - Inspector: hold threshold, noise filter, "treat missing face as closed" (on by default: looking away lets time pass).
+  - Inspector: hold threshold, noise filter, "treat missing face as closed" (**off** by default).
+  - **Looking away = eyes open.** No face in view (`present: false`) counts as open, whatever `closed` says: no blink, no eyes-shut, no fast-forward. If the face goes while the eyes are closed (`EyeStateMerger` notices the source that saw them closed lost the face, then `BlinkClassifier.LoseFace`):
+    - mid-blink (under the hold threshold): the closure is dropped, **no** `Blinked`, so no skip. Nobody saw the eyes reopen, and a head turning away often reads as a closing eye;
+    - while shut: `EyesShutEnded` fires once, so fast-forward, the muffle and the rumble stop cleanly;
+    - when the face comes back it starts fresh: eyes open = nothing, eyes closed = a new closure (the hold threshold counts from its return).
+    The webcam going quiet (no packets for 0.5 s) is handled the same way.
 - **UDP protocol** (Python → Unity, `127.0.0.1:5065`, ~30 Hz, one JSON object per datagram):
   ```json
   {"t": 1731000000123, "present": true, "closed": false}
@@ -132,7 +138,7 @@ Unity/Assets/
 - **Slots** live under `Player/CameraPivot/Camera/Weapons/Holster` (`Weapons` gets `CameraFeel`'s view model bob, `Holster` is lowered by the hub); only the one in hand is active:
   1. **Hands** (`ViewModel_Hands`, `HandsViewModel`): our arms relaxed and open at the bottom corners, breathing sway. No attack.
   2. **Pistol** (`Gun` + its `ViewModel`): unchanged. The hub turns `Gun.ReadsInput` off and calls `TryFire`/`TryStartReload`; `Gun`'s own events still fire, so `GunViewModelAnimator` is untouched.
-  3. **Axe** (`MeleeWeapon` + `ViewModel_Axe`): 60 damage, once per swing, on `AxeViewModel.StrikeApex` (also when a blink skips past it): a 0.35 m sphere swept 1.8 m from the eye picks the nearest living hitbox in sight, else the nearest wall (a thud). `TrySwingAt(collider)` makes that swing land on a given collider instead (the grab QTE's chop at the head). No ammo. The damage goes through the struck `Hitbox`, so `Hitbox.Struck` fires (hit point, view direction) just as for a bullet.
+  3. **Axe** (`MeleeWeapon` + `ViewModel_Axe`): 60 damage, once per swing, on `AxeViewModel.StrikeApex` (also when a blink skips past it): a 0.35 m sphere swept 1.8 m from the eye picks the nearest living hitbox in sight, else the nearest wall (a thud). No ammo. The damage goes through the struck `Hitbox`, so `Hitbox.Struck` fires (hit point, view direction) just as for a bullet.
 - **Switching**: a 0.12 s lower and 0.14 s raise on unscaled time (the player's hands are outside world time). A reload is dropped when its gun is put away; a swing finishes before the switch starts. No switching or attacking during the grab QTE or once dead.
 - **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`, `Range`, `CancelReload()`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead. On its own (no hub) it reads its own input.
 - **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
@@ -144,20 +150,36 @@ Unity/Assets/
 ### Player (`Blink.Player`)
 - **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
 - **`CameraFeel`** (on the Camera): recoil per `ShotFired`, a small jolt on `MeleeHit`, the reload dip while a gun reloads (from `ActiveWeapon.ReloadProgress01`), head bob and strafe tilt.
-- **`GrabQte`** (creates itself): the grab when a zombie reaches you because you blinked. Freezes the world (timeScale 0), yanks the camera onto the zombie's face (`PlayerController.TurnTowards`) and jolts it on every bite (`CameraFeel.AddJolt`), under a dark vignette. After a 0.6 s scare, a white ring closes onto a red target somewhere on screen with a key in its middle; press that key as they meet (±0.15 s, ring meets the target 1.2 s after appearing). Keys go by position: W/A/S/D on the keyboard, Y/X/A/B on the gamepad's face buttons (`GrabKey` Up/Left/Down/Right), never the same twice running; the label follows the device you last pressed. Each hit shoves the zombie back and the next ring jumps elsewhere with a new key. The wrong key (several at once counts as the wrong one), bad timing or a ring left to pass is a bite: the zombie's `attackDamage` off your HP with a red flash (the only red flash), then the next ring. 3 hits escape with a killing blow from whatever is in your hand, landing 0.22 s after the last hit as time eases into slow motion: the pistol shoots it point-blank (`Gun.FireScripted`); the axe swings (`MeleeWeapon.TrySwingAt` its head), pushed along in real time so the apex lands on the beat, the follow-through in slow motion; bare hands headbutt it (`Headbutt`, a pure, tested camera path played through `CameraFeel.SetScriptedOffset`; the zombie isn't shoved back so you connect, and the hit is reported with `PlayerWeapons.ReportMeleeHit`). All three hit the head and go through the normal shot/melee events, so blood, the kill marker, camera kick, rumble and sound play as usual. It ragdolls, and time eases back to full speed before you get control back. Die from the bites and time eases back over your body. Timing is the pure `GrabRing` (unit tested). The grabber implements `IGrabber` (`GrabFacePoint`, `GrabBite(hurts)`, `GrabShoved(final, pushedBack)`, `GrabKill`, `GrabResolved`). `BlocksInput` keeps the presses from counting as blinks or shots; static events `Began`, `Bit(hurts)` (each bite lunge) and `Resolved(escaped)` for audio and rumble.
-- **`GamepadHaptics`** (on Player): controller rumble for blinks, shots, axe hits, dry fire, reload, damage, the grab QTE (biggest jolt when `GrabQte.Active` turns on, then a thump on every `GrabQte.Bit`), forcing and bursting the jammed door, and an eyes-shut heartbeat that speeds up as zombies close in. Unscaled time; one-shot pulses with a priority override the background layer. **Strength** (0–2) scales everything. DualSense/DS4 rumble only over USB. Patterns: [FEEL_KIT.md](FEEL_KIT.md#controller-haptics).
+- **`GrabQte`** (creates itself): the grab when a zombie reaches you because you blinked. Freezes the world (timeScale 0), yanks the camera onto the zombie's face (`PlayerController.TurnTowards`) and jolts it on every bite (`CameraFeel.AddJolt`), under a dark vignette. After a 0.6 s scare, a white ring closes onto a red target somewhere on screen with a key in its middle; press that key as they meet (±0.15 s, ring meets the target 1.2 s after appearing). Keys go by position: W/A/S/D on the keyboard, Y/X/A/B on the gamepad's face buttons (`GrabKey` Up/Left/Down/Right), never the same twice running; the label follows the device you last pressed. Each hit shoves the zombie back and the next ring jumps elsewhere with a new key. The wrong key (several at once counts as the wrong one), bad timing or a ring left to pass is a bite: the zombie's `attackDamage` off your HP with a red flash (the only red flash), then the next ring. Being grabbed drops whatever you're carrying (`Carryable.DropHeld`) and `PlayerWeapons` swaps to the hands, which brace against it and shove on every hit; the weapon comes back 0.4 s after you break free. 3 hits escape: a two-handed shove (`BrokeFree`) flings it back a few metres as a ragdoll 0.08 s later, while the world is still frozen, then time eases through slow motion back to full speed before you get control back. It isn't hurt: it lies stunned and gets up to come for you again. Die from the bites and time eases back over your body. Timing is the pure `GrabRing` (unit tested). The grabber implements `IGrabber` (`GrabFacePoint`, `GrabBite(hurts)`, `GrabShoved(final)`, `GrabThrown(away)`, `GrabResolved`). `BlocksInput` keeps the presses from counting as blinks or shots; static events `Began`, `Bit(hurts)` (each bite lunge), `Beat` (each hit), `BrokeFree` (the last hit) and `Resolved(escaped)` for the hands, audio and rumble.
+- **`GamepadHaptics`** (on Player): controller rumble for blinks, shots, axe hits, dry fire, reload, damage, the grab QTE (biggest jolt when `GrabQte.Active` turns on, then a thump on every `GrabQte.Bit` and a heavy one on `GrabQte.BrokeFree`), forcing and bursting the jammed door, and **continuous rumble for the whole eyes-shut fast-forward** (`EyesShutRumble`: a low drone plus a lub-dub on every beat of `PlayerAudio`'s heartbeat, so you feel exactly the beats you hear; a grab interrupting fast-forward gives a hard jolt, then stops). It is the only thing that sets the motors: layers and one-shot pulses mix by per-motor max. Unscaled time. **Strength** (0–2) scales everything. Motors are reset on disable, pause, focus loss, quit and pad change. DualSense/DS4 rumble only over USB. Patterns: [FEEL_KIT.md](FEEL_KIT.md#controller-haptics).
 - **`JammedDoor`** (World): hold Interact to force it on a `WorldTimer`. Exposes `IsForcing`, `Progress01` and an `Opened` event for sound, rumble and dust.
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
   - On a skip it jumps along its navmesh path by speed × seconds, and can land a hit if it was already in range.
-  - Reaching you because you blinked starts a `GrabQte` instead of plain damage. It's the `IGrabber`: while the world is frozen it takes its body off the agent, slams in to `grabDistance` (0.7 m) in front of you, the camera locked between its eyes, restarts its `Attack` clip on every bite with the Animator on unscaled time, and lunges (`biteLunge`) or flinches back (`shoveDistance`) on GrabQte's cues. A bite that hurts deals `attackDamage`; breaking free kills it, and the ragdoll is thrown back off you at `grabKillThrow` (3 m/s) so it never falls into the camera. Letting go never snaps the body: the agent is warped to wherever the grab left it.
+  - Reaching you because you blinked starts a `GrabQte` instead of plain damage. It's the `IGrabber`: while the world is frozen it takes its body off the agent, slams in to `grabDistance` (0.7 m) in front of you, the camera locked between its eyes, restarts its `Attack` clip on every bite with the Animator on unscaled time, and lunges (`biteLunge`) or flinches back (`shoveDistance`) on GrabQte's cues. A bite that hurts deals `attackDamage`; breaking free (`GrabThrown`) hands it back to the agent and `KnockDown`s it: flung back at `grabEscapeThrow` (3 m/s) plus `grabEscapeLift` (1.5 m/s up) from the chest so it tips over backwards and lands about 3 m from you, then stunned for `grabEscapeStun` (3 world s) before it stands up where it landed and investigates you. Letting go never snaps the body: the agent is warped to wherever the grab left it.
   - Events `StateChanged(State)`, `Attacked`.
   - On death: agent and root collider off. With a `ZombieRagdoll` it goes limp (see below); without one it plays the `Dead` clip, or falls over procedurally when there's no `Dead` param. The body is removed after `corpseLifetime` world seconds (6 s). It stays an `ISkippable`, so blinking makes bodies vanish sooner.
   - Animation hook: if the Animator has a float `Speed`, a trigger `Attack` or a bool `Dead`, they're set automatically. Build an Animator Controller with those parameters and it just works.
 - **`ZombieRagdoll`** (on the Zombie root; bones built with Unity's Ragdoll wizard): while alive the bone bodies are kinematic and each bone collider gets a `Hitbox`. On death the Animator stops and the bodies go limp with the zombie's running speed, knocked back by the killing shot (`knockbackSpeed`, `hitImpulse`). The body freezes once at rest or after `settleSeconds` (3 s) of world time. `RagdollSkipper` (on GameSystems) steps physics on a blink so falling bodies jump forward too.
 - **Layers**: `Zombie` (root capsule: blocks the player, not bullets), `ZombieHitbox` (bone colliders while alive: collide with nothing, only raycasts), `Corpse` (bone colliders once dead: level and other corpses only), `Player`. The gun's `hitMask` skips `Zombie`, `Corpse`, `Player` and `Ignore Raycast`, so shots land on limbs and pass over bodies. A zombie without a ragdoll must keep its root on `Default` to stay shootable.
 - Levels need a **NavMeshSurface** (AI Navigation package, already installed) baked over the floor.
+
+### UI theme (`Blink.UI`, `Scripts/UI/`)
+All in-game UI is IMGUI drawn through one theme, so the look is retuned in one place. The style is restrained and western-serif: off-white "bone" text with a soft shadow, muted grey for secondary text, one deep red accent, short eased fades on unscaled time, and nothing on screen unless it matters.
+- **`BlinkThemeAsset`** (`Assets/Art/UI/Resources/BlinkTheme.asset`, loaded automatically): fonts (Cormorant SC and EB Garamond, OFL, see CREDITS.md), palette, `uiScale`, type sizes, reticle sizes and fade timings. Edit it in Play mode to retune live.
+- **`BlinkTheme`** (static): the asset, `Scale` (screen height / 1080 × `uiScale`), `Px(size1080)`, `PxText` (type never shrinks below `minTextScale`), palette (`Bone`, `Muted`, `Accent`, `Ink`, `Paper`...), cached styles (`Title`, `Heading`, `Subtitle`, `Prompt`, `SmallCaps`, `Body`, `Number`, `Key`), easing and `StepFade`/`Linger` helpers, and drawing primitives: `Text`/`SpacedText` (letterspaced, soft shadow), `Rule`, `RoundedRect`, `CornerShade` (soft darkening behind corner HUD so it reads over bright scenes), and anti-aliased GL `Disc`, `Ring`, `Arc`. Call the drawing helpers from OnGUI on Repaint.
+- **`BlinkWidgets`**: the pieces, each taking plain state: `Reticle` (soft dot), `HitRing` (bone on a hit, red on a kill, larger on a headshot), `KeyCap` (with an optional hold ring), `PromptRow`, `Ammo`, `HealthCore`, `Clock`, `Inventory`, `TitleCard` (title/death screens), `NoteCard` (aged paper), `QteTarget`/`QtePips`/`Banner` (grab QTE), `DebugPanel`.
+- **`BlinkPrompts`**: the bottom-right prompt stack. Call `BlinkPrompts.Show(owner, action, fallbackKey, label, progress, order)` every frame from Update/LateUpdate while the prompt applies (`action` and `fallbackKey` both null = a muted statement; `progress` 0..1 = hold ring). With an `InputAction`, the glyph follows the device in use. Rows fade and slide in and out by themselves; `ReserveBottom(px)` keeps them above the ammo. Drawn by a `BlinkPromptHud` that creates itself.
+- **`BlinkInput`**: controller support for the UI. `UsingGamepad` flips live on real input (sticks past a dead zone, buttons, triggers; mouse movement or keys flip it back). `GlyphFor(action, fallbackKey)` reads the action's actual bindings (overrides included) for that device. Gamepad glyphs are device-neutral and drawn in code: face buttons and the d-pad by position (a four-dot diagram with the button filled), `LB`/`RB`/`LT`/`RT` pills, `L`/`R` sticks. The grab QTE shows W/A/S/D or the face button in the same position.
+- **Pad layout (shooter style):**
+  - **X (West)** is Interact *and* Reload. It interacts when something usable is in focus: the look target, a jammed door in reach, getting out of a hiding spot, or a note held up. Otherwise it reloads. `SharedPress` decides the owner once, when the button goes down, and keeps it until release, so one press never does both. `Interactor.InteractOwns`/`ReloadOwns` are what `PlayerWeapons` and `JammedDoor` check.
+  - **Y (North)** swaps to the next weapon (as do RB and d-pad right).
+  - **A** jumps.
+  - **B** crouches, and also puts a note down. That press doesn't crouch (`Readable.ClaimsCrouch`).
+  - Keyboard is unchanged: E interacts, R reloads.
+- **`NotePaper`**: procedural worn paper for `Readable` notes. Each seed (from the note's text, or `paperSeed`) gives a different sheet: torn side, nick, dog-ear, creases, stains, grime, a broken border and patchy ink. It is baked on a worker thread from `Readable.Start` and cached. `LiftPose` is the pure lift/drop/sway animation (unscaled time).
+- Users: `GunHud`, `WakeUpSequence`, `GrabQte`, `Interactor`, `Inventory`, `Readable`, `JammedDoor`, `ClockHud`, `BlinkDebugOverlay`. `GunHud` and `ClockHud` have a `themeColors` toggle to fall back to their own colour fields.
 
 ## Workstreams
 

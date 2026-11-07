@@ -180,8 +180,10 @@ namespace Blink.Player
         void Stance(float dt)
         {
             float height = _controller.height;
+            // Pad B also puts a note down; that press isn't a crouch.
+            bool crouchHeld = _crouch != null && _crouch.IsPressed() && !Interaction.Readable.ClaimsCrouch;
             float target = _crawl != null && _crawl.IsPressed() ? crawlHeight
-                : _crouch != null && _crouch.IsPressed() ? crouchHeight
+                : crouchHeld ? crouchHeight
                 : _standHeight;
             if (target > height && !Headroom(target - height)) target = height;
 
