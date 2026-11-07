@@ -53,8 +53,22 @@ namespace Blink.Player
         /// <summary>True from lying down in bed until fully sat up and in control (the HUD hides the crosshair).</summary>
         public static bool Asleep { get; private set; }
 
+        /// <summary>
+        /// Raised once the player has been teleported back to bed and healed after a death, while the screen is black.
+        /// Carried items are already back where they were found. Puzzles reset themselves here.
+        /// </summary>
+        public static event Action Respawned;
+
+        /// <summary>Overrides the next respawn screen's text once (e.g. "Lily wanted to play\nBLINK to wake up"), then clears.</summary>
+        public static string NextRespawnPrompt { get; set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => Asleep = false;
+        static void ResetStatics()
+        {
+            Asleep = false;
+            Respawned = null;
+            NextRespawnPrompt = null;
+        }
 
         BlinkEyelids _eyelids;
         PlayerController _player;
@@ -139,12 +153,14 @@ namespace Blink.Player
             if (t < 1f) return;
 
             _diedAt = -1f;
-            prompt = respawnPrompt;
+            prompt = string.IsNullOrEmpty(NextRespawnPrompt) ? respawnPrompt : NextRespawnPrompt;
+            NextRespawnPrompt = null;
             DropItems();
             _player.Teleport(_bedPos, _bedRot);
             _health.ResetHealth();
             if (FindAnyObjectByType<Blink.Mobs.ClownSpawner>() is { } spawner) spawner.Restart(); // before the reset: spawned clowns go
             foreach (var mob in FindObjectsByType<Blink.Mobs.MobController>()) mob.ResetToSpawn();
+            Respawned?.Invoke();
             if (FindAnyObjectByType<GamepadHaptics>() is { } haptics) haptics.enabled = true; // it switches off on death
             Sleep();
         }

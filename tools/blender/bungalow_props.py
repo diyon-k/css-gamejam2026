@@ -155,7 +155,8 @@ put("Bath_Sink", "PedestalSink", "Bathroom", 4.4, Z_N - 0.04, 180)
 wall("Bath_Mirror", "MirrorCabinet", "Bathroom", Z_N, "x", 4.4, 1.5)
 wall("Bath_Towel", "Towel_Rail", "Bathroom", Z_BATH_S, "x", 3.0, 1.1)
 put("Bath_Bucket", "wooden_bucket_01", "Bathroom", 2.45, 10.05, 140)
-put("Bath_Chair", "painted_wooden_chair_01", "Bathroom", 5.95, 10.2, 315)
+put("Bath_Chair", "painted_wooden_chair_01", "Bathroom", X_BED_W + 0.30, 12.6, 90,
+    note="P2 Lily's doll sits here, facing D3 (Editor/PuzzleProps.cs moves it here too)")
 put("Bath_Plaster", "Debris_Plaster", "Bathroom", 3.8, 13.6, 0)
 
 # ------------------------------------------------------------------ BASEMENT (B1 cellar, B2 workshop)

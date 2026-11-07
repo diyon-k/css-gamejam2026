@@ -103,7 +103,7 @@ Seven puzzles, one per room, placed in the blockout's empty puzzle rooms (`Puzzl
 | # | Room (blockout) | Floor | Puzzle | Blink rule | Reward |
 |---|---|---|---|---|---|
 | P1 | `StartBedroom` | Second | The jammed door | Eyes shut gets work done | Out to `Corridor_Second`, plus the candle |
-| P2 | `PuzzleRoom_1` (dressed as Lily's playroom) | Second | Lily's doll | **Don't blink** | `key_dorm`: opens `ServantsDorm` (attic hatch and ladder) |
+| P2 | Bungalow `Bathroom` (was `PuzzleRoom_1`) | Ground | Lily's doll | **Don't blink, don't look away** | `key_dorm`: opens `ServantsDorm` (attic hatch and ladder) |
 | P3 | `PuzzleRoom_2` | Attic | Moonlight through the roof | **Speed time up** | `key_servants`: opens the servants' stair door down |
 | P4 | `PuzzleRoom_3` | First | The watching portraits | **Blinks as information** | `wrench` |
 | P5 | `PuzzleRoom_4` (dressed as the scullery) | Ground | Fire and pipes | Eyes shut gets work done | `key_basement`: opens the basement stair door in the `Kitchen` |
@@ -128,26 +128,25 @@ Seven puzzles, one per room, placed in the blockout's empty puzzle rooms (`Puzzl
 - **Teaches:** eyes shut gets work done, at the cost of not seeing what's coming.
 - **Build:** done (`JammedDoor`, `Openable`, `Pickup`). Tuning: `forceTimer` duration (4 s now).
 
-### P2. Lily's doll (`PuzzleRoom_1`)
+### P2. Lily's doll (bungalow `Bathroom`)
 
-- **Setup:**
-  - Dress the room as Lily's playroom: toy chest, small chair, children's photo, Tom's tin soldier.
-  - Lily's porcelain doll sits in a chair at the far wall with `key_dorm` in its lap.
-- **Clue card:** *"Lily never liked to be watched while she played."*
-- **Solve:**
-  1. Take the key. From now on the doll moves only while you're not looking.
-  2. Every 0.5 s of world time you don't watch, it hops about 1.2 m towards you and turns to face you. One blink is one hop. Eyes held shut is several hops at once.
-  3. Back out of the room while staring at it, then use the key on the `ServantsDorm` door down the corridor.
-- **Fail:** the doll reaches you and starts the existing grab QTE (`GrabQte`).
-  - **Break free:** the doll snaps back to its chair and you keep the key.
-  - **Fail the QTE:** you take 25 damage, the key goes back in its lap and the doll goes back to its chair.
-- **Ends:** when the `ServantsDorm` door opens, the doll stops for good.
+Full brief: [puzzles/LILYS_DOLL_ROOM.md](puzzles/LILYS_DOLL_ROOM.md). **Blink rule: don't blink, don't look away.**
+
+- **Setup:** Lily's porcelain doll sits on a chair against the far wall, facing the door, with `key_dorm` (*"Lily's key"*) in her lap. A music box plays Brahms' Lullaby from her, audible from the hall.
+- **Clue card** (on the hall wall beside the door, read before going in): *"Lily's doll hates to be ignored. Keep your eyes on her, and don't you dare blink."*
+- **Solve:** walk in looking straight at her, take the key, and back out without taking your eyes off her. Safe once you're 0.4 m past the doorway with the key; from then on she's just a doll and the music stops.
+- **Fail:**
+  - **Look away** (more than 0.15 s outside a 30° cone, or behind something): she leaps onto your face.
+  - **Blink once** (or shut your eyes): when they open she has lurched 1.2 m closer (never nearer than 1.5 m), head tilted, with a giggle, and the music box goes out of tune. **Blink again:** she's on your face when they open.
+  - **Eyes held shut** past 1 s: on your face, and she's still there when you open them.
+  - On your face: camera jolts, scratching, then you die (*"Lily wanted to play"*) and wake in bed. Doll and key reset; the warning is fresh.
+  - Leaving without the key also forgives the warning.
 - **Why it works:** blinks are involuntary, so the player fights their own eyes. The scariest use of the core rule.
-- **Build:**
-  - `StaringDoll` (drafted).
-  - Inspector: `key` (the `Pickup` in its lap), `door` (the `Openable` locked with `key_dorm`), `secondsPerStep` 0.5, `stepMetres` 1.2, `grabReach` 1, `failDamage` 25.
-  - Moves in a straight line and ignores furniture. Switch to NavMesh if it clips.
-- **Tuning:** the room-to-door walk should take 3-4 hops, so about 4-5 m.
+- **Build:** done.
+  - `Scripts/Puzzles/DollRule.cs` (pure rules, `Tests/EditMode/DollRuleTests.cs`) and `LilysDollRoom.cs` (looking, moving, kill, reset on `WakeUpSequence.Respawned`).
+  - **BLINK > Place Puzzle: Lily's Doll** (`Editor/PuzzleProps.cs`) builds it in the room named by `Room`: trigger box, placeholder primitive doll, key, clue card, warm light, toy blocks. It moves the room's chair under her.
+  - Cues `Doll_MusicBox`, `Doll_Giggle` (silent placeholder), `Doll_Scream` (`Grab_Sting` clips), `Doll_Scratch`. Clips from `tools/audio/doll_sounds.py`.
+- **Tuning:** door to doll and back is 4-6 s at walking speed (6.3 m here). If it's near-certain death: move her closer, widen `watchAngle`, then lengthen `lookAwayGrace` a little. Don't add a second warning.
 
 ### P3. Moonlight through the roof (`PuzzleRoom_2`, attic)
 
@@ -258,7 +257,7 @@ Existing ids (`candle`, `key_brass`, `key_iron`, cutlery) are unchanged. `key_br
 
 ### Build order
 
-1. **P2 and P7** first: scripts are drafted, they're the strongest moments and they need no blockout changes.
+1. **P2 and P7** first: they're the strongest moments. P2 is built (bungalow bathroom); P7's scripts are drafted.
 2. **P5 and P6** next: they chain (the burst pipe floods the basement) and reuse `JammedDoor` and the step maths.
 3. **P3:** needs the ceiling and roof hole from the mansion session.
 4. **P4** last: needs portrait art, and it's first on the cut list.
@@ -279,4 +278,4 @@ Existing ids (`candle`, `key_brass`, `key_iron`, cutlery) are unchanged. `key_br
 | `Readable` (notes and photos) | Done, needs a play test. Depends on the uncommitted Interaction folder (`IInteractable`, `Interactor`) |
 | Story props placement (`StoryProps` menu) | Done. Run **BLINK > Place Story Props** in House.unity and check positions |
 | Heirlooms | Not started |
-| Puzzles, puzzle notes, keys | Planned (see **Puzzles and keys**). P2 and P7 scripts drafted, not in the repo yet |
+| Puzzles, puzzle notes, keys | P2 (Lily's doll) built in the bungalow bathroom: **BLINK > Place Puzzle: Lily's Doll**. P7 scripts drafted, not in the repo yet. The rest planned (see **Puzzles and keys**) |

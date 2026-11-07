@@ -183,6 +183,7 @@ Each room lists the ref it is based on and why. Material names are defined in §
 - **Walls:** `M_Tile` (dirty, broken white tiles) to 1.2 m, `M_Plaster` above. **Floor:** `M_Lino`. **Ceiling:** `M_Plaster` with mould.
 - **Fixtures:** W1 shaded vanity sconce over the mirror; WW1 frosted window light.
 - **Props:** clawfoot tub along the S wall, toilet on the W wall, pedestal sink and mirror cabinet on the N wall, towel, rust streaks. Zombie Z4 stands here, dormant.
+- **Puzzle P2, Lily's doll** ([LILYS_DOLL_ROOM.md](../puzzles/LILYS_DOLL_ROOM.md)): the chair (`Bath_Chair`) stands against the W wall at (0.6, 12.6), facing D3, with the doll on it. Keep the line from D3 to the chair clear. **Don't spawn Z4 here** while the puzzle is in this room (the `Spawn_Z4` marker is still at (2.5, 12.5)): a zombie making you turn away is an unfair death.
 
 ### 2.7 Basement: B1 Cellar (6.35 × 10.63) and B2 Workshop (6.13 × 10.63) (y −2.85), flood-damaged
 - **Story fit:** `STORY_PLAN.md` puts the flood puzzle (P6) and the generator finale (P7) here.

@@ -14,6 +14,7 @@ A near-empty child's room. At the far wall, facing the door, sits Lily's porcela
 
 ## Where it goes
 
+- **Built (2026-11-07) in the bungalow `Bathroom`** (`House_Bungalow.unity`, x 0.3..6.9, z 9.6..14.7). The doorway is D3 in the east wall (x 7.0, z 12.05..13.15, off the central hall's north landing). The doll sits on the bathroom's own chair (`Bath_Chair`, moved) against the west wall at (0.6, 12.6), facing the door, 6.3 m away. The clue card is on the hall wall just north of the doorway. Re-run **BLINK > Place Puzzle: Lily's Doll** after a house rebuild. The rest of this section is the original brief.
 - **The room isn't decided yet.** Build it room-agnostic: everything lives under one root object with a `LilysDollRoom` component, and the room's size comes from a box on that root. Moving the puzzle = moving that root and re-running the placement menu with a different room name.
 - **Default placement for now:** `PuzzleRoom_1` (second floor, x 29..36, z 3..10, doorway in the north wall at x ≈ 32.5, z 10, off `Corridor_Second`). That's the existing P2 slot and it's right next to the start bedroom, so death → respawn → retry is quick.
   - Doll against the south wall at about (32.5, 6.4, 3.4), facing +z (towards the door). That's ~6.5 m from the doorway: about 2 s of walking each way at `walkSpeed` 3.5.

@@ -2263,13 +2263,13 @@
    "prefab": "painted_wooden_chair_01",
    "room": "Bathroom",
    "pos": [
-    5.95,
+    0.6,
     0.0,
-    10.2
+    12.6
    ],
    "rot": [
     0.0,
-    315.0,
+    90.0,
     0.0
    ],
    "scale": [
@@ -2280,7 +2280,7 @@
    "kind": "furniture",
    "tris": 724,
    "fixture": "",
-   "note": ""
+   "note": "P2 Lily's doll sits here, facing D3 (Editor/PuzzleProps.cs moves it here too)"
   },
   {
    "id": "Bath_Plaster",

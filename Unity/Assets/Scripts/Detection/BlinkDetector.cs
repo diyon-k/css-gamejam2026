@@ -38,6 +38,9 @@ namespace Blink.Detection
 
         public bool EyesClosed => _classifier.IsClosed;
         public bool EyesShut => _classifier.IsShut;
+
+        /// <summary>Seconds closed before a closure counts as eyes shut (when <see cref="EyesShutBegan"/> fires).</summary>
+        public float HoldThreshold => holdThreshold;
         public int BlinkCount { get; private set; }
 
         /// <summary>Unscaled seconds since the eyes were last open-and-reopened. Drives stare effects.</summary>
