@@ -20,7 +20,10 @@ namespace Blink.World
     {
         const float Eps = 0.01f;
 
+        /// <summary>How far it opens toward its front (the side it's modelled swinging to).</summary>
         public float OpenAngle { get; }
+        /// <summary>How far it opens toward its back. Often less: the hinge sits on the front face, so the leaf meets the jamb.</summary>
+        public float BackAngle { get; }
         public float Seconds { get; }
         /// <summary>Ease-out-back strength when opening (see Openable.Ease); closing is a plain ease.</summary>
         public float Overshoot { get; set; } = 0.3f;
@@ -42,16 +45,21 @@ namespace Blink.World
 
         float _from, _p = 1f, _wait, _rattleLeft, _rattleDir = 1f;
 
-        public DoorModel(bool locked, int keysRequired, float openAngle = 90f, float seconds = 0.5f)
+        /// <param name="backAngle">Degrees it opens toward its back; negative = the same as <paramref name="openAngle"/>.</param>
+        public DoorModel(bool locked, int keysRequired, float openAngle = 90f, float seconds = 0.5f, float backAngle = -1f)
         {
             Locked = locked;
             KeysRequired = Mathf.Max(0, keysRequired);
             OpenAngle = openAngle;
+            BackAngle = backAngle < 0f ? openAngle : backAngle;
             Seconds = Mathf.Max(0.01f, seconds);
         }
 
         /// <summary>Which way to swing so the leaf goes away from <paramref name="side"/> (&gt;0 = front, &lt;0 = back).</summary>
         public static float TargetAwayFrom(float side, float openAngle) => side > Eps ? -openAngle : openAngle;
+
+        /// <summary>The open target away from <paramref name="side"/>, using each side's own angle.</summary>
+        public float AwayFrom(float side) => side > Eps ? -BackAngle : OpenAngle;
 
         public int KeysLeft => Mathf.Max(0, KeysRequired - KeysUsed);
         public bool HasEnoughKeys(int held) => KeysRequired > 0 && held >= KeysLeft;
@@ -111,9 +119,9 @@ namespace Blink.World
         {
             target = 0f;
             if (Locked) return false;
-            float away = TargetAwayFrom(side, OpenAngle);
+            float away = AwayFrom(side), other = away > 0f ? -BackAngle : OpenAngle;
             if (sweepBlocked == null || !sweepBlocked(away)) { target = away; return true; }
-            if (!sweepBlocked(-away)) { target = -away; return true; }
+            if (!sweepBlocked(other)) { target = other; return true; }
             return false;
         }
 

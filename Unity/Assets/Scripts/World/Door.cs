@@ -55,7 +55,10 @@ namespace Blink.World
         public string doorId = "D1";
         [Tooltip("Direction (parent space, plan) the door is modelled to swing toward; the 'front' side.")]
         public Vector3 front = Vector3.forward;
+        [Tooltip("Degrees it opens toward its front (the modelled swing side).")]
         public float openAngle = 90f;
+        [Tooltip("Degrees it opens toward its back, where the leaf meets the jamb sooner (Setup Doors measures it).")]
+        public float backAngle = 90f;
         [Range(0.3f, 0.8f)] public float seconds = 0.5f;
         [Tooltip("Real seconds between the press and the leaf moving: the hand reaching the handle.")]
         [SerializeField, Min(0f)] float handDelay = 0.1f;
@@ -95,7 +98,7 @@ namespace Blink.World
         /// <summary>Every door: a press by the player and what it did (for rumble and sound).</summary>
         public static event Action<Door, DoorResult> PlayerUsed;
 
-        public DoorModel Model => _model ??= new DoorModel(startLocked, keysRequired, openAngle, seconds);
+        public DoorModel Model => _model ??= new DoorModel(startLocked, keysRequired, openAngle, seconds, backAngle);
         public bool IsLocked => Model.Locked;
         public bool IsOpen => Model.IsOpen;
         public int LeafCount => leaves.Length;
@@ -130,7 +133,7 @@ namespace Blink.World
 
         public void SnapToStart()
         {
-            _model = new DoorModel(startLocked, keysRequired, openAngle, seconds);
+            _model = new DoorModel(startLocked, keysRequired, openAngle, seconds, backAngle);
             _model.Snap(startOpen == 1 ? openAngle : 0f);
             ApplyPose();
             _carvingSet = false;

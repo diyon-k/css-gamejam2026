@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Blink.Tests
 {
-    public class DoorModelTests
+    public class DoorTests
     {
         static DoorModel Run(DoorModel m, float seconds)
         {
@@ -56,6 +56,26 @@ namespace Blink.Tests
             // player in front: away = -90, but something stands in that arc
             Assert.AreEqual(DoorResult.Opened, m.Interact(1f, 0, t => t < 0f));
             Assert.AreEqual(90f, Run(m, 1f).Angle, 1e-3f);
+        }
+
+        [Test]
+        public void BackSide_OpensOnlyAsFarAsItsOwnAngle()
+        {
+            var m = new DoorModel(false, 0, 90f, 0.5f, backAngle: 75f);
+            m.Interact(1f, 0, null); // player in front: away is the back
+            Assert.AreEqual(-75f, Run(m, 1f).Angle, 1e-3f);
+            m.Interact(1f, 0, null);
+            Run(m, 1f);
+            m.Interact(-1f, 0, null); // player behind: away is the front
+            Assert.AreEqual(90f, Run(m, 1f).Angle, 1e-3f);
+        }
+
+        [Test]
+        public void BlockedAway_FallsBackToTheOtherSidesOwnAngle()
+        {
+            var m = new DoorModel(false, 0, 90f, 0.5f, backAngle: 75f);
+            Assert.AreEqual(DoorResult.Opened, m.Interact(-1f, 0, t => t > 0f)); // front arc occupied
+            Assert.AreEqual(-75f, Run(m, 1f).Angle, 1e-3f);
         }
 
         [Test]
