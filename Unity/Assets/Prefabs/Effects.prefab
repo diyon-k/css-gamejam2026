@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7619794670287511441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 710546703222901627}
+  - component: {fileID: 6871033281486358128}
+  m_Layer: 0
+  m_Name: Effects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &710546703222901627
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7619794670287511441}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6871033281486358128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7619794670287511441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae895a8d3d635b34ba61e556de7f30ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.BloodImpactSpawner
+  gun: {fileID: 0}
+  aimCamera: {fileID: 0}
+  impactPrefab: {fileID: 3284035147886175601, guid: d2fb46b86ea3d234cb520e57397ba716, type: 3}
+  towardShooter: 0.4
+  dropletLift: 0.25
+  surfaceOffset: 0.01
+  scaleRange: {x: 0.85, y: 1.15}
+  exitSpray: 1
+  exitScale: 0.7
+  maxExitDepth: 1.2
+  floorPrefab: {fileID: 298657062186163303, guid: 604e75042fa2de442967211310301494, type: 3}
+  floorChance: 0.6
+  floorMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  maxFloorDrop: 2.5
+  floorCarry: 0.3
+  floorScaleRange: {x: 0.8, y: 1.2}
+  impactPoolSize: 8
+  floorPoolSize: 6
+  maxSkipStep: 0.1
