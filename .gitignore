@@ -62,3 +62,6 @@ CLAUDE.local.md
 
 # Kie.ai API key
 .env.kie
+
+# Brainstorm mockups
+.superpowers/

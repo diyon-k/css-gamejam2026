@@ -60,6 +60,7 @@ namespace Blink.Combat
         readonly List<MeleeCandidate> _candidates = new(MaxHits);
         readonly List<RaycastHit> _candidateHits = new(MaxHits);
         IDamageable _owner;
+        Collider _forcedTarget;
 
         void Awake()
         {
@@ -81,9 +82,21 @@ namespace Blink.Combat
         /// <summary>Starts a swing. False if one is already running (or the player is dead).</summary>
         public bool TrySwing()
         {
+            _forcedTarget = null;
             if (_owner != null && _owner.IsDead) return false;
             if (viewModel == null || !viewModel.PlaySwing()) return false;
             Swung?.Invoke();
+            return true;
+        }
+
+        /// <summary>
+        /// Starts a swing whose strike lands on <paramref name="target"/> whatever the sweep would pick: for scripted
+        /// kills (the grab QTE's chop goes for the head, past the arms reaching for you). Same damage, sound and events.
+        /// </summary>
+        public bool TrySwingAt(Collider target)
+        {
+            if (!TrySwing()) return false;
+            _forcedTarget = target;
             return true;
         }
 
@@ -96,6 +109,18 @@ namespace Blink.Combat
             if (aimCamera == null) return;
             Vector3 origin = aimCamera.transform.position;
             Vector3 dir = aimCamera.transform.forward;
+
+            var forced = _forcedTarget;
+            _forcedTarget = null;
+            if (forced != null && forced.enabled && forced.GetComponentInParent<IDamageable>() is { } forcedTarget)
+            {
+                Vector3 point = ClosestPoint(forced, origin);
+                Vector3 away = origin - point;
+                Vector3 normal = away.sqrMagnitude > 1e-8f ? away.normalized : -dir;
+                Land(forcedTarget, point, normal, (point - origin).sqrMagnitude > 1e-8f ? (point - origin).normalized : dir, forced);
+                return;
+            }
+
             int count = Physics.SphereCastNonAlloc(origin, radius, dir, _hits, reach, hitMask, QueryTriggerInteraction.Ignore);
 
             _candidates.Clear();
@@ -125,17 +150,21 @@ namespace Blink.Combat
             if (pick < 0) return;
 
             var chosen = _candidateHits[pick];
-            IDamageable target = null;
+            Land(isSurface ? null : chosen.collider.GetComponentInParent<IDamageable>(), chosen.point, chosen.normal, dir, chosen.collider);
+        }
+
+        /// <summary>Damages <paramref name="target"/> (null for a wall), makes the noise and raises <see cref="Hit"/>.</summary>
+        void Land(IDamageable target, Vector3 point, Vector3 normal, Vector3 dir, Collider collider)
+        {
             bool killed = false;
-            if (!isSurface)
+            if (target != null)
             {
-                target = chosen.collider.GetComponentInParent<IDamageable>();
-                target.TakeDamage(damage, chosen.point, dir);
+                target.TakeDamage(damage, point, dir);
                 killed = target.IsDead;
             }
 
-            Noise.Make(chosen.point, hitLoudness);
-            Hit?.Invoke(new MeleeHitInfo(WeaponKind.Axe, chosen.point, chosen.normal, dir, chosen.collider, target, killed));
+            Noise.Make(point, hitLoudness);
+            Hit?.Invoke(new MeleeHitInfo(WeaponKind.Axe, point, normal, dir, collider, target, killed));
         }
 
         // Nothing solid (that isn't part of the target) between the eye and the hit point.

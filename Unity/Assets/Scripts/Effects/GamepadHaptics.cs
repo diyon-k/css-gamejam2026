@@ -50,6 +50,7 @@ namespace Blink.Effects
             if (_weapons) { _weapons.ShotFired += OnFired; _weapons.DryFired += OnDryFire; _weapons.ReloadFinished += OnReloaded; _weapons.MeleeHit += OnMeleeHit; }
             if (_health) { _health.Damaged += OnDamaged; _health.Died += OnDied; }
             foreach (var d in _doors) d.Opened += OnDoorOpened;
+            GrabQte.Bit += OnGrabBite;
         }
 
         void OnDestroy()
@@ -58,6 +59,14 @@ namespace Blink.Effects
             if (_weapons) { _weapons.ShotFired -= OnFired; _weapons.DryFired -= OnDryFire; _weapons.ReloadFinished -= OnReloaded; _weapons.MeleeHit -= OnMeleeHit; }
             if (_health) { _health.Damaged -= OnDamaged; _health.Died -= OnDied; }
             if (_doors != null) foreach (var d in _doors) if (d) d.Opened -= OnDoorOpened;
+            GrabQte.Bit -= OnGrabBite;
+        }
+
+        // Each bite lunge while grabbed. Lower priority than the grab jolt, so the first bite doesn't cut it short.
+        // A bite that hurts (missed ring) already rumbles through Health.Damaged.
+        void OnGrabBite(bool hurts)
+        {
+            if (!hurts) Pulse(0.7f, 0.9f, 0.2f, 2);
         }
 
         // Motors hold their last speed forever (even after leaving Play mode), so always stop them.
@@ -100,7 +109,7 @@ namespace Blink.Effects
 
             float now = Time.unscaledTime, low = 0f, high = 0f;
 
-            // Grab QTE: GrabQte has no events, so watch for it starting. Biggest jolt in the game.
+            // Grab QTE starting: biggest jolt in the game. Bites after it come from GrabQte.Bit.
             bool grabbed = GrabQte.Active;
             if (grabbed && !_wasGrabbed) Pulse(1f, 1f, 0.45f, 3);
             _wasGrabbed = grabbed;

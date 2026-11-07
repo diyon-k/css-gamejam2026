@@ -121,6 +121,7 @@ namespace Blink.Player
 
         Vector3 _basePosition, _viewModelBasePosition;
         Quaternion _baseRotation;
+        Vector3 _scriptedPosition, _scriptedEuler;
         bool _initialised, _subscribed;
 
         void Awake()
@@ -157,6 +158,7 @@ namespace Blink.Player
             _recoilPosition.Reset();
             _bob.Reset();
             _strafe = 0f;
+            ClearScriptedOffset();
             RestoreBasePose();
         }
 
@@ -201,6 +203,33 @@ namespace Blink.Player
 
         void OnMeleeHit(MeleeHitInfo hit) => AddImpact(hit.Target != null ? 1f : meleeSurfaceScale);
 
+        /// <summary>
+        /// A sharp jolt in a random direction (grabbed, bitten), peaking at about <paramref name="degrees"/>, with
+        /// the camera knocked back <paramref name="pushBack"/> metres. Springs back like recoil.
+        /// </summary>
+        public void AddJolt(float degrees, float pushBack = 0f)
+        {
+            if (degrees <= 0f && pushBack <= 0f) return;
+            SyncSpringSettings();
+            float rotPeak = Spring3.PeakPerUnitVelocity(recoilFrequency, recoilDamping);
+            float posPeak = Spring3.PeakPerUnitVelocity(pushBackFrequency, pushBackDamping);
+            _recoilRotation.AddVelocity(Random.onUnitSphere * (Mathf.Max(0f, degrees) / rotPeak));
+            _recoilPosition.AddVelocity(new Vector3(0f, 0f, -Mathf.Max(0f, pushBack) / posPeak));
+        }
+
+        /// <summary>
+        /// A pose someone else is animating (the grab headbutt), in the camera's own axes: metres (z forward) and
+        /// degrees (positive pitch looks down). Applied on top of everything else and not scaled by
+        /// <see cref="Intensity"/>, since it's an animation rather than feel. Set it every frame; clear it when done.
+        /// </summary>
+        public void SetScriptedOffset(Vector3 position, Vector3 euler)
+        {
+            _scriptedPosition = position;
+            _scriptedEuler = euler;
+        }
+
+        public void ClearScriptedOffset() => SetScriptedOffset(Vector3.zero, Vector3.zero);
+
         /// <summary>Advances every motion by <paramref name="dt"/> real seconds and writes the pose.</summary>
         void Step(float dt)
         {
@@ -232,6 +261,11 @@ namespace Blink.Player
 
             CameraFeelMath.Compose(_basePosition, _baseRotation, position, euler, intensity,
                 out Vector3 pos, out Quaternion rot);
+            if (_scriptedPosition != Vector3.zero || _scriptedEuler != Vector3.zero)
+            {
+                pos += rot * _scriptedPosition;
+                rot *= Quaternion.Euler(_scriptedEuler);
+            }
             target.SetLocalPositionAndRotation(pos, rot);
 
             if (viewModel != null)

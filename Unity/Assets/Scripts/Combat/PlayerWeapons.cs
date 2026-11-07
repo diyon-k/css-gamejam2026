@@ -398,6 +398,12 @@ namespace Blink.Combat
         void OnAxeSwung() => MeleeSwing?.Invoke(WeaponKind.Axe);
         void OnMeleeHit(MeleeHitInfo hit) => MeleeHit?.Invoke(hit);
 
+        /// <summary>
+        /// Raises <see cref="MeleeHit"/> for a blow that didn't come from a weapon slot (the grab QTE's headbutt), so
+        /// blood, the hit marker, camera, rumble and sound react as to any melee hit. The caller does the damage.
+        /// </summary>
+        public void ReportMeleeHit(MeleeHitInfo hit) => MeleeHit?.Invoke(hit);
+
         sealed class Slot
         {
             public readonly WeaponKind Kind;
