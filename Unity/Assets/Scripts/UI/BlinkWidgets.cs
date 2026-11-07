@@ -222,8 +222,8 @@ namespace Blink.UI
         public static float AmmoBlockHeight => PxText(98f);
 
         /// <summary>
-        /// Weapon readout, bottom-right: a small-caps name (or "reloading" with a filling ring), and for guns the loaded
-        /// count large with the reserve small and muted. "no ammo" in the accent when both are empty.
+        /// Weapon readout, bottom-right: a small-caps name (or "reloading" with a filling ring), and for guns a row of
+        /// bullet icons, one per loaded round. "no ammo" in the accent when magazine and reserve are both empty.
         /// </summary>
         public static void Ammo(string weaponName, bool usesAmmo, int loaded, int reserve, bool reloading, float reloadProgress, float alpha)
         {
@@ -245,12 +245,13 @@ namespace Blink.UI
             }
             if (!usesAmmo) return;
 
-            string reserveText = "/ " + reserve;
-            var numRect = new Rect(right - PxText(400f), bottom - PxText(62f), PxText(400f), PxText(62f));
-            float reserveW = Measure(reserveText, NumberSmall);
-            Text(new Rect(numRect.x, numRect.y - PxText(6f), numRect.width, numRect.height), reserveText, NumberSmall, Fade(Muted, alpha));
-            var loadedRect = new Rect(numRect.x - reserveW - PxText(10f), numRect.y, numRect.width, numRect.height);
-            Text(loadedRect, loaded.ToString(), Number, Fade(Bone, alpha * (reloading ? 0.55f : 1f)));
+            // One bullet per loaded round: the first at the right edge, each next one added to its left.
+            float bw = PxText(9f), bh = PxText(28f), step = bw + PxText(6f), by = bottom - PxText(30f) - bh * 0.5f;
+            var col = Fade(Bone, alpha * (reloading ? 0.55f : 0.9f));
+            float tip = bw * 0.5f;
+            for (int i = 0; i < loaded; i++)
+                GUI.DrawTexture(new Rect(right - bw - i * step, by, bw, bh), Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                    true, 0f, col, Vector4.zero, new Vector4(tip, tip, PxText(1f), PxText(1f)));
         }
 
         /// <summary>
