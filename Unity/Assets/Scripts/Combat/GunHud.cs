@@ -120,7 +120,7 @@ namespace Blink.Combat
         {
             if (Event.current.type != EventType.Repaint) return;
 
-            if (health == null || !health.IsDead) DrawCrosshair();
+            if ((health == null || !health.IsDead) && !Player.WakeUpSequence.Asleep) DrawCrosshair();
             if (weapons != null) DrawWeapon(weapons.ActiveWeapon);
             if (health != null && !health.IsDead) BlinkWidgets.HealthCore(health.Fraction, _healthAlpha, lowHealth);
         }
