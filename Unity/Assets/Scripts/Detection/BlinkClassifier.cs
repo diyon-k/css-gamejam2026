@@ -90,6 +90,27 @@ namespace Blink.Detection
             }
         }
 
+        /// <summary>
+        /// The face was lost (the player looked away) while the eyes were closed: they now count as open. A
+        /// closure still under the hold threshold is dropped without a <see cref="BlinkEventType.Blink"/>, since
+        /// nobody saw the eyes reopen (and a head turning away often reads as an eye closing), so it can't skip
+        /// time. Eyes already shut still report <see cref="BlinkEventType.ShutEnded"/>, so fast-forward stops.
+        /// </summary>
+        public BlinkEvent LoseFace(float now)
+        {
+            switch (_phase)
+            {
+                case Phase.Closing:
+                    _phase = Phase.Open;
+                    return BlinkEvent.None;
+                case Phase.Shut:
+                    _phase = Phase.Open;
+                    return new BlinkEvent(BlinkEventType.ShutEnded, now - _closedAt);
+                default:
+                    return BlinkEvent.None;
+            }
+        }
+
         public void Reset() => _phase = Phase.Open;
     }
 }

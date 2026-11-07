@@ -6,7 +6,11 @@ namespace Blink.Detection
     /// <summary>
     /// The one place the rest of the game asks "what are the player's eyes doing?".
     /// Merges every <see cref="IEyeStateSource"/> on this GameObject (eyes count as closed if ANY active
-    /// source says so), classifies blinks vs. eyes-shut, and raises events.
+    /// source says so), classifies blinks vs. eyes-shut, and raises events. The only source in the game is the
+    /// webcam (<see cref="UdpEyeStateSource"/>); there is no keyboard blink (Space is Jump). Without a webcam,
+    /// blink with <c>blink_server/send_test_blinks.py</c>.
+    /// Looking away from the webcam counts as eyes open: no blink, no eyes-shut. Losing the face mid-blink
+    /// drops that blink; losing it while shut ends the eyes-shut (see <see cref="BlinkClassifier.LoseFace"/>).
     /// Everything here runs on unscaled time so fast-forward doesn't affect detection.
     /// </summary>
     [DefaultExecutionOrder(-100)]
@@ -18,8 +22,9 @@ namespace Blink.Detection
         [SerializeField] float holdThreshold = 0.35f;
         [Tooltip("Closures shorter than this are ignored as noise.")]
         [SerializeField] float minClosedTime = 0.03f;
-        [Tooltip("If the webcam can't see a face, treat the eyes as closed (looking away lets time pass).")]
-        [SerializeField] bool treatMissingFaceAsClosed = true;
+        [Tooltip("Off (default): no face in view counts as eyes open, so looking away from the webcam does nothing. " +
+                 "On: no face counts as closed eyes, so looking away blinks and fast-forwards time.")]
+        [SerializeField] bool treatMissingFaceAsClosed;
         [SerializeField] bool logEvents;
 
         /// <summary>A quick blink finished (fired when the eyes reopen).</summary>
@@ -38,11 +43,12 @@ namespace Blink.Detection
         /// <summary>Unscaled seconds since the eyes were last open-and-reopened. Drives stare effects.</summary>
         public float SecondsSinceLastBlink => EyesClosed ? 0f : Time.unscaledTime - _lastOpenedAt;
 
-        /// <summary>Name of the source currently reporting closed eyes, or the first active one.</summary>
+        /// <summary>Name of the source currently reporting closed eyes, or the first active one, or "none" (no webcam packets).</summary>
         public string ActiveSourceName { get; private set; } = "none";
 
         IEyeStateSource[] _sources = Array.Empty<IEyeStateSource>();
         BlinkClassifier _classifier;
+        EyeStateMerger _merger;
         float _lastOpenedAt;
 
         // OnEnable, not Awake: a script recompile during Play wipes these fields and re-runs OnEnable but not Awake.
@@ -60,6 +66,8 @@ namespace Blink.Detection
                 _classifier = new BlinkClassifier(holdThreshold, minClosedTime);
                 _lastOpenedAt = Time.unscaledTime;
             }
+            _merger ??= new EyeStateMerger(treatMissingFaceAsClosed);
+            _merger.Reset();
             _sources = GetComponents<IEyeStateSource>();
             if (_sources.Length == 0)
                 Debug.LogWarning("[Blink] BlinkDetector has no IEyeStateSource components next to it.");
@@ -75,12 +83,16 @@ namespace Blink.Detection
             if (_classifier == null) return;
             _classifier.HoldThreshold = holdThreshold;
             _classifier.MinClosedTime = minClosedTime;
+            if (_merger != null) _merger.TreatMissingFaceAsClosed = treatMissingFaceAsClosed;
         }
 
         void Update()
         {
             float now = Time.unscaledTime;
-            var e = _classifier.Update(ReadClosed(), now);
+            var reading = _merger.Read(_sources);
+            ActiveSourceName = reading.SourceName;
+            var e = reading.FaceLost ? _classifier.LoseFace(now) : _classifier.Update(reading.Closed, now);
+            if (reading.FaceLost && e.Type == BlinkEventType.None) Log("face lost mid-blink: no blink");
 
             switch (e.Type)
             {
@@ -97,28 +109,10 @@ namespace Blink.Detection
                 case BlinkEventType.ShutEnded:
                     BlinkCount++;
                     _lastOpenedAt = now;
-                    Log($"eyes open after {e.ClosedDuration:0.00} s");
+                    Log($"eyes open after {e.ClosedDuration:0.00} s{(reading.FaceLost ? " (face lost)" : "")}");
                     EyesShutEnded?.Invoke(e.ClosedDuration);
                     break;
             }
-        }
-
-        bool ReadClosed()
-        {
-            string firstActive = null;
-            foreach (var source in _sources)
-            {
-                if (!source.IsActive) continue;
-                firstActive ??= source.SourceName;
-                var state = source.Current;
-                if (state.Closed || (treatMissingFaceAsClosed && !state.Present))
-                {
-                    ActiveSourceName = source.SourceName;
-                    return true;
-                }
-            }
-            ActiveSourceName = firstActive ?? "none";
-            return false;
         }
 
         void Log(string message)
