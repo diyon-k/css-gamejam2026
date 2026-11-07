@@ -28,7 +28,8 @@ namespace Blink.Mobs
     [RequireComponent(typeof(NavMeshAgent))]
     public sealed class MobController : MonoBehaviour, ISkippable
     {
-        public enum State { Idle, Patrol, Investigate, Chase, Attack, Dead }
+        /// <summary>Down = knocked flying by a melee prop: limp and stunned, then gets back up (see <see cref="KnockDown"/>).</summary>
+        public enum State { Idle, Patrol, Investigate, Chase, Attack, Dead, Down }
 
         [Tooltip("Defaults to the PlayerController in the scene.")]
         [SerializeField] Transform target;
@@ -126,6 +127,10 @@ namespace Blink.Mobs
         Vector3 _spawnPos;
         Quaternion _spawnRot;
 
+        // Knockdown: world seconds left stunned, and where it stood when hit (fallback get-up spot).
+        float _downTimer;
+        Vector3 _downFrom;
+
         void Awake()
         {
             _agent = GetComponent<NavMeshAgent>();
@@ -173,6 +178,7 @@ namespace Blink.Mobs
         /// <summary>Back to where it started, calm (used when the player respawns). Corpses stay put.</summary>
         public void ResetToSpawn()
         {
+            if (CurrentState == State.Down) StandUp();
             if (CurrentState == State.Dead || !_agent.enabled) return;
             _agent.Warp(_spawnPos);
             transform.rotation = _spawnRot;
@@ -184,6 +190,11 @@ namespace Blink.Mobs
             if (CurrentState == State.Dead)
             {
                 AdvanceDeath(Time.deltaTime);
+                return;
+            }
+            if (CurrentState == State.Down)
+            {
+                TickDown(Time.deltaTime);
                 return;
             }
             if (!EnsureOnNavMesh()) return;
@@ -338,6 +349,11 @@ namespace Blink.Mobs
                 AdvanceDeath(seconds);
                 return;
             }
+            if (CurrentState == State.Down)
+            {
+                _downTimer -= seconds; // the fall itself is stepped by RagdollSkipper
+                return;
+            }
             if (!_agent.isOnNavMesh) return;
 
             _attackCooldown -= seconds;
@@ -429,6 +445,52 @@ namespace Blink.Mobs
                 _targetHealth?.TakeDamage(float.MaxValue, target.position + Vector3.up, -away.normalized);
             }
             Attacked?.Invoke();
+        }
+
+        /// <summary>
+        /// Sends it flying as a ragdoll (a blunt melee prop): every limb gets <paramref name="velocity"/> and the one
+        /// nearest <paramref name="point"/> spins. A living zombie then lies stunned for at least
+        /// <paramref name="stunSeconds"/> of world time and gets back up; a corpse just flies. Needs a ZombieRagdoll.
+        /// </summary>
+        public void KnockDown(Vector3 velocity, Vector3 point, float stunSeconds)
+        {
+            if (ragdoll == null) return;
+            if (CurrentState is not (State.Dead or State.Down))
+            {
+                _downFrom = transform.position;
+                if (_agent.isOnNavMesh) _agent.isStopped = true;
+                _agent.enabled = false; // the root stays put; the bones fly
+                foreach (var col in GetComponents<Collider>()) col.enabled = false;
+                SetState(State.Down);
+            }
+            if (CurrentState == State.Down) _downTimer = Mathf.Max(_downTimer, stunSeconds);
+            ragdoll.Launch(velocity, point);
+        }
+
+        void TickDown(float dt)
+        {
+            _downTimer -= dt;
+            // Up once the stun is over and it has stopped tumbling (3 s more at most).
+            if (_downTimer > 0f || (ragdoll.FastestSpeed > 0.6f && _downTimer > -3f)) return;
+            StandUp();
+        }
+
+        /// <summary>Back on its feet where the body landed (the nearest navmesh), facing you, and straight back after you.</summary>
+        void StandUp()
+        {
+            Vector3 hips = ragdoll.HipsPosition;
+            ragdoll.GetUp(); // captures the lying pose before the root moves under it
+            Vector3 spot = NavMesh.SamplePosition(hips, out var floor, 3f, _agent.areaMask) ? floor.position : _downFrom;
+            Vector3 face = target != null ? target.position - spot : transform.forward;
+            face.y = 0f;
+            transform.SetPositionAndRotation(spot, face.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(face) : transform.rotation);
+            _agent.enabled = true;
+            _agent.Warp(spot);
+            foreach (var col in GetComponents<Collider>()) col.enabled = true;
+            SetState(State.Idle);
+            if (!_agent.isOnNavMesh) return;
+            if (TargetAlive()) Investigate(target.position); // it knows who hit it
+            else StartPatrol();
         }
 
         void OnDied()
