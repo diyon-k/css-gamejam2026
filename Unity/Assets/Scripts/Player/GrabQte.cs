@@ -1,5 +1,6 @@
 using System;
 using Blink.Combat;
+using Blink.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
@@ -39,7 +40,8 @@ namespace Blink.Player
     /// The blow lands as time eases into slow motion, it drops in a burst of blood, and time eases back to normal. Die
     /// from the bites and time eases back over your body instead. Timing lives in <see cref="GrabRing"/>.
     ///
-    /// Drawn with IMGUI in the HUD's style (thin white, one blood red, small bold caps). Runs on unscaled time.
+    /// Drawn with IMGUI in the <see cref="BlinkTheme"/> style (a thin bone ring closing on a key cap inside a thin red
+    /// circle, red dots for hits). Runs on unscaled time.
     /// Creates itself on first use; no scene setup needed.
     /// </summary>
     public sealed class GrabQte : MonoBehaviour
@@ -66,10 +68,8 @@ namespace Blink.Player
         const float DeathHoldSeconds = 0.6f;
         const float DeathEndsAt = 1.2f;
 
-        // Look, in pixels like GunHud.
-        const float TargetRadius = 28f, TargetThickness = 6f, RingThickness = 2.5f;
-        static readonly Color Blood = new(0.85f, 0.15f, 0.12f, 0.95f);
-        static readonly Color Shadow = new(0f, 0f, 0f, 0.5f);
+        // Look: target radius in 1080p pixels (scaled by BlinkTheme); colours come from the theme.
+        const float TargetRadius = 38f;
 
         enum Phase { Struggle, Kill, Death }
         enum KillMove { Shot, Chop, Headbutt }
@@ -135,7 +135,6 @@ namespace Blink.Player
         Gun _gun;
 
         Texture2D _vignette;
-        GUIStyle _big, _key;
 
         void Begin(IGrabber grabber)
         {
@@ -179,13 +178,8 @@ namespace Blink.Player
         }
 
         // ponytail: last-updated device wins; a drifting stick can claim it, compare real button presses if that bites.
-        static bool LastUsedGamepad()
-        {
-            var pad = Gamepad.current;
-            if (pad == null) return false;
-            double kbm = Math.Max(Keyboard.current?.lastUpdateTime ?? 0, Mouse.current?.lastUpdateTime ?? 0);
-            return pad.lastUpdateTime > kbm;
-        }
+        // A pad's lastUpdateTime moves with stick noise too, so ask the UI's device tracker, which only counts real input.
+        static bool LastUsedGamepad() => Gamepad.current != null && BlinkInput.UsingGamepad;
 
         static bool IsGone(IGrabber g) => g == null || (g is UnityEngine.Object o && o == null);
 
@@ -425,6 +419,12 @@ namespace Blink.Player
             GrabKey.Up => pad.buttonNorth, GrabKey.Left => pad.buttonWest, GrabKey.Down => pad.buttonSouth, _ => pad.buttonEast,
         };
 
+        /// <summary>The face button for a grab key, by position (matches <see cref="ButtonFor"/>).</summary>
+        public static PadDirection PadPosition(GrabKey k) => k switch
+        {
+            GrabKey.Up => PadDirection.Up, GrabKey.Left => PadDirection.Left, GrabKey.Down => PadDirection.Down, _ => PadDirection.Right,
+        };
+
         static string Label(GrabKey k, bool gamepad) => k switch
         {
             GrabKey.Up => gamepad ? "Y" : "W",
@@ -502,71 +502,25 @@ namespace Blink.Player
                 GUI.DrawTexture(rect, _vignette, ScaleMode.StretchToFill, true);
                 GUI.color = old;
             }
-            if (_flash > 0f) Fill(new Rect(0f, 0f, w, h), new Color(0.6f, 0f, 0f, _flash));
+            if (_flash > 0f) BlinkTheme.Fill(new Rect(0f, 0f, w, h), BlinkTheme.Fade(BlinkTheme.Accent, _flash));
 
             if (_hud <= 0f) return;
             if (_phase == Phase.Struggle && _ring.RingVisible) DrawRing(new Vector2(_spot.x * w, _spot.y * h));
-            DrawPips(w, h);
-            if (_phase == Phase.Death)
-            {
-                _big.normal.textColor = Blood * new Color(1f, 1f, 1f, _hud);
-                GUI.Label(new Rect(0f, h * 0.22f, w, 50f), "BITTEN", _big);
-            }
+            BlinkWidgets.QtePips(_ring.Hits, Beats, _hud);
+            if (_phase == Phase.Death) BlinkWidgets.Banner("Bitten", _hud);
         }
 
         void DrawRing(Vector2 c)
         {
             float a = Mathf.Clamp01(_ring.RingSeconds / 0.1f) * _hud;
-            var fade = new Color(1f, 1f, 1f, a);
-            Circle(c, TargetRadius, TargetThickness + 3f, Shadow * fade);
-            Circle(c, TargetRadius, TargetThickness, Blood * fade);
-
-            float r = TargetRadius * _ring.RingScale;
-            Circle(c, r, RingThickness + 2f, Shadow * fade);
-            Circle(c, r, RingThickness, fade);
-
-            // The key to press, in the middle of the target, with a drop shadow so it reads over the zombie's face.
-            var box = new Rect(c.x - TargetRadius, c.y - TargetRadius, TargetRadius * 2f, TargetRadius * 2f);
-            var content = new GUIContent(Label(_ring.Key, _gamepad));
-            _key.normal.textColor = Shadow * fade;
-            GUI.Label(new Rect(box.x + 1.5f, box.y + 1.5f, box.width, box.height), content, _key);
-            _key.normal.textColor = Color.white * fade;
-            GUI.Label(box, content, _key);
-        }
-
-        void DrawPips(float w, float h)
-        {
-            const float size = 8f, gap = 6f;
-            var fade = new Color(1f, 1f, 1f, _hud);
-            float x = w * 0.5f - (Beats * size + (Beats - 1) * gap) * 0.5f, y = h - 56f;
-            for (int i = 0; i < Beats; i++)
-            {
-                var r = new Rect(x + i * (size + gap), y, size, size);
-                bool on = i < _ring.Hits;
-                Fill(new Rect(r.x - 1f, r.y - 1f, r.width + 2f, r.height + 2f), (on ? Blood : new Color(1f, 1f, 1f, 0.5f)) * fade);
-                Fill(r, (on ? Blood : new Color(0f, 0f, 0f, 0.6f)) * fade);
-            }
-        }
-
-        /// <summary>An anti-aliased circle outline centred on <paramref name="radius"/>.</summary>
-        static void Circle(Vector2 centre, float radius, float thickness, Color color)
-        {
-            float outer = radius + thickness * 0.5f;
-            var rect = new Rect(centre.x - outer, centre.y - outer, outer * 2f, outer * 2f);
-            GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, color, thickness, outer);
+            // The label follows the device in use, live: the key on keyboard, the face button by position on a pad.
+            _gamepad = BlinkInput.UsingGamepad;
+            var glyph = _gamepad ? InputGlyph.Face(PadPosition(_ring.Key)) : InputGlyph.Key(Label(_ring.Key, false));
+            BlinkWidgets.QteTarget(c, BlinkTheme.Px(TargetRadius), _ring.RingScale, glyph, a);
         }
 
         void EnsureAssets()
         {
-            if (_big == null)
-            {
-                _big = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter,
-                    normal = { textColor = Color.white },
-                };
-                _key = new GUIStyle(_big) { fontSize = 24, padding = new RectOffset(), margin = new RectOffset() };
-            }
             if (_vignette != null) return;
 
             // Clear in the middle, dark at the edges (alpha only; tinted when drawn).
@@ -585,14 +539,6 @@ namespace Blink.Player
             }
             _vignette.SetPixels32(pixels);
             _vignette.Apply();
-        }
-
-        static void Fill(Rect rect, Color color)
-        {
-            var old = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = old;
         }
     }
 }

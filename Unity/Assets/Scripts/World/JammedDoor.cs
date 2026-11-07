@@ -1,6 +1,7 @@
 using System;
 using Blink.Interaction;
 using Blink.TimeSkip;
+using Blink.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -84,12 +85,18 @@ namespace Blink.World
             if (_player == null && GameObject.FindWithTag("Player") is { } p) _player = p.transform;
             _inReach = _player != null && Vector3.Distance(_player.position, transform.position) <= reach;
 
-            bool holding = _inReach && _interact != null && _interact.IsPressed();
+            // In reach, its prompt is up, so a pad X press here forces the door rather than reloading; a held X that
+            // began as a reload doesn't start forcing.
+            if (_inReach) Interactor.ReportFocus();
+            // The grab QTE's face buttons aren't door presses.
+            bool holding = _inReach && _interact != null && _interact.IsPressed() && !Interactor.ReloadOwns(_interact.activeControl)
+                           && !Blink.Player.GrabQte.BlocksInput;
             if (holding && !forceTimer.IsRunning) forceTimer.Resume();
             else if (!holding && forceTimer.IsRunning) forceTimer.Pause();
             SetForcing(holding);
             forceTimer.Advance(Time.deltaTime);
             if (_open) return; // gave way this frame
+            if (_inReach) ShowPrompt(holding);
 
             // Shoved against the jamb: judders toward open, harder as it nears giving way.
             Pose(!holding ? 0f
@@ -126,15 +133,11 @@ namespace Blink.World
             transform.SetPositionAndRotation(_hinge + q * (_closedPos - _hinge), q * _closedRot);
         }
 
-        // ponytail: IMGUI prompt, swap for real UI when the HUD exists.
-        void OnGUI()
+        /// <summary>"[E] hold to force door" in the prompt stack, with a ring around the key filling as it gives.</summary>
+        void ShowPrompt(bool holding)
         {
-            if (_open || !_inReach) return;
-            string text = forceTimer.Elapsed > 0f
-                ? $"Forcing door... {forceTimer.Progress01:P0}"
-                : "Hold E to force the door";
-            var r = new Rect(Screen.width / 2f - 150f, Screen.height * 0.7f, 300f, 30f);
-            GUI.Label(r, text, new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = 20 });
+            string label = holding ? "Forcing door" : forceTimer.Elapsed > 0f ? "Force door" : "Hold to force door";
+            BlinkPrompts.Show(this, _interact, "E", label, forceTimer.Progress01, 10);
         }
     }
 }
