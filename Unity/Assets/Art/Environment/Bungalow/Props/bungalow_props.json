@@ -2403,30 +2403,6 @@
    "note": ""
   },
   {
-   "id": "B1_Crate2",
-   "prefab": "wooden_crate_01",
-   "room": "B1",
-   "pos": [
-    12.62,
-    -2.52,
-    4.6
-   ],
-   "rot": [
-    0.0,
-    8.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 700,
-   "fixture": "",
-   "note": ""
-  },
-  {
    "id": "B1_Barrel",
    "prefab": "barrel_03",
    "room": "B1",
@@ -2543,30 +2519,6 @@
    ],
    "kind": "furniture",
    "tris": 900,
-   "fixture": "",
-   "note": ""
-  },
-  {
-   "id": "B1_CrateLong2",
-   "prefab": "wooden_crate_02",
-   "room": "B1",
-   "pos": [
-    11.2,
-    -2.85,
-    4.4
-   ],
-   "rot": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 800,
    "fixture": "",
    "note": ""
   },
@@ -2870,30 +2822,6 @@
    "rot": [
     0.0,
     0.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 700,
-   "fixture": "",
-   "note": ""
-  },
-  {
-   "id": "B2_Crate2",
-   "prefab": "wooden_crate_01",
-   "room": "B2",
-   "pos": [
-    16.32,
-    -2.52,
-    4.35
-   ],
-   "rot": [
-    0.0,
-    -6.0,
     0.0
    ],
    "scale": [
@@ -4321,6 +4249,78 @@
    "tris": 120,
    "fixture": "",
    "note": ""
+  },
+  {
+   "id": "Cor_Chest",
+   "prefab": "wooden_crate_01",
+   "room": "Corridor",
+   "pos": [
+    13.6,
+    0.0,
+    16.58
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 700,
+   "fixture": "",
+   "note": "hiding spot, was B1_Crate2"
+  },
+  {
+   "id": "Par_Chest",
+   "prefab": "wooden_crate_01",
+   "room": "Parlour",
+   "pos": [
+    14.6,
+    0.0,
+    25.48
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 700,
+   "fixture": "",
+   "note": "hiding spot under WP1/WP2 gap, was B2_Crate2"
+  },
+  {
+   "id": "Mbr_Chest",
+   "prefab": "wooden_crate_02",
+   "room": "MasterBedroom",
+   "pos": [
+    5.95,
+    0.0,
+    23.36
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 800,
+   "fixture": "",
+   "note": "blanket chest at the bed's foot, hiding spot, was B1_CrateLong2"
   },
   {
    "id": "FX_E1",

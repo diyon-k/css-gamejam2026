@@ -198,13 +198,11 @@ put("B1_Shelves", "steel_frame_shelves_01", "B1", 10.0, 4.075 + 0.27, 0, y=B)
 for k, lv in enumerate((0.64, 1.65)):
     put(f"B1_Jars{k}", "Jars_Shelf", "B1", 10.0, 4.36, 0, on=("B1_Shelves", lv))
 put("B1_Crate", "wooden_crate_01", "B1", 12.6, 4.6, 0, y=B)
-put("B1_Crate2", "wooden_crate_01", "B1", 12.62, 4.6, 8, on=("B1_Crate", None))
 put("B1_Barrel", "barrel_03", "B1", 12.9, 5.85, 0, y=B)
 put("B1_CrateLong", "wooden_crate_02", "B1", 12.8, 14.2, 0, y=B)
 put("B1_Trash", "TrashBags", "B1", 11.55, 14.3, 180, y=B)
 put("B1_Float", "Debris_PaperFloat", "B1", 10.4, 9.0, 0, y=WATER + 0.002)
 put("B1_Boxes", "BoxStack", "B1", 9.7, 14.25, 180, y=B)
-put("B1_CrateLong2", "wooden_crate_02", "B1", 11.2, 4.4, 0, y=B)
 put("B1_Barrel2", "barrel_03", "B1", 13.0, 9.2, 0, y=B)
 put("B1_FallenBox", "BoxFallen", "B1", 9.6, 7.4, 110, y=B)
 put("B1_Bucket", "wooden_bucket_01", "B1", 12.9, 10.0, 200, y=B)
@@ -218,7 +216,6 @@ for k, lv in enumerate((0.13, 1.15)):
     put(f"B2_Jars{k}", "Jars_Shelf", "B2", 15.0, 4.36, 0, on=("B2_Shelves", lv))
 put("B2_Boxes", "BoxStack", "B2", 17.8, 4.5, 0, y=B)
 put("B2_Crate", "wooden_crate_01", "B2", 16.3, 4.35, 0, y=B)
-put("B2_Crate2", "wooden_crate_01", "B2", 16.32, 4.35, -6, on=("B2_Crate", None))
 put("B2_Barrel", "barrel_03", "B2", 19.2, 8.4, 0, y=B)
 put("B2_Bucket", "wooden_bucket_01", "B2", 14.2, 8.0, 60, y=B)
 put("B2_Trash", "TrashBags", "B2", 14.3, 14.2, 180, y=B)
@@ -280,6 +277,13 @@ put("Cor_FallenBox", "BoxFallen", "Corridor", 11.0, 16.3, 30)
 put("Cor_Paper", "Debris_Paper", "Corridor", 3.0, 15.6, 60)
 put("Cor_Plaster", "Debris_Plaster", "Corridor", 12.9, 16.45, 0)
 put("Cor_Paper2", "Debris_Paper", "Corridor", 17.6, 16.0, 200)
+
+# ------------------------------------------------------------------ HIDING CHESTS (moved up from the basement stacks)
+# Lidded chests are hiding spots (BungalowInteractables); spread them into the north wing. Backs to the wall, lids open
+# into the room. The corridor keeps 1.36 m clear.
+put("Cor_Chest", "wooden_crate_01", "Corridor", 13.6, Z_COR_N - 0.22, 180, note="hiding spot, was B1_Crate2")
+put("Par_Chest", "wooden_crate_01", "Parlour", 14.6, Z_WING_N - 0.22, 180, note="hiding spot under WP1/WP2 gap, was B2_Crate2")
+put("Mbr_Chest", "wooden_crate_02", "MasterBedroom", 5.95, 23.36, 180, note="blanket chest at the bed's foot, hiding spot, was B1_CrateLong2")
 
 # ------------------------------------------------------------------ FIXTURES (SPEC 5.1 / bungalow_layout.FIXTURES)
 # id: (model, mount kind, parent or wall, yaw). Ceiling: mount at the ceiling over the light. Wall: on the wall
