@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2109156320880567613}
   - component: {fileID: 3842554834860264839}
   - component: {fileID: 5182736490127365041}
+  - component: {fileID: 6427193058814430217}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -176,3 +177,19 @@ MonoBehaviour:
   curveHeight: 0.15
   edgeSoftness: 0.2
   guiDepth: -1000
+--- !u!114 &6427193058814430217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3d44ea52386491fbee692f554ed6c5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.FilmGrain
+  shader: {fileID: 4800000, guid: f67a7709550d46c29cbadd616ca8ca78, type: 3}
+  amount: 0.02
+  framesPerSecond: 24
+  showInSceneView: 0

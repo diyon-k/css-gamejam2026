@@ -53,7 +53,7 @@ Unity/Assets/
   Scripts/                     Blink.Runtime assembly (namespace Blink.*)
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
     TimeSkip/                  TimeSkipController, ISkippable, IBlinkTransition, WorldTimer
-    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer, Blood*, GamepadHaptics
+    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer, Blood*, GamepadHaptics, FilmGrain (subtle screen grain)
     Player/                    PlayerController
     Mobs/                      MobController, NavPathUtility, ZombieRagdoll, RagdollSkipper
     Combat/                    Health, IDamageable, Hitbox, Gun
