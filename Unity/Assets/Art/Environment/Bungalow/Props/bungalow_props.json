@@ -94,7 +94,7 @@
     1.0
    ],
    "kind": "furniture",
-   "tris": 1600,
+   "tris": 1599,
    "fixture": "",
    "note": "chest of drawers beside the bed: key + note on top (Editor/BungalowStartBedroom.cs)"
   },
@@ -766,7 +766,7 @@
     1.0
    ],
    "kind": "furniture",
-   "tris": 1600,
+   "tris": 1599,
    "fixture": "",
    "note": ""
   },
@@ -3670,7 +3670,7 @@
     1.0
    ],
    "kind": "furniture",
-   "tris": 1600,
+   "tris": 1599,
    "fixture": "",
    "note": "chest of drawers beside the bed: key + note on top (Editor/BungalowStartBedroom.cs)"
   },

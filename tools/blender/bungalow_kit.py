@@ -1328,7 +1328,11 @@ def build_stair():
             rz = zt + k * run
             ry0 = -(k + 1) * rise
             ry1 = y - TREAD_T
-            trim_box(mb, (xs0, xs1), (ry0, ry1), (rz - 0.02, rz), "varnish_door", bev=0.002,
+            # Riser 0 stands in FRONT of the slab's hole edge (z = zt, M_Plaster, lightmapped): the others sit under their
+            # tread's nose, but this one's face used to be coplanar with that edge, so the plaster edge z-fought through
+            # it (a tan, diagonally split quad where the dark varnish riser belongs).
+            rzs = (rz, rz + 0.012) if k == 0 else (rz - 0.02, rz)
+            trim_box(mb, (xs0, xs1), (ry0, ry1), rzs, "varnish_door", bev=0.002,
                      frame=((1, 0, 0), (0, 1, 0), (0, 0, 1)))
     # stringers (wall side and rail side) along the pitch, clipped to the hall floor and the basement floor
     k_ = rise / run

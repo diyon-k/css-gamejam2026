@@ -121,7 +121,13 @@ namespace Blink.EditorTools
                 if (o.navIgnore && !leaf) t.gameObject.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
             }
             report.AppendLine($"objects {cols.objects.Length}, box colliders {boxes}, missing {missing}");
-            if (shell) report.AppendLine(OpenLeaves(byName, cols, layout));
+            if (shell)
+            {
+                // keys first: Setup Doors only locks a keyed door whose keys are in the scene
+                Physics.SyncTransforms();
+                report.AppendLine(BungalowDoorSetup.PlaceKeys(scene, false));
+                report.AppendLine(BungalowDoorSetup.Setup(scene, false)); // doors: leaves leave the bake; each Door carves instead
+            }
 
             // ---- markers: spawns, patrol routes, reference-match cameras
             var markers = new GameObject("Markers");
@@ -257,53 +263,6 @@ namespace Blink.EditorTools
             var t = new GameObject(name).transform;
             t.SetParent(parent, false);
             return t;
-        }
-
-        // Doors that stay shut (story locks). Every other leaf hung less than fully open is swung to 90 degrees.
-        static readonly HashSet<string> LockedDoors = new HashSet<string> { "D4" };
-        const float FullyOpen = 90f;
-
-        /// <summary>
-        /// The kit shell hangs some leaves part-open (D1's right leaf 18 deg, D3 62 deg), where they catch the player
-        /// capsule. Swings every unlocked leaf that is less than fully open to 90 degrees about its hinge, in the
-        /// direction it already swings, so the doorway is clear; colliders (children) follow. Scene-only: the FBX is
-        /// unchanged. The hinge is the leaf box's vertical edge nearest a jamb of its opening (layout span).
-        /// </summary>
-        static string OpenLeaves(Dictionary<string, Transform> byName, ColliderFile cols, Layout layout)
-        {
-            var sb = new System.Text.StringBuilder("door leaves:");
-            foreach (var o in cols.objects)
-            {
-                int k = o.name.IndexOf("_Leaf", StringComparison.Ordinal);
-                if (k < 0 || o.boxes == null || o.boxes.Length == 0 || !byName.TryGetValue(o.name, out var t)) continue;
-                string door = o.name.Substring(0, k);
-                Opening op = null;
-                if (layout.openings != null) foreach (var x in layout.openings) if (x.id == door) op = x;
-                if (op == null) continue;
-                // walls named ..._S / _N / Z.. run along x; ..._E / _W / X.. run along z
-                string w = op.wall;
-                bool alongX = w.EndsWith("_S") || w.EndsWith("_N") || w.Contains("_Z");
-                var b = o.boxes[0];
-                var c = V(b.c);
-                var axis = Quaternion.Euler(V(b.r)) * Vector3.right * (b.s[0] * 0.5f);
-                Vector3 e0 = c - axis, e1 = c + axis;
-                Func<Vector3, float> along = p => alongX ? p.x : p.z;
-                Func<Vector3, float> jamb = p => Mathf.Min(Mathf.Abs(along(p) - op.span[0]), Mathf.Abs(along(p) - op.span[1]));
-                Vector3 hinge = jamb(e0) <= jamb(e1) ? e0 : e1, free = hinge == e0 ? e1 : e0;
-                hinge.y = free.y = 0f;
-                var d = (free - hinge).normalized;
-                float spanMid = (op.span[0] + op.span[1]) * 0.5f;
-                var closedDir = (alongX ? Vector3.right : Vector3.forward) * Mathf.Sign(spanMid - along(hinge));
-                float openAngle = Vector3.Angle(d, closedDir);
-                if (LockedDoors.Contains(door)) { sb.Append($" {o.name} locked ({openAngle:0} deg)"); continue; }
-                if (openAngle >= FullyOpen - 1f) { sb.Append($" {o.name} {openAngle:0} deg kept"); continue; }
-                var n = alongX ? Vector3.forward : Vector3.right;
-                if (Vector3.Dot(d, n) < 0f) n = -n;
-                float delta = Vector3.SignedAngle(d, n, Vector3.up);
-                t.RotateAround(hinge, Vector3.up, delta);
-                sb.Append($" {o.name} {openAngle:0}->{FullyOpen:0} deg");
-            }
-            return sb.ToString();
         }
 
         static Vector3 V(float[] a) => a == null || a.Length < 3 ? Vector3.zero : new Vector3(a[0], a[1], a[2]);

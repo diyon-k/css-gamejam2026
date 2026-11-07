@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-5488871713658634879
+--- !u!114 &-9044250488961164180
 MonoBehaviour:
   m_ObjectHideFlags: 3
   m_CorrespondingSourceObject: {fileID: 0}
@@ -32,10 +32,10 @@ MonoBehaviour:
   m_Name: VP_Room_Hall
   m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.VolumeProfile
   components:
-  - {fileID: 2423707637795281752}
-  - {fileID: -5488871713658634879}
-  - {fileID: 941675631917581001}
---- !u!114 &941675631917581001
+  - {fileID: 1558579813040609098}
+  - {fileID: -9044250488961164180}
+  - {fileID: 632220066633826606}
+--- !u!114 &632220066633826606
 MonoBehaviour:
   m_ObjectHideFlags: 3
   m_CorrespondingSourceObject: {fileID: 0}
@@ -63,7 +63,7 @@ MonoBehaviour:
   rounded:
     m_OverrideState: 0
     m_Value: 0
---- !u!114 &2423707637795281752
+--- !u!114 &1558579813040609098
 MonoBehaviour:
   m_ObjectHideFlags: 3
   m_CorrespondingSourceObject: {fileID: 0}

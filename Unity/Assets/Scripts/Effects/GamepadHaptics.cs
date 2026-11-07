@@ -62,6 +62,7 @@ namespace Blink.Effects
             if (_weapons) { _weapons.ShotFired += OnFired; _weapons.DryFired += OnDryFire; _weapons.ReloadFinished += OnReloaded; _weapons.MeleeHit += OnMeleeHit; }
             if (_health) { _health.Damaged += OnDamaged; _health.Died += OnDied; }
             foreach (var d in _doors) d.Opened += OnDoorOpened;
+            Door.PlayerUsed += OnDoorUsed;
             GrabQte.Bit += OnGrabBite;
             GrabQte.ShovedOff += OnGrabShovedOff;
         }
@@ -74,6 +75,7 @@ namespace Blink.Effects
             if (_weapons) { _weapons.ShotFired -= OnFired; _weapons.DryFired -= OnDryFire; _weapons.ReloadFinished -= OnReloaded; _weapons.MeleeHit -= OnMeleeHit; }
             if (_health) { _health.Damaged -= OnDamaged; _health.Died -= OnDied; }
             if (_doors != null) foreach (var d in _doors) if (d) d.Opened -= OnDoorOpened;
+            Door.PlayerUsed -= OnDoorUsed;
             GrabQte.Bit -= OnGrabBite;
             GrabQte.ShovedOff -= OnGrabShovedOff;
         }
@@ -128,6 +130,18 @@ namespace Blink.Effects
         void OnReloaded(WeaponKind kind) => Pulse(0f, 0.45f, 0.04f, 0, decay: false, taps: 2, gap: 0.07f);
         void OnMeleeHit(MeleeHitInfo hit) => Pulse(hit.Target != null ? 0.7f : 0.4f, 0.4f, 0.1f, 1); // thunk
         void OnDoorOpened() => Pulse(0.8f, 0.5f, 0.25f, 1);
+
+        // Walk-through doors: a soft thump moving, a knock when locked, a click per key, a firmer double click on unlocking.
+        void OnDoorUsed(Door door, DoorResult result)
+        {
+            switch (result)
+            {
+                case DoorResult.Opened: case DoorResult.Closed: Pulse(0.25f, 0.1f, 0.12f, 0); break;
+                case DoorResult.Rattled: case DoorResult.Blocked: Pulse(0.45f, 0.3f, 0.07f, 1, decay: false, taps: 2, gap: 0.06f); break;
+                case DoorResult.Unlocked: Pulse(0.3f, 0.6f, 0.1f, 1, taps: 2, gap: 0.12f); break;
+                case DoorResult.KeyUsed: Pulse(0.2f, 0.5f, 0.06f, 1); break; // a key turning, not the last
+            }
+        }
         void OnDied() => enabled = false;
 
         /// <summary>A hit-sized thump (0..1) for scripted scares that don't go through Health, e.g. Lily's doll on your face.</summary>

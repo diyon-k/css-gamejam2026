@@ -361,6 +361,27 @@ DOOR_LEAVES = {
     "DC3": dict(style="panel4", open=90.0),
     "DC4": dict(style="panel4", open=90.0),
 }
+# Door gameplay state (Unity: BLINK/Bungalow/Setup Doors). locked + keys: that many of `key` (default KEY_ITEM), each
+# used up in the lock as the player brings it (one hand: one key at a time); keys=0 is a story lock nothing opens (D4).
+# A keyed door is only locked in Unity once a Pickup of its key is in the scene, so the player can't be shut in.
+# open: starts open toward its swing side. Unlisted unlocked doors start closed.
+DOOR_STATE = {
+    "D1": dict(locked=True, keys=3, key="key_dorm", also=("key_workshop", "key_front_3"), open=False,
+               note="front door; one key per puzzle room, any order: key_dorm (Lily's doll), key_workshop "
+                    "(flooded basement), key_front_3 (third room). Placeholders stand in for unbuilt rooms "
+                    "(BLINK/Bungalow/Place Front Door Keys)"),
+    "D2": dict(locked=True, keys=1, key="key_bedroom", open=False,
+               note="the start bedroom: shut and locked, key on the chest of drawers (BLINK/Bungalow/Set Up Start Bedroom)"),
+    "D3": dict(locked=False, open=False),
+    "D4": dict(locked=True, keys=0, open=False, note="kitchen back door, locked for story use"),
+    "D5": dict(locked=False, open=True, note="basement door open: the B1-D5-B2 sightline"),
+    # revision 3 north wing: all unlocked and open, so the D1-DC1-DC2 sightline and the two chase loops read
+    "DC1": dict(locked=False, open=True, note="hall -> corridor, on the D1 sightline"),
+    "DC2": dict(locked=False, open=True, note="corridor -> parlour, on the D1 sightline"),
+    "DC3": dict(locked=False, open=True),
+    "DC4": dict(locked=False, open=True, note="kitchen -> corridor chase loop"),
+}
+KEY_ITEM = "key_front"
 # Radiators: wall run axis, wall face coordinate, inward direction (+1 / -1 across the face), span along the wall
 RADIATORS = {   # rev 3: Radiator_Hall (and its pipes) removed, DC1 is cut where it hung
     "Radiator_Parlour": dict(room="Parlour", axis="z", face=19.7, inward=-1, span=(20.15, 21.45)),
@@ -424,6 +445,10 @@ def to_json():
                           range=f.get("range", 0.0), mode=f["mode"]) for k, f in FIXTURES.items()],
         "gate": dict(id=GATE["id"], hinge=v3(GATE["hinge"]), openYaw=GATE["open_yaw"],
                      closedYaw=GATE["closed_yaw"]),
+        "doors": [dict(id=k, locked=bool(v.get("locked", False)), keys=int(v.get("keys", 0)), key=v.get("key", KEY_ITEM),
+                       also=list(v.get("also", ())), open=bool(v.get("open", False)))
+                  for k, v in DOOR_STATE.items()],
+        "keyItem": KEY_ITEM,
         "surfaceTiles": [dict(material=k, tileM=float(v)) for k, v in SURFACE_TILE_M.items()],
         "agent": dict(NAV_AGENT),
         "player": dict(PLAYER),
@@ -487,6 +512,8 @@ def check():
     out.append((f"well end {s['opening']['z'][1]} >= headroom line {need:.2f}", s["opening"]["z"][1] >= need))
     # Phase 3 kit tables
     out.append(("every room has a ROOM_FINISH", set(ROOMS) <= set(ROOM_FINISH)))
+    out.append(("every door has a DOOR_STATE entry",
+                {k for k, o in OPENINGS.items() if o["kind"] == "door"} <= set(DOOR_STATE)))
     out.append(("every door has a DOOR_LEAVES entry",
                 {k for k, o in OPENINGS.items() if o["kind"] == "door"} <= set(DOOR_LEAVES)))
     for k, r in RADIATORS.items():

@@ -239,7 +239,7 @@ namespace Blink.EditorTools
         {
             if (!AssetDatabase.IsValidFolder(PrefabDir.TrimEnd('/'))) AssetDatabase.CreateFolder(PropsDir.TrimEnd('/'), "Prefabs");
             var models = LoadModels();
-            int n = 0, boxes = 0;
+            int n = 0, boxes = 0, drawers = 0;
             var missing = new List<string>();
             foreach (var m in models.Values)
             {
@@ -270,11 +270,53 @@ namespace Blink.EditorTools
                     bc.size = hi - lo;
                     boxes++;
                 }
+                drawers += SetupDrawers(go, m);
                 PrefabUtility.SaveAsPrefabAsset(go, PrefabDir + m.name + ".prefab");
                 UnityEngine.Object.DestroyImmediate(go);
                 n++;
             }
-            return $"prefabs: {n} in {PrefabDir} ({boxes} with a box collider)" + (missing.Count > 0 ? "; missing fbx: " + string.Join(", ", missing.ToArray()) : "");
+            return $"prefabs: {n} in {PrefabDir} ({boxes} with a box collider, {drawers} drawers)" + (missing.Count > 0 ? "; missing fbx: " + string.Join(", ", missing.ToArray()) : "");
+        }
+
+        static readonly System.Text.RegularExpressions.Regex DrawerName = new System.Text.RegularExpressions.Regex(@"_Drawer\d+$");
+        const float DrawerPull = 0.30f;    // metres out of the front (+Z): about half of a 0.54 m deep drawer
+        const float DrawerSeconds = 0.3f;
+        const float DrawerProud = 0.01f;   // the drawer collider sticks out past the body box, so the look ray finds it
+
+        /// <summary>
+        /// Every "&lt;Model&gt;_Drawer&lt;N&gt;" child (split out by the Blender build, ph(split=...)) becomes a sliding
+        /// <see cref="Blink.Interaction.Openable"/> with its own box collider. Drawers aren't static and are lit by light
+        /// probes, so they can move. Returns how many it set up.
+        /// </summary>
+        static int SetupDrawers(GameObject go, Model m)
+        {
+            int n = 0;
+            float bodyFront = m.hi != null && m.hi.Length == 3 ? m.hi[2] : float.NegativeInfinity;
+            foreach (var t in go.GetComponentsInChildren<Transform>(true))
+            {
+                if (!DrawerName.IsMatch(t.name)) continue;
+                GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
+                var r = t.GetComponent<MeshRenderer>();
+                if (r != null)
+                {
+                    r.receiveGI = ReceiveGI.LightProbes;
+                    r.shadowCastingMode = ShadowCastingMode.On;
+                }
+                var mf = t.GetComponent<MeshFilter>();
+                var b = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.one * 0.2f);
+                var bc = t.gameObject.AddComponent<BoxCollider>();
+                float front = t.localPosition.z + b.max.z;
+                float extra = Mathf.Max(0f, bodyFront + DrawerProud - front);
+                bc.center = b.center + new Vector3(0f, 0f, extra * 0.5f);
+                bc.size = b.size + new Vector3(0f, 0f, extra);
+                var o = t.gameObject.AddComponent<Blink.Interaction.Openable>();
+                o.motion = Blink.Interaction.Openable.Motion.Sliding;
+                o.noun = "drawer";
+                o.slide = new Vector3(0f, 0f, DrawerPull);
+                o.seconds = DrawerSeconds;
+                n++;
+            }
+            return n;
         }
 
         // ------------------------------------------------------------------ placement
