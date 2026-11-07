@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.SwingableProp
   displayName: frying pan
-  grip: {x: 0, y: 0.0000000018626451, z: -0.17099999}
+  grip: {x: 0, y: 0.023, z: -0.191}
   lengthAxis: {x: 0, y: 0, z: 1}
   knocksDown: 1
   damage: 5

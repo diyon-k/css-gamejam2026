@@ -96,7 +96,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.SwingableProp
   displayName: crowbar
-  grip: {x: 0, y: -0.22800003, z: 0}
+  grip: {x: 0, y: -0.265, z: -0.043}
   lengthAxis: {x: 0, y: 1, z: 0}
   knocksDown: 1
   damage: 7
