@@ -23,12 +23,17 @@ namespace Blink.Interaction
         [Tooltip("Drops if it gets this far from the hold point (stuck behind something).")]
         [SerializeField] float breakDistance = 1.5f;
         [SerializeField] float throwSpeed = 9f;
+        [Tooltip("Random tumble on a throw, rad/s, so it reads as thrown rather than launched.")]
+        [SerializeField] float throwSpin = 4f;
+        [Tooltip("Seconds (real time) the pull eases in after a grab, so it drifts up into the hands instead of snapping.")]
+        [SerializeField, Min(0.01f)] float grabSeconds = 0.3f;
 
         Rigidbody _body;
         Collider[] _colliders;
         Collider _holder;
         Transform _eye;
         InputAction _throw;
+        float _grabbedAt;
         SwingableProp _swing; // optional: held like a club and swung on Attack instead of thrown
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -47,7 +52,7 @@ namespace Blink.Interaction
 
         public void Interact(Interactor who)
         {
-            if (Held == this) Release(Vector3.zero);
+            if (Held == this) Release(_body.linearVelocity); // keeps its swing, doesn't stop dead mid-air
             else if (Held == null) Grab(who);
         }
 
@@ -59,6 +64,13 @@ namespace Blink.Interaction
             SetIgnoreHolder(true); // don't shove the player around
             _body.useGravity = false;
             _body.interpolation = RigidbodyInterpolation.Interpolate;
+            _grabbedAt = Time.unscaledTime;
+        }
+
+        /// <summary>Lets go of whatever the player is carrying, e.g. when they die.</summary>
+        public static void DropHeld()
+        {
+            if (Held != null) Held.Release(Vector3.zero);
         }
 
         void Release(Vector3 velocity)
@@ -81,6 +93,8 @@ namespace Blink.Interaction
                     return;
                 }
                 Release(_eye.forward * throwSpeed);
+                _body.angularVelocity = Random.insideUnitSphere * throwSpin;
+                if (FindAnyObjectByType<Combat.HandsViewModel>() is { } hands) hands.Reach(); // shove the arms forward
             }
         }
 
@@ -96,7 +110,8 @@ namespace Blink.Interaction
             var target = _eye.position + _eye.forward * holdDistance;
             var toTarget = target - _body.position;
             if (toTarget.magnitude > breakDistance) { Release(Vector3.zero); return; }
-            _body.linearVelocity = toTarget * followStrength;
+            float ease = Mathf.SmoothStep(0.1f, 1f, (Time.unscaledTime - _grabbedAt) / grabSeconds);
+            _body.linearVelocity = toTarget * (followStrength * ease);
             _body.angularVelocity *= 0.8f;
         }
 

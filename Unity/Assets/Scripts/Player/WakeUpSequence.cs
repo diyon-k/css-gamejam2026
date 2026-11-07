@@ -105,6 +105,7 @@ namespace Blink.Player
             _diedAt = Time.unscaledTime;
             enabled = true;
             TimeSkipController.Locked = true;
+            Carryable.DropHeld();
             if (_cam != null) { _diedPos = _cam.localPosition; _diedRot = _cam.localRotation; }
         }
 

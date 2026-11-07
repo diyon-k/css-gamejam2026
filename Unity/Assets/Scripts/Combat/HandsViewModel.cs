@@ -1,3 +1,5 @@
+using Blink.Interaction;
+using Blink.Player;
 using UnityEngine;
 
 namespace Blink.Combat
@@ -12,6 +14,14 @@ namespace Blink.Combat
     /// Both targets hang off <see cref="swayPivot"/>, which this moves; the pivot carries a RigTransform so the
     /// IK reads this frame's pose. The sway is the player's body, so it runs on unscaled time like the camera.
     /// Parent the root to the camera at local (0, 0, 0): the pose is authored in camera space.
+    ///
+    /// On top of the sway, three procedural poses: a reach forward when the player interacts (picks something up,
+    /// opens a door), and while a zombie has us (<see cref="GrabQte"/>) a raised, trembling brace against its
+    /// chest, a shove on every correct press and a big shove when we break free.
+    ///
+    /// On a <see cref="Ladder"/> the hands go up onto the rails and climb hand over hand: each hand's IK target is
+    /// moved on its own, one reaching up a rung while the other pulls down, following <see cref="Ladder.Rungs"/>;
+    /// over the top they push down on the edge (the reach pose, driven by <see cref="Ladder.Mantle"/>).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class HandsViewModel : MonoBehaviour
@@ -27,17 +37,84 @@ namespace Blink.Combat
         [Tooltip("Breaths per second.")]
         [SerializeField, Min(0f)] float swayFrequency = 0.3f;
 
+        [Header("Grab an object (on interact)")]
+        [Tooltip("Offset at full reach in metres, and the pitch in degrees (+ = tip down).")]
+        [SerializeField] Vector3 reachPosition = new(0f, -0.04f, 0.2f);
+        [SerializeField] float reachPitch = 18f;
+        [SerializeField, Min(0.01f)] float reachSeconds = 0.45f;
+
+        [Header("Grabbed by a zombie (QTE)")]
+        [Tooltip("Hands up against the zombie's chest: offset and pitch (- = tip up).")]
+        [SerializeField] Vector3 bracePosition = new(0f, 0.12f, 0.08f);
+        [SerializeField] float bracePitch = -20f;
+        [Tooltip("Tremble while braced: metres and degrees.")]
+        [SerializeField] float trembleDistance = 0.008f;
+        [SerializeField] float trembleAngle = 2f;
+        [Tooltip("Push on each correct press (metres forward); breaking free shoves twice as far.")]
+        [SerializeField] float shoveDistance = 0.12f;
+        [SerializeField, Min(0.01f)] float shoveSeconds = 0.3f;
+
+        [Header("Climbing a ladder")]
+        [Tooltip("Hand IK targets (children of the sway pivot), moved apart for hand over hand. Found by name " +
+                 "(LeftHandTarget / RightHandTarget) if left empty.")]
+        [SerializeField] Transform leftHand, rightHand;
+        [Tooltip("Both hands up on the rails: offset in metres and pitch in degrees (- = tip up).")]
+        [SerializeField] Vector3 climbPosition = new(0f, 0.14f, 0.08f);
+        [SerializeField] float climbPitch = -25f;
+        [Tooltip("Metres each hand moves up or down per rung relative to the view (one reaches up as the other pulls down).")]
+        [SerializeField] float climbHandTravel = 0.16f;
+        [Tooltip("Metres the reaching hand comes off the rung towards us mid-reach.")]
+        [SerializeField] float climbHandLift = 0.05f;
+        [Tooltip("Seconds to raise the hands onto the ladder, or drop them after.")]
+        [SerializeField, Min(0.01f)] float climbBlendSeconds = 0.25f;
+
         Vector3 _restPosition;
         Quaternion _restRotation = Quaternion.identity;
         bool _initialised;
         float _time;
+        Interactor _interactor;
+        float _reachAt = float.NegativeInfinity, _shoveAt = float.NegativeInfinity, _shoveStrength, _brace, _climb;
+        Vector3 _leftRest, _rightRest;
 
-        void Awake() => EnsureInitialised();
+        void Awake()
+        {
+            EnsureInitialised();
+            _interactor = GetComponentInParent<Interactor>();
+        }
+
+        void OnEnable()
+        {
+            if (_interactor != null) _interactor.Interacted += Reach;
+            GrabQte.Beat += OnBeat;
+            GrabQte.Resolved += OnResolved;
+            _brace = GrabQte.Active ? 1f : 0f; // swapped in mid-QTE: already braced
+            _climb = Ladder.Climbing ? 1f : 0f;
+        }
 
         void OnDisable()
         {
-            if (_initialised && swayPivot != null) swayPivot.SetLocalPositionAndRotation(_restPosition, _restRotation);
+            if (_interactor != null) _interactor.Interacted -= Reach;
+            GrabQte.Beat -= OnBeat;
+            GrabQte.Resolved -= OnResolved;
+            _reachAt = _shoveAt = float.NegativeInfinity;
+            if (!_initialised) return;
+            if (swayPivot != null) swayPivot.SetLocalPositionAndRotation(_restPosition, _restRotation);
+            if (leftHand != null) leftHand.localPosition = _leftRest;
+            if (rightHand != null) rightHand.localPosition = _rightRest;
         }
+
+        /// <summary>Plays the reach-and-take motion.</summary>
+        public void Reach() => _reachAt = _time;
+
+        /// <summary>Plays a shove; <paramref name="strength"/> 1 = one QTE press.</summary>
+        public void Shove(float strength = 1f)
+        {
+            _shoveAt = _time;
+            _shoveStrength = strength;
+        }
+
+        void OnBeat() => Shove();
+        void OnResolved(bool passed) { if (passed) Shove(2f); }
 
         void Update() => Step(Time.unscaledDeltaTime);
 
@@ -53,8 +130,64 @@ namespace Blink.Combat
             var wave = new Vector3(Mathf.Sin(w * 0.5f + 0.4f), Mathf.Sin(w), Mathf.Sin(w * 0.77f + 2.1f));
             Vector3 position = _restPosition + Vector3.Scale(swayPosition, wave);
             Quaternion rotation = _restRotation * Quaternion.Euler(Vector3.Scale(swayRotation, new Vector3(wave.y, wave.x, wave.z)));
+
+            // Grab an object: out and back on a sine.
+            float reach = Pulse(_time - _reachAt, reachSeconds * 0.45f, reachSeconds * 0.55f);
+            float reachEase = Mathf.SmoothStep(0f, 1f, reach);
+            position += reachPosition * reachEase;
+            float pitch = reachPitch * reachEase;
+
+            // Grabbed: ease into the brace, tremble, shove.
+            _brace = Mathf.MoveTowards(_brace, GrabQte.Active ? 1f : 0f, Mathf.Max(0f, seconds) * 6f);
+            float brace = Mathf.SmoothStep(0f, 1f, _brace);
+            float shove = Pulse(_time - _shoveAt, shoveSeconds * 0.25f, shoveSeconds * 0.75f) * _shoveStrength;
+            var tremble = new Vector3(Noise(0f), Noise(10f), Noise(20f)) * brace;
+            position += bracePosition * brace + tremble * trembleDistance + new Vector3(0f, 0.02f, shoveDistance) * shove;
+            pitch += bracePitch * brace - 8f * shove;
+            // Ladder: both hands up on the rails, alternating; over the top, the reach pose pushes down on the edge.
+            _climb = Mathf.MoveTowards(_climb, Ladder.Climbing ? 1f : 0f, Mathf.Max(0f, seconds) / climbBlendSeconds);
+            float climb = Mathf.SmoothStep(0f, 1f, _climb);
+            float mantle = Mathf.SmoothStep(0f, 1f, Ladder.Mantle);
+            position += climbPosition * (climb * (1f - mantle)) + reachPosition * mantle;
+            pitch += climbPitch * climb * (1f - mantle) + reachPitch * mantle;
+            float rungs = Ladder.Rungs;
+            if (leftHand != null) leftHand.localPosition = _leftRest + ClimbHandOffset(rungs, 0) * climb;
+            if (rightHand != null) rightHand.localPosition = _rightRest + ClimbHandOffset(rungs, 1) * climb;
+
+            rotation *= Quaternion.Euler(pitch + tremble.x * trembleAngle, tremble.y * trembleAngle, tremble.z * trembleAngle);
+
             swayPivot.SetLocalPositionAndRotation(position, rotation);
         }
+
+        Vector3 ClimbHandOffset(float rungs, int hand)
+        {
+            float height = ClimbHand(rungs, hand, out float reach);
+            return new Vector3(0f, height * climbHandTravel, -climbHandLift * Mathf.Sin(reach * Mathf.PI));
+        }
+
+        /// <summary>
+        /// Hand over hand: <paramref name="hand"/> 0 (left) reaches up on even rungs and pulls down on odd ones, hand
+        /// 1 the other way round. Returns the hand's height, -0.5 (low) to 0.5 (high), in rung travels; continuous
+        /// across rungs. <paramref name="reach"/> is 0 → 1 through a reach up (0 while pulling).
+        /// </summary>
+        public static float ClimbHand(float rungs, int hand, out float reach)
+        {
+            int rung = Mathf.FloorToInt(rungs);
+            float f = rungs - rung;
+            bool reaching = ((rung + hand) & 1) == 0;
+            reach = reaching ? f : 0f;
+            return reaching ? f - 0.5f : 0.5f - f;
+        }
+
+        /// <summary>0 → 1 over <paramref name="rise"/> seconds, back to 0 over <paramref name="fall"/>; 0 outside.</summary>
+        public static float Pulse(float t, float rise, float fall)
+        {
+            if (t < 0f || t >= rise + fall) return 0f;
+            return t < rise ? Mathf.Sin(t / rise * Mathf.PI * 0.5f) : Mathf.Cos((t - rise) / fall * Mathf.PI * 0.5f);
+        }
+
+        // -1..1, fast enough to read as straining arms.
+        float Noise(float seed) => Mathf.PerlinNoise(seed, _time * 14f) * 2f - 1f;
 
         void EnsureInitialised()
         {
@@ -62,6 +195,10 @@ namespace Blink.Combat
             _initialised = true;
             _restPosition = swayPivot.localPosition;
             _restRotation = swayPivot.localRotation;
+            if (leftHand == null) leftHand = swayPivot.Find("LeftHandTarget");
+            if (rightHand == null) rightHand = swayPivot.Find("RightHandTarget");
+            if (leftHand != null) _leftRest = leftHand.localPosition;
+            if (rightHand != null) _rightRest = rightHand.localPosition;
         }
     }
 }

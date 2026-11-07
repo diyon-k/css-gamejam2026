@@ -182,6 +182,7 @@ namespace Blink.Mobs
             if (CurrentState == State.Dead || !_agent.enabled) return;
             _agent.Warp(_spawnPos);
             transform.rotation = _spawnRot;
+            if (_hasAttackParam) animator.ResetTrigger(AttackParam); // no leftover swing at home
             if (_agent.isOnNavMesh) StartPatrol();
         }
 
@@ -256,8 +257,13 @@ namespace Blink.Mobs
 
             // While chasing, animate at the intended pace: the measured velocity drops to zero for a
             // moment after a skip warps the agent, which would flick the Animator back to Idle.
+            // Once it has run out of path (you're somewhere it can't reach) it stands instead of running on the spot.
             if (_hasSpeedParam)
-                animator.SetFloat(SpeedParam, CurrentState == State.Chase ? moveSpeed : _agent.velocity.magnitude);
+            {
+                bool running = CurrentState == State.Chase &&
+                               (_agent.pathPending || _agent.remainingDistance > _agent.stoppingDistance);
+                animator.SetFloat(SpeedParam, running ? moveSpeed : _agent.velocity.magnitude);
+            }
         }
 
         /// <summary>Walk to the patrol waypoint / investigated spot, then pause or search there.</summary>

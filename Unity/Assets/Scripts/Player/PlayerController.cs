@@ -40,6 +40,10 @@ namespace Blink.Player
         public Vector3 Velocity => _velocity;
         public bool InputEnabled { get; set; } = true;
         public bool IsCrawling { get; private set; }
+        /// <summary>Camera pitch in degrees (positive looks down).</summary>
+        public float Pitch => _pitch;
+        /// <summary>Gamepad look multiplier; aim assist lowers it over a target (Fortnite-style slowdown).</summary>
+        public float GamepadLookScale { get; set; } = 1f;
 
         CharacterController _controller;
         Health _health;
@@ -110,10 +114,16 @@ namespace Blink.Player
             Vector2 delta = _look.ReadValue<Vector2>();
             // Mouse reports pixels per frame; sticks report a direction that needs time scaling.
             bool isGamepad = _look.activeControl?.device is Gamepad;
-            delta *= isGamepad ? gamepadSensitivity * Time.unscaledDeltaTime : mouseSensitivity;
+            delta *= isGamepad ? gamepadSensitivity * GamepadLookScale * Time.unscaledDeltaTime : mouseSensitivity;
+            AddLook(delta.x, -delta.y);
+        }
 
-            transform.Rotate(0f, delta.x, 0f, Space.Self);
-            _pitch = Mathf.Clamp(_pitch - delta.y, -maxPitch, maxPitch);
+        /// <summary>Turns the view by <paramref name="yaw"/> and <paramref name="pitch"/> degrees (pitch positive = down).</summary>
+        public void AddLook(float yaw, float pitch)
+        {
+            if (cameraPivot == null) return;
+            transform.Rotate(0f, yaw, 0f, Space.Self);
+            _pitch = Mathf.Clamp(_pitch + pitch, -maxPitch, maxPitch);
             cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         }
 

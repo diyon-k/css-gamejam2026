@@ -29,6 +29,9 @@ namespace Blink.Player
         /// <summary>A grab QTE ended. Argument: true if the player broke free.</summary>
         public static event Action<bool> Resolved;
 
+        /// <summary>A correct press that didn't finish the QTE (a shove that hasn't broken free yet).</summary>
+        public static event Action Beat;
+
         /// <summary>
         /// True during a QTE and briefly after, so the Space presses and clicks used for it don't register as
         /// blinks or gunshots (Space is also the keyboard blink key).
@@ -42,6 +45,7 @@ namespace Blink.Player
             _endedAt = float.NegativeInfinity;
             Began = null;
             Resolved = null;
+            Beat = null;
         }
 
         /// <summary>Starts a QTE. Returns false if one is already running. Callback arg: passed.</summary>
@@ -121,6 +125,7 @@ namespace Blink.Player
             {
                 if (m < _zoneStart || m > _zoneStart + _zoneWidth) { Finish(false); return; }
                 if (++_beat >= Beats) { Finish(true); return; }
+                Beat?.Invoke();
                 NextZone();
             }
             else if (m > 1f) Finish(false);
@@ -140,6 +145,7 @@ namespace Blink.Player
             if (pressed < 0) return;
             if (pressed != _combo[_comboIndex]) { Finish(false); return; }
             if (++_comboIndex >= ComboLength) Finish(true);
+            else Beat?.Invoke();
         }
 
         void Finish(bool passed)
