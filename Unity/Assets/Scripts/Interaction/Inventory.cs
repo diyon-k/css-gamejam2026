@@ -62,6 +62,7 @@ namespace Blink.Interaction
                 _candle.color = new Color(1f, 0.7f, 0.4f);
                 _candle.intensity = 1.5f;
                 _candle.range = 4f;
+                Blink.Player.ViewmodelLighting.AddToLight(_candle);
             }
             if (_candle != null) _candle.enabled = Has(lightItemId);
         }

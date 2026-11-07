@@ -100,6 +100,7 @@ namespace Blink.Interaction
             Body.interpolation = RigidbodyInterpolation.None;
             foreach (var col in Colliders) col.enabled = false;
             transform.SetParent(viewModelGrip, false);
+            Blink.Player.ViewmodelLighting.SetHeld(gameObject, true);
             if (!_customPose)
             {
                 _heldRotation = lengthAxis.sqrMagnitude > 1e-6f ? Quaternion.FromToRotation(lengthAxis.normalized, Vector3.up) : Quaternion.identity;
@@ -113,6 +114,7 @@ namespace Blink.Interaction
         {
             IsHeld = false;
             transform.SetParent(null, true);
+            Blink.Player.ViewmodelLighting.SetHeld(gameObject, false);
             foreach (var col in Colliders)
             {
                 col.enabled = true;
