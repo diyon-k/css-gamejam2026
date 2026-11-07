@@ -336,7 +336,7 @@ def draw():
         if r["level"] == "ground":
             room_label(g, rid, r)
     # sightlines (direction 12): long views through aligned openings
-    SIGHT = [((9.25, -0.2), (9.25, 25.6), "D1-A2-DC1-DC2 25.8 m"), ((1.0, 2.1), (19.6, 2.1), "D2-A1 18.6 m"),
+    SIGHT = [((9.25, -0.2), (9.25, 25.6), "D1-A2-D6-D7 25.8 m"), ((1.0, 2.1), (19.6, 2.1), "D2-A1 18.6 m"),
              ((15.0, 0.4), (15.0, 14.6), "O1 14.2 m")]
     for a, b, lab in SIGHT:
         dashed(g, [a, b], COL["sight"], 2, 14)

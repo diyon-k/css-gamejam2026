@@ -88,7 +88,7 @@ WALLS = {
     "Wall_Ext_S": dict(axis="x", t=(0.0, 0.3), a=(0.0, 20.0), y=(GRADE, CEILING_TOP), openings=["D1", "WL1"]),
     # revision 3: Wall_Ext_N is now the corridor's south wall (WB1 / WK1 become borrowed lights into the corridor)
     "Wall_Ext_N": dict(axis="x", t=(14.7, 15.0), a=(0.0, 20.0), y=(GRADE, CEILING_TOP),
-                       openings=["WB1", "WK1", "DC1", "DC4"]),
+                       openings=["WB1", "WK1", "D6", "D9"]),
     "Wall_Ext_W": dict(axis="z", t=(0.0, 0.3), a=(0.3, 14.7), y=(GRADE, CEILING_TOP), openings=["WR1"]),
     "Wall_Ext_E": dict(axis="z", t=(19.7, 20.0), a=(0.3, 14.7), y=(GRADE, CEILING_TOP),
                        openings=["WL2", "WK2", "D4"]),
@@ -107,7 +107,7 @@ WALLS = {
                         openings=["WM1", "WP1", "WP2"]),
     "Wall_Ext_W2": dict(axis="z", t=(0.0, 0.3), a=(15.0, 25.7), y=(GRADE, CEILING_TOP), openings=["WC1", "WM2"]),
     "Wall_Ext_E2": dict(axis="z", t=(19.7, 20.0), a=(15.0, 25.7), y=(GRADE, CEILING_TOP), openings=["WC2"]),
-    "Wall_Z16p875": dict(axis="x", t=(16.8, 16.95), a=(0.3, 19.7), y=(-SLAB, CEILING_TOP), openings=["DC2", "DC3"]),
+    "Wall_Z16p875": dict(axis="x", t=(16.8, 16.95), a=(0.3, 19.7), y=(-SLAB, CEILING_TOP), openings=["D7", "D8"]),
     "Wall_X8p0": dict(axis="z", t=(7.925, 8.075), a=(16.95, 25.7), y=(-SLAB, CEILING_TOP), openings=["AC1"]),
     "Wall_B_W": dict(axis="z", t=(6.775, 7.075), a=(4.075, 14.7), y=(_BW, -SLAB), openings=[]),
     "Wall_B_E": dict(axis="z", t=(19.7, 20.0), a=(3.775, 15.0), y=(_BW, GRADE), openings=["BW2"]),
@@ -139,14 +139,14 @@ OPENINGS = {
     "WB1": dict(kind="window", wall="Wall_Ext_N", span=(2.4, 3.4), y=(1.50, HEAD), frosted=True),
     "BW2": dict(kind="window", wall="Wall_B_E", span=(9.0, 10.4), y=(-0.75, -0.30), hopper=True,
                 well=dict(x=(20.0, 20.6), z=(8.9, 10.5), floor=-0.90)),
-    # revision 3. DC1 is centred on D1 (x 9.25) and DC2 on DC1: front door -> hall -> corridor -> parlour, ~25 m
-    "DC1": dict(kind="door", wall="Wall_Ext_N", span=(8.65, 9.85), y=(0.0, DOOR_H), hinge="W", swing="corridor",
+    # revision 3. D6 is centred on D1 (x 9.25) and D7 on D6: front door -> hall -> corridor -> parlour, ~25 m
+    "D6": dict(kind="door", wall="Wall_Ext_N", span=(8.65, 9.85), y=(0.0, DOOR_H), hinge="W", swing="corridor",
                 swing_dir=1, note="hall north landing -> corridor, on the D1 sightline"),
-    "DC2": dict(kind="door", wall="Wall_Z16p875", span=(8.65, 9.85), y=(0.0, DOOR_H), hinge="W", swing="parlour",
+    "D7": dict(kind="door", wall="Wall_Z16p875", span=(8.65, 9.85), y=(0.0, DOOR_H), hinge="W", swing="parlour",
                 swing_dir=1, note="corridor -> parlour, on the D1 sightline"),
-    "DC3": dict(kind="door", wall="Wall_Z16p875", span=(3.40, 4.60), y=(0.0, DOOR_H), hinge="E", swing="bedroom",
+    "D8": dict(kind="door", wall="Wall_Z16p875", span=(3.40, 4.60), y=(0.0, DOOR_H), hinge="E", swing="bedroom",
                 swing_dir=1),
-    "DC4": dict(kind="door", wall="Wall_Ext_N", span=(18.00, 19.20), y=(0.0, DOOR_H), hinge="E", swing="corridor",
+    "D9": dict(kind="door", wall="Wall_Ext_N", span=(18.00, 19.20), y=(0.0, DOOR_H), hinge="E", swing="corridor",
                 swing_dir=1, note="kitchen -> corridor: the hall / corridor / kitchen / living chase loop"),
     "AC1": dict(kind="arch", wall="Wall_X8p0", span=(20.50, 22.50), y=(0.0, 2.70), spring=2.30),
     "WM1": dict(kind="window", wall="Wall_Ext_N2", span=(3.0, 4.6), y=(SILL, HEAD)),
@@ -228,7 +228,7 @@ NAV_AGENT = dict(name="BungalowZombie", radius=0.30, height=1.80, climb=0.30, sl
 FIXTURES = {
     "E1": dict(kind="dome", pos=(9.25, 2.92, 2.0), col="#F2DFA8", i=1.2, range=5.5, mode="Baked"),
     "H1": dict(kind="chand", pos=(7.70, 2.45, 9.6), col="#FFD6A0", i=1.0, range=6.5, mode="Baked"),
-    # rev 3: H2 / H3 flank the new DC1 door (were x 8.45 / 10.05 round the removed hall radiator)
+    # rev 3: H2 / H3 flank the new D6 door (were x 8.45 / 10.05 round the removed hall radiator)
     "H2": dict(kind="sconce", pos=(8.20, 1.90, 14.62), col="#FFC680", i=0.5, range=5.0, mode="Baked"),
     "H3": dict(kind="sconce", pos=(10.30, 1.90, 14.62), col="#FFC680", i=0.5, range=5.0, mode="Baked"),
     "H4": dict(kind="lamp", pos=(11.0, 1.05, 13.8), col="#FFCB85", i=1.4, range=4.0, mode="Mixed", hero=True),
@@ -356,10 +356,10 @@ DOOR_LEAVES = {
     "D3": dict(style="panel4", open=62.0),
     "D4": dict(style="panel4", open=0.0, note="locked, closed"),
     "D5": dict(style="ledged", open=96.0),
-    "DC1": dict(style="panel4", open=170.0, note="folds flat on the corridor S wall: at 90 it leaves 0.6 m of corridor"),
-    "DC2": dict(style="panel4", open=90.0),
-    "DC3": dict(style="panel4", open=90.0),
-    "DC4": dict(style="panel4", open=90.0),
+    "D6": dict(style="panel4", open=170.0, note="folds flat on the corridor S wall: at 90 it leaves 0.6 m of corridor"),
+    "D7": dict(style="panel4", open=90.0),
+    "D8": dict(style="panel4", open=90.0),
+    "D9": dict(style="panel4", open=90.0),
 }
 # Door gameplay state (Unity: BLINK/Bungalow/Setup Doors). locked + keys: that many of `key` (default KEY_ITEM), each
 # used up in the lock as the player brings it (one hand: one key at a time); keys=0 is a story lock nothing opens (D4).
@@ -376,14 +376,14 @@ DOOR_STATE = {
     "D4": dict(locked=True, keys=0, open=False, note="kitchen back door, locked for story use"),
     "D5": dict(locked=False, open=False, note="basement door, shut like the rest (it was open for the B1-D5-B2 sightline)"),
     # revision 3 north wing: unlocked, shut like every door
-    "DC1": dict(locked=False, open=False, note="hall -> corridor, on the D1 sightline"),
-    "DC2": dict(locked=False, open=False, note="corridor -> parlour, on the D1 sightline"),
-    "DC3": dict(locked=False, open=False),
-    "DC4": dict(locked=False, open=False, note="kitchen -> corridor chase loop"),
+    "D6": dict(locked=False, open=False, note="hall -> corridor, on the D1 sightline"),
+    "D7": dict(locked=False, open=False, note="corridor -> parlour, on the D1 sightline"),
+    "D8": dict(locked=False, open=False),
+    "D9": dict(locked=False, open=False, note="kitchen -> corridor chase loop"),
 }
 KEY_ITEM = "key_front"
 # Radiators: wall run axis, wall face coordinate, inward direction (+1 / -1 across the face), span along the wall
-RADIATORS = {   # rev 3: Radiator_Hall (and its pipes) removed, DC1 is cut where it hung
+RADIATORS = {   # rev 3: Radiator_Hall (and its pipes) removed, D6 is cut where it hung
     "Radiator_Parlour": dict(room="Parlour", axis="z", face=19.7, inward=-1, span=(20.15, 21.45)),
     "Radiator_Master": dict(room="MasterBedroom", axis="z", face=0.3, inward=1, span=(18.2, 19.2)),
     "Radiator_Living": dict(room="Living", axis="z", face=19.7, inward=-1, span=(3.15, 4.45)),
