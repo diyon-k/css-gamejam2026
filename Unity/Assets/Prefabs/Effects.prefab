@@ -10,6 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 710546703222901627}
   - component: {fileID: 6871033281486358128}
+  - component: {fileID: 7781438192504661927}
+  - component: {fileID: 5925378388063220835}
+  - component: {fileID: 7938290153227515327}
   m_Layer: 0
   m_Name: Effects
   m_TagString: Untagged
@@ -44,8 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae895a8d3d635b34ba61e556de7f30ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.BloodImpactSpawner
-  gun: {fileID: 0}
-  aimCamera: {fileID: 0}
+  weapons: {fileID: 0}
   impactPrefab: {fileID: 3284035147886175601, guid: d2fb46b86ea3d234cb520e57397ba716, type: 3}
   towardShooter: 0.4
   dropletLift: 0.25
@@ -62,6 +64,65 @@ MonoBehaviour:
   maxFloorDrop: 2.5
   floorCarry: 0.3
   floorScaleRange: {x: 0.8, y: 1.2}
+  headshotBlood:
+    scale: 1.6
+    countMultiplier: 2.5
+    exitScaleMultiplier: 1.8
+    extraBursts: 2
+    extraBurstSpread: 35
   impactPoolSize: 8
   floorPoolSize: 6
   maxSkipStep: 0.1
+--- !u!114 &7781438192504661927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7619794670287511441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0efbdad4be000124d957bc3f5fd105e8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.WeaponAudio
+  gun: {fileID: 0}
+  shotCue: {fileID: 11400000, guid: 4f304fba2ec344d44a2a92881f7462d7, type: 2}
+  tailCue: {fileID: 11400000, guid: d42ad65274f8c3042b3c49734f09a004, type: 2}
+  dryFireCue: {fileID: 11400000, guid: f9cde2d263f8e3c4aa3014b513503350, type: 2}
+  reloadStartCue: {fileID: 0}
+  magOutCue: {fileID: 11400000, guid: 9677ecb44c1b3584b843578881738d5b, type: 2}
+  magInCue: {fileID: 11400000, guid: dd6c62b4070d9c14d8d77e623076def1, type: 2}
+  slideCue: {fileID: 11400000, guid: 0e6e12d220f506d48854d62e25301947, type: 2}
+  reloadMarks: {x: 0.18, y: 0.55, z: -1}
+  emptyReloadMarks: {x: 0.2, y: 0.55, z: 0.82}
+--- !u!114 &5925378388063220835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7619794670287511441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98af28bdd305099479448c5c3e4b20c5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.ImpactAudio
+  gun: {fileID: 0}
+  fleshHitCue: {fileID: 11400000, guid: d8660ecc687f8a94b81cea1edb0b1242, type: 2}
+  killCue: {fileID: 11400000, guid: 8d75c607321119c4cabd4d8e43630d50, type: 2}
+  surfaceHitCue: {fileID: 11400000, guid: efa7025201bbb4e46ab59e2ea6c8b905, type: 2}
+--- !u!114 &7938290153227515327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7619794670287511441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5aa5a57a32d05384092108e50885bfea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.MeleeAudio
+  swingCue: {fileID: 11400000, guid: 1000d3a8ac948ce4385335fa4ea5acb9, type: 2}
+  fleshHitCue: {fileID: 11400000, guid: 912ae4480d5e7c646825cd0ff295a135, type: 2}
+  surfaceHitCue: {fileID: 11400000, guid: efa7025201bbb4e46ab59e2ea6c8b905, type: 2}

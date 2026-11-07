@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Skip_Hit
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 029694c783aa3ea4a819c221f6b3d347, type: 3}
+  - {fileID: 8300000, guid: e5073257a65b2ee4b8e000a33c188939, type: 3}
+  - {fileID: 8300000, guid: 2819330ef1b92c144a3632b9e8e7c111, type: 3}
+  order: 1
+  volume: {x: 0.5, y: 0.58}
+  pitch: {x: 0.97, y: 1.03}
+  spatialBlend: 0
+  minDistance: 1
+  maxDistance: 30
+  output: {fileID: 254959869493016281, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 15
+  cooldown: 0.05

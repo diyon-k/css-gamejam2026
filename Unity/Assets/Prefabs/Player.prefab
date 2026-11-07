@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4229830482227302727}
   - component: {fileID: 6127039504923669072}
   - component: {fileID: 2525679010966593557}
+  - component: {fileID: 9137140159218555530}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -107,7 +108,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 238400d3909a4f94b8291c5dfacc2f35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.GunHud
-  gun: {fileID: 0}
+  weapons: {fileID: 9137140159218555530}
   health: {fileID: 0}
   crosshairColor: {r: 1, g: 1, b: 1, a: 0.85}
   hitColor: {r: 1, g: 1, b: 1, a: 1}
@@ -129,6 +130,62 @@ MonoBehaviour:
   beatSlow: 0.9
   beatFast: 0.35
   beatRange: 15
+--- !u!114 &9137140159218555530
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370471841403644919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa507776f7f119e4abbfbe9e8b769743, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.PlayerWeapons
+  pistol: {fileID: 9013984708963151249}
+  axe: {fileID: 7483735623276863291}
+  hands: {fileID: 538050452879307081}
+  loadout: 000000000100000002000000i
+  startWeapon: 1
+  holster: {fileID: 1604478157874594366}
+  aimCamera: {fileID: 5087806078031823911}
+  lowerSeconds: 0.12
+  raiseSeconds: 0.14
+  lowerDrop: 0.16
+  lowerPitchRoll: {x: 30, y: -10}
+  scrollCooldown: 0.08
+--- !u!1 &538050452879307081
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8640417672608476713}
+  m_Layer: 0
+  m_Name: Hands
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &8640417672608476713
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 538050452879307081}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1861301456706671278}
+  m_Father: {fileID: 1604478157874594366}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1406138421326163226
 GameObject:
   m_ObjectHideFlags: 0
@@ -160,7 +217,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5797510796737681976}
-  m_Father: {fileID: 545076073471970129}
+  m_Father: {fileID: 1604478157874594366}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &9013984708963151249
 MonoBehaviour:
@@ -176,16 +233,105 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.Gun
   aimCamera: {fileID: 5087806078031823911}
   muzzle: {fileID: 9027132562521483920}
+  readsInput: 1
   damage: 34
   range: 60
   fireInterval: 0.25
   hitMask:
     serializedVersion: 2
     m_Bits: 4294966459
+  shotLoudness: 35
+  dryFireLoudness: 4
   magazineSize: 8
   reserveAmmo: 32
   reloadSeconds: 2.3333335
   emptyReloadSeconds: 3.0333335
+--- !u!1 &1643118159745657433
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2907338102234207954}
+  m_Layer: 0
+  m_Name: Weapons
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2907338102234207954
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643118159745657433}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1604478157874594366}
+  m_Father: {fileID: 545076073471970129}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1786157060967775960
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7066587642324081020}
+  - component: {fileID: 7483735623276863291}
+  m_Layer: 0
+  m_Name: Axe
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &7066587642324081020
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786157060967775960}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 5386427909182149106}
+  m_Father: {fileID: 1604478157874594366}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7483735623276863291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1786157060967775960}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e81261f296e4a5b40bbe4f4aef7940e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.MeleeWeapon
+  aimCamera: {fileID: 5087806078031823911}
+  viewModel: {fileID: 7082728530845561718}
+  damage: 60
+  reach: 1.8
+  radius: 0.35
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 4294966459
+  hitLoudness: 6
 --- !u!1 &1861278722185175209
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,6 +395,40 @@ Transform:
   - {fileID: 545076073471970129}
   m_Father: {fileID: 1696891197522388200}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6029654919751384061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1604478157874594366}
+  m_Layer: 0
+  m_Name: Holster
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1604478157874594366
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6029654919751384061}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8640417672608476713}
+  - {fileID: 4944767842320866942}
+  - {fileID: 7066587642324081020}
+  m_Father: {fileID: 2907338102234207954}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6233756666962240348
 GameObject:
   m_ObjectHideFlags: 0
@@ -281,7 +461,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 4944767842320866942}
+  - {fileID: 2907338102234207954}
   m_Father: {fileID: 5671123119074197520}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &5087806078031823911
@@ -357,8 +537,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Player.CameraFeel
   target: {fileID: 545076073471970129}
   player: {fileID: 4229830482227302727}
-  gun: {fileID: 9013984708963151249}
-  viewModel: {fileID: 4944767842320866942}
+  weapons: {fileID: 9137140159218555530}
+  viewModel: {fileID: 2907338102234207954}
   intensity: 1
   maxDeltaTime: 0.1
   recoilPitch: 1.4
@@ -370,6 +550,10 @@ MonoBehaviour:
   recoilDamping: 0.7
   pushBackFrequency: 5
   pushBackDamping: 0.85
+  meleePitch: 0.9
+  meleeRoll: 1.2
+  meleePush: 0.01
+  meleeSurfaceScale: 0.6
   reloadPitch: 2.5
   reloadRoll: -2
   reloadDrop: 0.02
@@ -386,6 +570,72 @@ MonoBehaviour:
   strafeTiltSharpness: 8
   viewModelBobLateral: -0.004
   viewModelBobVertical: -0.004
+--- !u!1001 &5493521626320841719
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 8640417672608476713}
+    m_Modifications:
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6989760496411669740, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_Name
+      value: ViewModel_Hands
+      objectReference: {fileID: 0}
+    - target: {fileID: 8381679182088277181, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+--- !u!4 &1861301456706671278 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6190271355572500825, guid: 807393b706600e3469b669599f7c7ff2, type: 3}
+  m_PrefabInstance: {fileID: 5493521626320841719}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &6340606648422759891
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -611,3 +861,128 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2538042991029906076, guid: 20945c7c6f8f85445a74ed9f6be84db2, type: 3}
   m_PrefabInstance: {fileID: 6340606648422759891}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &9199630762520239075
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 7066587642324081020}
+    m_Modifications:
+    - target: {fileID: 548598214349760011, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 677915621142179528, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1245049312719604465, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1523703440276602680, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_Name
+      value: ViewModel_Axe
+      objectReference: {fileID: 0}
+    - target: {fileID: 2554289517195881190, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4923809111416688552, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4923994128721557763, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5007623610129141163, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5318222680449204703, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5591223039372146490, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5892350434465161651, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6879014238989983011, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8942796339682975960, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9153283735930491213, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+--- !u!4 &5386427909182149106 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3849391079779142161, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+  m_PrefabInstance: {fileID: 9199630762520239075}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7082728530845561718 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2153089497184905365, guid: e8c1d07d96a382b4f8a2411862f8c8de, type: 3}
+  m_PrefabInstance: {fileID: 9199630762520239075}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c79071c699fe2fd4b8965bd037571826, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.AxeViewModel

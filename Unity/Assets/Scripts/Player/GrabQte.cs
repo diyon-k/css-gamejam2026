@@ -23,6 +23,12 @@ namespace Blink.Player
 
         public static bool Active => _instance != null && _instance._running;
 
+        /// <summary>A grab QTE started (the world is now frozen). For audio and effects.</summary>
+        public static event Action Began;
+
+        /// <summary>A grab QTE ended. Argument: true if the player broke free.</summary>
+        public static event Action<bool> Resolved;
+
         /// <summary>
         /// True during a QTE and briefly after, so the Space presses and clicks used for it don't register as
         /// blinks or gunshots (Space is also the keyboard blink key).
@@ -34,6 +40,8 @@ namespace Blink.Player
         {
             _instance = null;
             _endedAt = float.NegativeInfinity;
+            Began = null;
+            Resolved = null;
         }
 
         /// <summary>Starts a QTE. Returns false if one is already running. Callback arg: passed.</summary>
@@ -76,6 +84,7 @@ namespace Blink.Player
             Time.timeScale = 0f;
             _player = FindAnyObjectByType<PlayerController>();
             if (_player != null) _player.InputEnabled = false;
+            Began?.Invoke();
         }
 
         // ponytail: last-updated device wins; a drifting stick can claim it, compare real button presses if that bites.
@@ -141,6 +150,7 @@ namespace Blink.Player
             if (_player != null) _player.InputEnabled = true; // Health.Died turns it back off on a fail
             var cb = _onDone;
             _onDone = null;
+            Resolved?.Invoke(passed);
             cb?.Invoke(passed);
         }
 

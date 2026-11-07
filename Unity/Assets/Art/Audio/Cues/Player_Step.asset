@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Player_Step
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 339d0f0f70b76c046b69dbc85eab1c5c, type: 3}
+  - {fileID: 8300000, guid: 7c88d3aaf0d0cbb458ea2b42205a1534, type: 3}
+  - {fileID: 8300000, guid: 1b3d97047cf19104a952c1f8fa9fbbf8, type: 3}
+  - {fileID: 8300000, guid: 8571379bf57fe304fa3e80e5941d0855, type: 3}
+  - {fileID: 8300000, guid: 9ce82cc1c35d09e4cbb884af7eb2f8d4, type: 3}
+  order: 1
+  volume: {x: 0.3, y: 0.4}
+  pitch: {x: 0.92, y: 1.08}
+  spatialBlend: 0
+  minDistance: 1
+  maxDistance: 30
+  output: {fileID: -5740928097967852656, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 120
+  cooldown: 0

@@ -4,8 +4,9 @@ using UnityEngine;
 namespace Blink.Player
 {
     /// <summary>
-    /// First-person camera feel: recoil kick on each shot, a dip and tilt while reloading, and head bob plus
-    /// strafe tilt while walking. Lives on the camera object, which sits under the pitch pivot that
+    /// First-person camera feel: recoil kick on each shot, a
+    /// small jolt when the axe connects, a dip and tilt while a gun reloads, and head bob plus strafe tilt while
+    /// walking. Weapon events come from <see cref="PlayerWeapons"/>. Lives on the camera object, which sits under the pitch pivot that
     /// <see cref="PlayerController"/> rotates, so the two never write the same transform.
     ///
     /// Every frame the camera's local pose is set to its stored base pose plus this frame's offsets, so
@@ -14,12 +15,13 @@ namespace Blink.Player
     ///
     /// Time: everything runs on unscaled time, so eyes-shut fast-forward (timeScale 3) and the grab QTE
     /// (timeScale 0) don't speed up or freeze the springs. Bob phase comes from the player's real-time speed,
-    /// so it stays in step with the walking. The reload pose is read from <see cref="Gun.ReloadProgress01"/>
-    /// rather than timed here, so a blink that jumps the reload forward jumps the camera with the hands.
+    /// so it stays in step with the walking. The reload pose is read from the active weapon's
+    /// <see cref="IWeaponStatus.ReloadProgress01"/> rather than timed here, so a blink that jumps the reload forward
+    /// jumps the camera with the hands.
     ///
-    /// The gun is a child of the camera, so it rides along with all of this (crosshair, muzzle and hands stay
-    /// aligned with where the shot goes). On top of that it gets a small bob of its own, against the head
-    /// motion by default, so it reads as held in hands rather than painted on the screen.
+    /// The weapons are children of the camera, so they ride along with all of this (crosshair, muzzle and hands stay
+    /// aligned with where the shot goes). On top of that the view model root gets a small bob of its own, against
+    /// the head motion by default, so it reads as held in hands rather than painted on the screen.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class CameraFeel : MonoBehaviour
@@ -28,9 +30,10 @@ namespace Blink.Player
         [SerializeField] Transform target;
         [Tooltip("Defaults to the PlayerController on a parent.")]
         [SerializeField] PlayerController player;
-        [Tooltip("Defaults to the Gun under the target.")]
-        [SerializeField] Gun gun;
-        [Tooltip("Gets the extra view model bob below. Defaults to the gun's transform. Must not be animated.")]
+        [Tooltip("Defaults to the PlayerWeapons on a parent.")]
+        [SerializeField] PlayerWeapons weapons;
+        [Tooltip("Gets the extra view model bob below. Defaults to the parent of the weapons' holster. Must not be " +
+                 "animated or moved by anything else.")]
         [SerializeField] Transform viewModel;
 
         [Tooltip("Master scale for every motion here. 0 turns camera feel off (for motion-sensitive players).")]
@@ -56,7 +59,17 @@ namespace Blink.Player
         [SerializeField, Min(0.1f)] float pushBackFrequency = 5f;
         [SerializeField, Range(0.2f, 1f)] float pushBackDamping = 0.85f;
 
-        [Header("Reload (follows the gun's reload progress)")]
+        [Header("Melee impact (when the axe connects)")]
+        [Tooltip("Degrees the view jolts down, following the chop.")]
+        [SerializeField] float meleePitch = 0.9f;
+        [Tooltip("Degrees of roll, towards the chop's direction (it travels right to left).")]
+        [SerializeField] float meleeRoll = 1.2f;
+        [Tooltip("Metres the camera jolts forward into the blow.")]
+        [SerializeField] float meleePush = 0.01f;
+        [Tooltip("Scale on a hit that lands on a wall instead of a body.")]
+        [SerializeField, Range(0f, 1f)] float meleeSurfaceScale = 0.6f;
+
+        [Header("Reload (follows the active gun's reload progress)")]
         [Tooltip("Degrees the view dips down mid-reload.")]
         [SerializeField] float reloadPitch = 2.5f;
         [Tooltip("Degrees the head tilts mid-reload. Negative tilts right, towards the gun hand; positive tilts left.")]
@@ -114,8 +127,8 @@ namespace Blink.Player
         {
             if (target == null) target = transform;
             if (player == null) player = GetComponentInParent<PlayerController>();
-            if (gun == null) gun = target.GetComponentInChildren<Gun>();
-            if (viewModel == null && gun != null) viewModel = gun.transform;
+            if (weapons == null) weapons = GetComponentInParent<PlayerWeapons>();
+            if (viewModel == null && weapons != null && weapons.Holster != null) viewModel = weapons.Holster.parent;
             if (viewModel != null && !viewModel.IsChildOf(target)) viewModel = null; // must ride on the camera
 
             _basePosition = target.localPosition;
@@ -126,14 +139,19 @@ namespace Blink.Player
 
         void OnEnable()
         {
-            if (gun == null || _subscribed) return;
-            gun.Fired += OnFired;
+            if (weapons == null || _subscribed) return;
+            weapons.ShotFired += OnShotFired;
+            weapons.MeleeHit += OnMeleeHit;
             _subscribed = true;
         }
 
         void OnDisable()
         {
-            if (_subscribed && gun != null) gun.Fired -= OnFired;
+            if (_subscribed && weapons != null)
+            {
+                weapons.ShotFired -= OnShotFired;
+                weapons.MeleeHit -= OnMeleeHit;
+            }
             _subscribed = false;
             _recoilRotation.Reset();
             _recoilPosition.Reset();
@@ -165,7 +183,23 @@ namespace Blink.Player
             _recoilPosition.AddVelocity(new Vector3(0f, 0f, -recoilPushBack) * (scale / posPeak));
         }
 
-        void OnFired(bool hit, RaycastHit info) => AddRecoil();
+        /// <summary>
+        /// A short jolt down and to the side, as when a melee blow connects; <paramref name="scale"/> 1 is a full axe hit.
+        /// </summary>
+        public void AddImpact(float scale = 1f)
+        {
+            if (scale <= 0f) return;
+            SyncSpringSettings();
+            float rotPeak = Spring3.PeakPerUnitVelocity(recoilFrequency, recoilDamping);
+            float posPeak = Spring3.PeakPerUnitVelocity(pushBackFrequency, pushBackDamping);
+            var kickDegrees = new Vector3(meleePitch, Random.Range(-0.2f, 0.2f) * meleePitch, meleeRoll);
+            _recoilRotation.AddVelocity(kickDegrees * (scale / rotPeak));
+            _recoilPosition.AddVelocity(new Vector3(0f, 0f, meleePush) * (scale / posPeak));
+        }
+
+        void OnShotFired(WeaponKind kind) => AddRecoil();
+
+        void OnMeleeHit(MeleeHitInfo hit) => AddImpact(hit.Target != null ? 1f : meleeSurfaceScale);
 
         /// <summary>Advances every motion by <paramref name="dt"/> real seconds and writes the pose.</summary>
         void Step(float dt)
@@ -184,8 +218,9 @@ namespace Blink.Player
             _strafe = Mathf.Lerp(_strafe, Mathf.Clamp(lateral, -1f, 1f), 1f - Mathf.Exp(-strafeTiltSharpness * dt));
             if (Mathf.Abs(_strafe) < 1e-5f && Mathf.Abs(lateral) < 1e-5f) _strafe = 0f;
 
-            float reload = gun != null && gun.IsReloading
-                ? CameraFeelMath.ReloadEnvelope(gun.ReloadProgress01, reloadEaseIn, reloadEaseOut)
+            var active = weapons != null ? weapons.ActiveWeapon : null;
+            float reload = active != null && active.UsesAmmo && active.IsReloading
+                ? CameraFeelMath.ReloadEnvelope(active.ReloadProgress01, reloadEaseIn, reloadEaseOut)
                 : 0f;
 
             Vector3 position = _recoilPosition.Value
