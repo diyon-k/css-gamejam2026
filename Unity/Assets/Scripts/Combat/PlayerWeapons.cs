@@ -63,7 +63,7 @@ namespace Blink.Combat
         [SerializeField, Min(0f)] float regrabWeaponDelay = 0.4f;
 
         [Header("Attack cooldown (world seconds)")]
-        [Tooltip("After any shot or swing, no weapon (pistol, axe, picked-up melee item) can attack again for this long. Shared across slots.")]
+        [Tooltip("After a melee swing, no melee weapon (axe, picked-up item) can attack again for this long. The pistol ignores it.")]
         [SerializeField, Min(0f)] float attackCooldown = 2f;
 
         /// <summary>A gun fired (the pistol). Once per trigger pull, after its <see cref="RayFired"/> ray.</summary>
@@ -103,7 +103,7 @@ namespace Blink.Combat
         public float Lowered01 => _switch.Lowered01;
 
         /// <summary>Attack cooldown left, 1 = just attacked, 0 = ready.</summary>
-        public float Cooldown01 => attackCooldown > 0f ? Mathf.Clamp01((_readyAt - Time.time) / attackCooldown) : 0f;
+        public float Cooldown01 => attackCooldown > 0f && ActiveKind != WeaponKind.Pistol ? Mathf.Clamp01((_readyAt - Time.time) / attackCooldown) : 0f;
 
         public int SlotCount => _slots.Count;
         public Gun Pistol => pistol;
@@ -323,7 +323,7 @@ namespace Blink.Combat
 
         void Use(Slot slot)
         {
-            if (Time.time < _readyAt) return; // cooling down; started by a real shot or swing (OnPistolFired / OnAxeSwung)
+            if (slot.Kind != WeaponKind.Pistol && Time.time < _readyAt) return; // melee cooling down (OnAxeSwung); the pistol has no cooldown, only Gun.fireInterval
             switch (slot.Kind)
             {
                 case WeaponKind.Pistol: pistol.TryFire(); break;
@@ -465,7 +465,6 @@ namespace Blink.Combat
         {
             // Gun.Fired is raised in the same frame as its raycast, so the camera's centre ray is the shot's ray.
             var ray = aimCamera != null ? aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)) : new Ray(pistol.transform.position, pistol.transform.forward);
-            _readyAt = Time.time + attackCooldown;
             RayFired?.Invoke(new ShotRay(WeaponKind.Pistol, ray, pistol.Range, hit, info, pistol.Muzzle));
             ShotFired?.Invoke(WeaponKind.Pistol);
         }
