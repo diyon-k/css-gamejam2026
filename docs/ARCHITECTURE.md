@@ -53,6 +53,12 @@ flowchart LR
 - **Noise:** call `Noise.Make(position, loudness)` from anything. Loudness is the audible range in metres, measured as walking distance on the navmesh, so walls muffle it. Zombies that hear it (and can't see you) walk over and search. Add a `NoiseSource` to props for drop/impact noise, or call its `Emit()` from cupboards etc.
 - Current sources: pistol shot 35, axe hitting something 6, dry-fire 4, forcing a door 10/s, door bursting open 20. All Inspector fields. The player's footsteps are silent (sprint was removed).
 
+## Hit reactions
+
+- **Living zombies (`ZombieHitReaction`, on the Zombie root):** every `Hitbox.Struck` flinches the bones away from the shot (torso bend and twist, head whip, arm swing, knee buckle), layered on top of the animation in `LateUpdate`, plus a short stagger (slower agent, small slide back). The axe hits harder (via `PlayerWeapons.MeleeHit`). Stops the instant the zombie dies so the ragdoll takes over.
+- **Corpses (`CorpseShotReaction`, creates itself once per scene):** re-casts each shot and axe sweep against the `Corpse` layer and shoves the limb it finds, waking a settled ragdoll and re-freezing it after it settles. Bullets still carry on to their target.
+- Details, tuning knobs and time-skip behaviour: [HIT_REACTIONS.md](HIT_REACTIONS.md).
+
 ## Folder map
 
 ```
