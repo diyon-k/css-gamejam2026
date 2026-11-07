@@ -1,0 +1,880 @@
+{
+ "revision": 2,
+ "rooms": [
+  {
+   "id": "EntranceHall",
+   "min": [
+    7.075,
+    0.0,
+    0.3
+   ],
+   "max": [
+    11.425,
+    3.0,
+    3.925
+   ],
+   "ref": "ref1"
+  },
+  {
+   "id": "CentralHall",
+   "min": [
+    7.075,
+    0.0,
+    4.075
+   ],
+   "max": [
+    11.425,
+    3.0,
+    14.7
+   ],
+   "ref": "ref1"
+  },
+  {
+   "id": "Living",
+   "min": [
+    11.575,
+    0.0,
+    0.3
+   ],
+   "max": [
+    19.7,
+    3.0,
+    6.925
+   ],
+   "ref": "ref2"
+  },
+  {
+   "id": "Kitchen",
+   "min": [
+    11.575,
+    0.0,
+    7.075
+   ],
+   "max": [
+    19.7,
+    3.0,
+    14.7
+   ],
+   "ref": "ref2/ref3"
+  },
+  {
+   "id": "Bedroom",
+   "min": [
+    0.3,
+    0.0,
+    0.3
+   ],
+   "max": [
+    6.925,
+    3.0,
+    9.425
+   ],
+   "ref": "ref3"
+  },
+  {
+   "id": "Bathroom",
+   "min": [
+    0.3,
+    0.0,
+    9.575
+   ],
+   "max": [
+    6.925,
+    3.0,
+    14.7
+   ],
+   "ref": ""
+  },
+  {
+   "id": "B1",
+   "min": [
+    7.075,
+    -2.85,
+    4.075
+   ],
+   "max": [
+    13.425,
+    -0.25,
+    14.7
+   ],
+   "ref": ""
+  },
+  {
+   "id": "B2",
+   "min": [
+    13.575,
+    -2.85,
+    4.075
+   ],
+   "max": [
+    19.7,
+    -0.25,
+    14.7
+   ],
+   "ref": ""
+  }
+ ],
+ "openings": [
+  {
+   "id": "D1",
+   "kind": "door",
+   "wall": "Wall_Ext_S",
+   "span": [
+    8.45,
+    10.05
+   ],
+   "y": [
+    0.0,
+    2.2
+   ]
+  },
+  {
+   "id": "D2",
+   "kind": "door",
+   "wall": "Wall_X7p0",
+   "span": [
+    1.5,
+    2.7
+   ],
+   "y": [
+    0.0,
+    2.2
+   ]
+  },
+  {
+   "id": "D3",
+   "kind": "door",
+   "wall": "Wall_X7p0",
+   "span": [
+    12.0,
+    13.2
+   ],
+   "y": [
+    0.0,
+    2.2
+   ]
+  },
+  {
+   "id": "D4",
+   "kind": "door",
+   "wall": "Wall_Ext_E",
+   "span": [
+    12.4,
+    13.6
+   ],
+   "y": [
+    0.0,
+    2.2
+   ]
+  },
+  {
+   "id": "D5",
+   "kind": "door",
+   "wall": "Wall_B_X13p5",
+   "span": [
+    12.4,
+    13.6
+   ],
+   "y": [
+    -2.85,
+    -0.6499999999999999
+   ]
+  },
+  {
+   "id": "A1",
+   "kind": "arch",
+   "wall": "Wall_X11p5",
+   "span": [
+    1.2,
+    3.2
+   ],
+   "y": [
+    0.0,
+    2.65
+   ]
+  },
+  {
+   "id": "A2",
+   "kind": "arch",
+   "wall": "Wall_Z4p0",
+   "span": [
+    7.6,
+    10.6
+   ],
+   "y": [
+    0.0,
+    2.75
+   ]
+  },
+  {
+   "id": "A3",
+   "kind": "arch",
+   "wall": "Wall_X11p5",
+   "span": [
+    8.4,
+    10.2
+   ],
+   "y": [
+    0.0,
+    2.7
+   ]
+  },
+  {
+   "id": "O1",
+   "kind": "cased",
+   "wall": "Wall_Z7p0",
+   "span": [
+    13.5,
+    16.5
+   ],
+   "y": [
+    0.0,
+    2.4
+   ]
+  },
+  {
+   "id": "O1_Transom",
+   "kind": "transom",
+   "wall": "Wall_Z7p0",
+   "span": [
+    13.5,
+    16.5
+   ],
+   "y": [
+    2.5,
+    2.85
+   ]
+  },
+  {
+   "id": "WR1",
+   "kind": "window",
+   "wall": "Wall_Ext_W",
+   "span": [
+    2.2,
+    3.8
+   ],
+   "y": [
+    0.9,
+    2.4
+   ]
+  },
+  {
+   "id": "WL1",
+   "kind": "window",
+   "wall": "Wall_Ext_S",
+   "span": [
+    16.6,
+    18.2
+   ],
+   "y": [
+    0.9,
+    2.4
+   ]
+  },
+  {
+   "id": "WL2",
+   "kind": "window",
+   "wall": "Wall_Ext_E",
+   "span": [
+    3.0,
+    4.6
+   ],
+   "y": [
+    0.9,
+    2.4
+   ]
+  },
+  {
+   "id": "WK1",
+   "kind": "window",
+   "wall": "Wall_Ext_N",
+   "span": [
+    13.6,
+    15.4
+   ],
+   "y": [
+    0.9,
+    2.4
+   ]
+  },
+  {
+   "id": "WK2",
+   "kind": "window",
+   "wall": "Wall_Ext_E",
+   "span": [
+    9.4,
+    11.0
+   ],
+   "y": [
+    0.9,
+    2.4
+   ]
+  },
+  {
+   "id": "WB1",
+   "kind": "window",
+   "wall": "Wall_Ext_N",
+   "span": [
+    2.4,
+    3.4
+   ],
+   "y": [
+    1.5,
+    2.4
+   ]
+  },
+  {
+   "id": "BW1",
+   "kind": "window",
+   "wall": "Wall_B_N",
+   "span": [
+    10.0,
+    11.4
+   ],
+   "y": [
+    -0.75,
+    -0.3
+   ]
+  },
+  {
+   "id": "BW2",
+   "kind": "window",
+   "wall": "Wall_B_E",
+   "span": [
+    9.0,
+    10.4
+   ],
+   "y": [
+    -0.75,
+    -0.3
+   ]
+  }
+ ],
+ "spawns": [
+  {
+   "id": "P0",
+   "kind": "player",
+   "pos": [
+    4.8,
+    0.0,
+    7.6
+   ],
+   "yaw": 200.0,
+   "route": ""
+  },
+  {
+   "id": "Z1",
+   "kind": "zombie",
+   "pos": [
+    12.5,
+    0.0,
+    6.2
+   ],
+   "yaw": 90.0,
+   "route": "R1"
+  },
+  {
+   "id": "Z2",
+   "kind": "zombie",
+   "pos": [
+    18.0,
+    0.0,
+    11.5
+   ],
+   "yaw": 240.0,
+   "route": "R2"
+  },
+  {
+   "id": "Z3",
+   "kind": "zombie",
+   "pos": [
+    11.0,
+    -2.85,
+    6.0
+   ],
+   "yaw": 0.0,
+   "route": "R3"
+  },
+  {
+   "id": "Z4",
+   "kind": "zombie",
+   "pos": [
+    2.5,
+    0.0,
+    12.5
+   ],
+   "yaw": 90.0,
+   "route": ""
+  }
+ ],
+ "routes": [
+  {
+   "id": "R1",
+   "pts": [
+    12.5,
+    0.0,
+    6.2,
+    18.8,
+    0.0,
+    6.2,
+    18.8,
+    0.0,
+    1.4,
+    16.0,
+    0.0,
+    1.4
+   ]
+  },
+  {
+   "id": "R2",
+   "pts": [
+    18.0,
+    0.0,
+    11.5,
+    13.0,
+    0.0,
+    9.3,
+    10.0,
+    0.0,
+    9.3,
+    10.0,
+    0.0,
+    13.5,
+    10.0,
+    0.0,
+    6.5,
+    13.0,
+    0.0,
+    9.3
+   ]
+  },
+  {
+   "id": "R3",
+   "pts": [
+    11.0,
+    -2.85,
+    6.0,
+    11.0,
+    -2.85,
+    13.0,
+    16.5,
+    -2.85,
+    13.0,
+    17.0,
+    -2.85,
+    6.0
+   ]
+  }
+ ],
+ "cameras": [
+  {
+   "id": "CAM-1",
+   "pos": [
+    9.4,
+    1.65,
+    4.1
+   ],
+   "yaw": 352.0,
+   "pitch": -8.0,
+   "fov": 60.0,
+   "ref": "ref1_stair_landing.png",
+   "w": 1192,
+   "h": 670
+  },
+  {
+   "id": "CAM-2",
+   "pos": [
+    19.2,
+    1.65,
+    0.8
+   ],
+   "yaw": 297.0,
+   "pitch": -12.0,
+   "fov": 60.0,
+   "ref": "ref2_red_living_room.png",
+   "w": 1920,
+   "h": 1080
+  },
+  {
+   "id": "CAM-3",
+   "pos": [
+    5.0,
+    1.5,
+    6.6
+   ],
+   "yaw": 200.0,
+   "pitch": -10.0,
+   "fov": 55.0,
+   "ref": "ref3_green_farmhouse_room.png",
+   "w": 1048,
+   "h": 486
+  }
+ ],
+ "fixtures": [
+  {
+   "id": "E1",
+   "kind": "dome",
+   "pos": [
+    9.25,
+    2.92,
+    2.0
+   ],
+   "color": "#F2DFA8",
+   "intensity": 1.2,
+   "range": 5.5,
+   "mode": "Baked"
+  },
+  {
+   "id": "H1",
+   "kind": "chand",
+   "pos": [
+    7.7,
+    2.45,
+    9.6
+   ],
+   "color": "#FFD6A0",
+   "intensity": 1.0,
+   "range": 6.5,
+   "mode": "Baked"
+  },
+  {
+   "id": "H2",
+   "kind": "sconce",
+   "pos": [
+    8.45,
+    1.9,
+    14.62
+   ],
+   "color": "#FFC680",
+   "intensity": 0.5,
+   "range": 5.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "H3",
+   "kind": "sconce",
+   "pos": [
+    10.05,
+    1.9,
+    14.62
+   ],
+   "color": "#FFC680",
+   "intensity": 0.5,
+   "range": 5.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "H4",
+   "kind": "lamp",
+   "pos": [
+    11.0,
+    1.05,
+    13.8
+   ],
+   "color": "#FFCB85",
+   "intensity": 1.4,
+   "range": 4.0,
+   "mode": "Mixed"
+  },
+  {
+   "id": "H5",
+   "kind": "sconce",
+   "pos": [
+    7.13,
+    2.1,
+    8.0
+   ],
+   "color": "",
+   "intensity": 0.0,
+   "range": 0.0,
+   "mode": "off"
+  },
+  {
+   "id": "H6",
+   "kind": "sconce",
+   "pos": [
+    11.37,
+    1.9,
+    6.6
+   ],
+   "color": "#FFC680",
+   "intensity": 0.45,
+   "range": 5.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "L1",
+   "kind": "fan",
+   "pos": [
+    14.6,
+    2.55,
+    2.9
+   ],
+   "color": "#FFD9A0",
+   "intensity": 2.0,
+   "range": 7.0,
+   "mode": "Mixed"
+  },
+  {
+   "id": "L2",
+   "kind": "lamp",
+   "pos": [
+    15.6,
+    1.0,
+    5.3
+   ],
+   "color": "#FFE6C2",
+   "intensity": 1.6,
+   "range": 4.5,
+   "mode": "Mixed"
+  },
+  {
+   "id": "L3",
+   "kind": "sconce",
+   "pos": [
+    11.62,
+    1.9,
+    5.3
+   ],
+   "color": "#FFC98A",
+   "intensity": 0.7,
+   "range": 5.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "L4",
+   "kind": "sconce",
+   "pos": [
+    16.75,
+    2.0,
+    6.85
+   ],
+   "color": "#FFC98A",
+   "intensity": 0.35,
+   "range": 5.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "K1",
+   "kind": "dome",
+   "pos": [
+    14.0,
+    2.92,
+    10.9
+   ],
+   "color": "#E9E6D2",
+   "intensity": 1.1,
+   "range": 6.0,
+   "mode": "Mixed"
+  },
+  {
+   "id": "K2",
+   "kind": "dome",
+   "pos": [
+    17.6,
+    2.92,
+    10.9
+   ],
+   "color": "#E9E6D2",
+   "intensity": 0.9,
+   "range": 5.5,
+   "mode": "Baked"
+  },
+  {
+   "id": "R1",
+   "kind": "lamp",
+   "pos": [
+    0.8,
+    1.0,
+    1.0
+   ],
+   "color": "#F2DDB0",
+   "intensity": 1.2,
+   "range": 5.0,
+   "mode": "Mixed"
+  },
+  {
+   "id": "R2",
+   "kind": "lamp",
+   "pos": [
+    4.6,
+    0.95,
+    9.0
+   ],
+   "color": "#F5E6A8",
+   "intensity": 0.5,
+   "range": 4.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "W1",
+   "kind": "sconce",
+   "pos": [
+    4.4,
+    2.0,
+    14.62
+   ],
+   "color": "#E6EBC8",
+   "intensity": 0.6,
+   "range": 5.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "C1",
+   "kind": "bulb",
+   "pos": [
+    8.9,
+    -0.65,
+    12.4
+   ],
+   "color": "#F0DC9A",
+   "intensity": 1.4,
+   "range": 7.0,
+   "mode": "Realtime"
+  },
+  {
+   "id": "C2",
+   "kind": "bulb",
+   "pos": [
+    16.6,
+    -0.65,
+    9.4
+   ],
+   "color": "#F0DC9A",
+   "intensity": 0.0,
+   "range": 7.0,
+   "mode": "Realtime"
+  },
+  {
+   "id": "RW1",
+   "kind": "area",
+   "pos": [
+    0.32,
+    1.65,
+    3.0
+   ],
+   "color": "#A9B3A2",
+   "intensity": 1.2,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "LW1",
+   "kind": "area",
+   "pos": [
+    17.4,
+    1.65,
+    0.32
+   ],
+   "color": "#8E9AA6",
+   "intensity": 0.4,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "LW2",
+   "kind": "area",
+   "pos": [
+    19.68,
+    1.65,
+    3.8
+   ],
+   "color": "#8E9AA6",
+   "intensity": 0.4,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "KW1",
+   "kind": "area",
+   "pos": [
+    14.5,
+    1.65,
+    14.68
+   ],
+   "color": "#9AA6B0",
+   "intensity": 0.8,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "KW2",
+   "kind": "area",
+   "pos": [
+    19.68,
+    1.65,
+    10.2
+   ],
+   "color": "#9AA6B0",
+   "intensity": 0.6,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "WW1",
+   "kind": "area",
+   "pos": [
+    2.9,
+    1.95,
+    14.68
+   ],
+   "color": "#A3AEA6",
+   "intensity": 0.5,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "CW1",
+   "kind": "area",
+   "pos": [
+    10.7,
+    -0.52,
+    14.68
+   ],
+   "color": "#8A96A0",
+   "intensity": 0.3,
+   "range": 0.0,
+   "mode": "Baked"
+  },
+  {
+   "id": "CW2",
+   "kind": "area",
+   "pos": [
+    19.68,
+    -0.52,
+    9.7
+   ],
+   "color": "#8A96A0",
+   "intensity": 0.3,
+   "range": 0.0,
+   "mode": "Baked"
+  }
+ ],
+ "gate": {
+  "id": "G1",
+  "hinge": [
+   8.305,
+   0.0,
+   6.0
+  ],
+  "openYaw": 0.0,
+  "closedYaw": -90.0
+ },
+ "agent": {
+  "name": "BungalowZombie",
+  "radius": 0.3,
+  "height": 1.8,
+  "climb": 0.3,
+  "slope": 40.0,
+  "voxel": 0.05,
+  "min_region": 0.5
+ },
+ "player": {
+  "radius": 0.35,
+  "height": 1.8,
+  "step": 0.3,
+  "slope": 45.0,
+  "eye": 1.65,
+  "fov": 60.0
+ }
+}
