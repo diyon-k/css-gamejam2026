@@ -199,7 +199,8 @@ SPAWNS = {
     "Z2": dict(pos=(18.0, 0.0, 11.5), yaw=240.0, kind="zombie", route="R2", room="Kitchen"),
     "Z3": dict(pos=(11.0, BASEMENT, 6.0), yaw=0.0, kind="zombie", route="R3", room="B1"),
     "Z4": dict(pos=(2.5, 0.0, 12.5), yaw=90.0, kind="zombie", route=None, room="Bathroom", note="dormant"),
-    "Z5": dict(pos=(2.0, 0.0, 15.9), yaw=90.0, kind="zombie", route="R5", room="Corridor"),
+    # Z5 keeps to the corridor east of x 8.5: PuzzleProps warns on zombies within 1.5 m of Lily's doll's bathroom
+    "Z5": dict(pos=(14.0, 0.0, 15.9), yaw=270.0, kind="zombie", route="R5", room="Corridor"),
     "Z6": dict(pos=(16.0, 0.0, 23.0), yaw=270.0, kind="zombie", route="R6", room="Parlour"),
 }
 ROUTES = {  # closed loops, waypoint order = patrol order
@@ -207,7 +208,7 @@ ROUTES = {  # closed loops, waypoint order = patrol order
     "R2": [(18.0, 0.0, 11.5), (13.0, 0.0, 9.3), (10.0, 0.0, 9.3), (10.0, 0.0, 13.5), (10.0, 0.0, 6.5),
            (13.0, 0.0, 9.3)],
     "R3": [(11.0, BASEMENT, 6.0), (11.0, BASEMENT, 13.0), (16.5, BASEMENT, 13.0), (17.0, BASEMENT, 6.0)],
-    "R5": [(2.0, 0.0, 15.9), (18.6, 0.0, 15.9)],
+    "R5": [(14.0, 0.0, 15.9), (9.0, 0.0, 15.9), (18.6, 0.0, 15.9)],
     "R6": [(16.0, 0.0, 23.0), (10.5, 0.0, 23.0), (10.5, 0.0, 19.0), (16.0, 0.0, 19.0)],
 }
 CAMERAS = {  # reference-match cameras (vertical FOV); composition checks in SPEC 5.3
