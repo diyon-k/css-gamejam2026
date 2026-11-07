@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -19,6 +20,8 @@ namespace Blink.Detection
         [Tooltip("Seconds without a packet before this source counts as disconnected.")]
         [SerializeField] float timeoutSeconds = 0.5f;
         [SerializeField] bool logConnectionChanges = true;
+        [Tooltip("Start blink_server/blink_server.py on enable. Untick if you run the sidecar by hand.")]
+        [SerializeField] bool launchSidecar = true;
 
         readonly object _lock = new();
         readonly Stopwatch _clock = Stopwatch.StartNew();
@@ -30,6 +33,7 @@ namespace Blink.Detection
         Thread _thread;
         volatile bool _running;
         bool _wasActive;
+        Process _sidecar;
 
         public string SourceName => $"Webcam (UDP :{port})";
         public long PacketCount { get { lock (_lock) return _packetCount; } }
@@ -59,15 +63,50 @@ namespace Blink.Detection
             _running = true;
             _thread = new Thread(ReceiveLoop) { IsBackground = true, Name = "BlinkUdpReceiver" };
             _thread.Start();
+
+            if (launchSidecar) StartSidecar();
         }
 
         void OnDisable()
         {
+            StopSidecar();
             _running = false;
             _client?.Close(); // unblocks Receive()
             _thread?.Join(200);
             _client = null;
             _thread = null;
+        }
+
+        void OnApplicationQuit() => StopSidecar();
+
+        void StartSidecar()
+        {
+#if UNITY_EDITOR_WIN // ponytail: Editor only; standalone builds will launch a PyInstaller exe instead
+            string root = Path.GetFullPath(Path.Combine(Application.dataPath, "../.."));
+            string python = Path.Combine(root, "blink_server/.venv/Scripts/python.exe");
+            if (!File.Exists(python))
+            {
+                Debug.LogWarning($"[Blink] No webcam sidecar: {python} not found. Run blink_server/setup.ps1 once (Space still works).");
+                return;
+            }
+            // Don't redirect stdout/stderr: nobody reads them, and a full pipe would freeze the sidecar.
+            _sidecar = Process.Start(new ProcessStartInfo(python, $"\"{Path.Combine(root, "blink_server/blink_server.py")}\"")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+#endif
+        }
+
+        void StopSidecar()
+        {
+            try
+            {
+                if (_sidecar is { HasExited: false }) _sidecar.Kill(); // the venv launcher takes the real python with it
+            }
+            catch (InvalidOperationException) { /* already gone */ }
+            _sidecar?.Dispose();
+            _sidecar = null;
         }
 
         void Update()
