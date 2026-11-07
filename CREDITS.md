@@ -24,15 +24,15 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Handgun Reload Sound Effect](https://opengameart.org/content/handgun-reload-sound-effect) | zer0_sol | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Pistol mag out, mag in, slide |
 | [Gun reload sounds](https://opengameart.org/content/gun-reload-sounds) | SpringySpringo | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Pistol mag in and slide (variants) |
 | [Heartbeat sounds](https://opengameart.org/content/heartbeat-sounds) | bart | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Heartbeat (one lub-dub) |
-| [Swishes Sound Pack](https://opengameart.org/content/swishes-sound-pack) | artisticdude | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Axe swings; pitched down for the blunt melee swings (golf club, plank, candlestick) |
-| [Impact](https://opengameart.org/content/impact) | qubodup | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Wood and metal layers in the plank / golf club hits |
+| [Swishes Sound Pack](https://opengameart.org/content/swishes-sound-pack) | artisticdude | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Axe swings; pitched down for the blunt melee swings (crowbar, pipe wrench, frying pan) |
+| [Impact](https://opengameart.org/content/impact) | qubodup | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Metal layer in the blunt melee hits |
 | [Punch](https://opengameart.org/content/punch) | qubodup | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Body thump of the blunt melee hits |
 | [Thwack Sounds](https://opengameart.org/content/thwack-sounds) | Jordan Irwin (AntumDeluge) | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Blunt melee hits on walls and props |
 | [Footsteps](https://opengameart.org/content/footsteps-0) | GboxMikeFozzy | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie footsteps |
 | [Zombie moans](https://opengameart.org/content/zombie-moans-01-by-emopreben) | EmoPreben | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie idle groans |
 | [Zombie noises and moans](https://opengameart.org/content/zombie-noises-and-moans) | ianzazz | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie groans and an alert growl |
 | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | Kenney | kenney.nl | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Player footsteps (wood), hit thuds, bullet-on-wall hits, door burst |
-| [Pipe Wrench](https://polyhaven.com/a/pipe_wrench), [Adjustable Wrench](https://polyhaven.com/a/adjustable_wrench), [Cross Pein Hammer](https://polyhaven.com/a/cross_pein_hammer), [Crowbar 01](https://polyhaven.com/a/crowbar_01), [Baseball Bat](https://polyhaven.com/a/baseball_bat), [Brass Pan 01](https://polyhaven.com/a/brass_pan_01), [Brass Candleholders](https://polyhaven.com/a/brass_candleholders) | Poly Haven | polyhaven.com | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Melee props you can pick up and swing |
+| [Pipe Wrench](https://polyhaven.com/a/pipe_wrench), [Crowbar 01](https://polyhaven.com/a/crowbar_01), [Brass Pan 01](https://polyhaven.com/a/brass_pan_01) | Poly Haven | polyhaven.com | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Melee props you can pick up and swing |
 
 ## Licence notes
 
