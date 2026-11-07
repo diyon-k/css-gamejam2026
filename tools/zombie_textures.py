@@ -42,7 +42,6 @@ def bloater(rgb, lab):
 def husk(rgb, lab):
     char = recolor(rgb, (0.26, 0.22, 0.2), 0.8)
     char = mix(char, np.array([0.55, 0.52, 0.5]), noise(3, 30) ** 4 * 1.5)               # ash patches
-    char = mix(char, np.array([1.0, 0.38, 0.08]), (ridge(4, 40, 30) > 0.5) * 0.9)         # ember cracks
     burnt = mix(recolor(rgb, (0.32, 0.3, 0.27)), np.zeros(3), noise(5, 50) ** 2)
     return {1: char, 2: mix(char, recolor(rgb, (0.15, 0.15, 0.15)), hair_mask(rgb)), 3: burnt, 4: burnt}
 
