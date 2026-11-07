@@ -13,7 +13,6 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 |---|---|
 | WASD / left stick | Move |
 | Mouse / right stick | Look |
-| Shift | Sprint |
 | Left click / right trigger | Shoot |
 | R / gamepad West | Reload |
 | **Space: tap** | Blink (world skips 0.5 s) |
@@ -52,7 +51,7 @@ Unity/Assets/
   Scripts/                     Blink.Runtime assembly (namespace Blink.*)
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
     TimeSkip/                  TimeSkipController, ISkippable, WorldTimer
-    Player/                    PlayerController
+    Player/                    PlayerController, CameraFeel, GrabQte
     Mobs/                      MobController, NavPathUtility, ZombieRagdoll, RagdollSkipper
     Combat/                    Health, IDamageable, Hitbox, Gun
   Tests/EditMode/              unit tests (Window > General > Test Runner)
@@ -103,7 +102,8 @@ Unity/Assets/
   - `HealthBar` (on Zombie): bar above the head once hurt; hidden when dead, far away or behind a wall.
 
 ### Player (`Blink.Player`)
-- **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
+- **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`). Walk only: no sprint, no jump. Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `InputEnabled` (turned off on death). It pitches `CameraPivot`; the camera is the child `CameraPivot/Camera`.
+- **`CameraFeel`** (on `CameraPivot/Camera`): recoil kick on `Gun.Fired`, a dip and tilt that follows `Gun.ReloadProgress01` (so a blink jumps it with the hands), and head bob plus strafe tilt scaled by `PlayerController.Velocity`. Sets the camera's local pose from a stored base pose every frame (no drift), runs on unscaled time, and has a master `intensity` (0 turns it off). The gun is a child of the camera, so it rides along, with a small counter-bob of its own. Springs and bob curve are in `CameraFeelMath.cs` (`Spring3`, `HeadBob`).
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
