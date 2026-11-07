@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Blink.UI;
 using UnityEngine;
 
 namespace Blink.Interaction
@@ -8,10 +9,13 @@ namespace Blink.Interaction
     /// On the Player. What you carry, by item id (duplicates allowed: two candles = two entries).
     /// Puzzles check <see cref="Has"/> / <see cref="Count"/> and can <see cref="Remove"/> to use items up.
     /// Carrying a candle lights a small warm light on the camera.
+    /// The list shows top-right, under the clock, for a few seconds after it changes, then fades away.
     /// </summary>
     public sealed class Inventory : MonoBehaviour
     {
         [SerializeField] string lightItemId = "candle";
+        [Tooltip("Real seconds the carried-items list stays up after it changes.")]
+        [SerializeField, Min(0f)] float listLinger = 5f;
 
         public event Action<string> ItemAdded, ItemRemoved;
         public IReadOnlyList<string> Items => _items;
@@ -19,13 +23,15 @@ namespace Blink.Interaction
         readonly List<string> _items = new List<string>();
         readonly Dictionary<string, string> _names = new Dictionary<string, string>();
         Light _candle;
-        GUIStyle _style;
+        float _changedAt = float.NegativeInfinity, _listAlpha;
+        readonly List<string> _lines = new List<string>();
 
         public void Add(string id, string displayName = null)
         {
             _items.Add(id);
             if (!string.IsNullOrEmpty(displayName)) _names[id] = displayName;
             UpdateCandle();
+            _changedAt = Time.unscaledTime;
             ItemAdded?.Invoke(id);
         }
 
@@ -38,6 +44,7 @@ namespace Blink.Interaction
         {
             if (!_items.Remove(id)) return false;
             UpdateCandle();
+            _changedAt = Time.unscaledTime;
             ItemRemoved?.Invoke(id);
             return true;
         }
@@ -59,18 +66,22 @@ namespace Blink.Interaction
             if (_candle != null) _candle.enabled = Has(lightItemId);
         }
 
-        // ponytail: IMGUI list, swap for real UI when the HUD exists.
+        void Update()
+        {
+            bool show = _items.Count > 0 && Time.unscaledTime - _changedAt < listLinger;
+            _listAlpha = BlinkTheme.StepFade(_listAlpha, show, -1f, BlinkTheme.Asset.fadeOut * 2f);
+        }
+
         void OnGUI()
         {
-            if (_items.Count == 0) return;
-            _style ??= new GUIStyle(GUI.skin.label) { alignment = TextAnchor.UpperRight, fontSize = 16 };
-            var lines = new List<string>();
+            if (_items.Count == 0 || _listAlpha <= 0f || Event.current.type != EventType.Repaint) return;
+            _lines.Clear();
             foreach (var id in new HashSet<string>(_items))
             {
                 int n = Count(id);
-                lines.Add(n > 1 ? $"{DisplayName(id)} x{n}" : DisplayName(id));
+                _lines.Add(n > 1 ? $"{DisplayName(id)} ×{n}" : DisplayName(id));
             }
-            GUI.Label(new Rect(Screen.width - 260f, 115f, 250f, 400f) /* below the ClockHud */, string.Join("\n", lines), _style);
+            BlinkWidgets.Inventory(_lines, BlinkTheme.EaseOut(_listAlpha));
         }
     }
 }

@@ -94,6 +94,9 @@ namespace Blink.Combat
         public MeleeWeapon Axe => axe;
         public Transform Holster => holster;
 
+        /// <summary>The reload input (R / gamepad West), so prompts can show its binding for the device in use. Read-only use.</summary>
+        public InputAction ReloadInput => _reload;
+
         readonly List<Slot> _slots = new();
         WeaponSwitchState _switch = new(0);
         IDamageable _owner;
@@ -177,7 +180,8 @@ namespace Blink.Combat
             if (Interaction.Carryable.Held != null) return; // hands are full: Attack throws the prop instead
             var slot = _slots[_switch.Active];
             if (_fire != null && _fire.WasPressedThisFrame()) Use(slot);
-            if (_reload.WasPressedThisFrame()) Reload(slot);
+            // Pad X is Reload and Interact: a press that began with something to interact with isn't a reload.
+            if (_reload.WasPressedThisFrame() && !Interaction.Interactor.InteractOwns(_reload.activeControl)) Reload(slot);
         }
 
         /// <summary>Switches to <paramref name="kind"/> if it is in the loadout. False otherwise (or already there).</summary>
@@ -320,6 +324,7 @@ namespace Blink.Combat
             _next = new InputAction("WeaponNext", InputActionType.Button);
             _next.AddBinding("<Gamepad>/rightShoulder");
             _next.AddBinding("<Gamepad>/dpad/right");
+            _next.AddBinding("<Gamepad>/buttonNorth"); // Y swaps to the next weapon, as in most shooters
             _previous = new InputAction("WeaponPrevious", InputActionType.Button);
             _previous.AddBinding("<Gamepad>/leftShoulder");
             _previous.AddBinding("<Gamepad>/dpad/left");
