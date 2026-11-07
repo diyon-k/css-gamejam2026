@@ -225,7 +225,7 @@ namespace Blink.UI
         /// Weapon readout, bottom-right: a small-caps name (or "reloading" with a filling ring), and for guns the loaded
         /// count large with the reserve small and muted. "no ammo" in the accent when both are empty.
         /// </summary>
-        public static void Ammo(string weaponName, bool usesAmmo, int loaded, int reserve, bool reloading, float reloadProgress, float alpha)
+        public static void Ammo(string weaponName, bool usesAmmo, int loaded, int capacity, int reserve, bool reloading, float reloadProgress, float alpha)
         {
             if (alpha <= 0f) return;
             float right = ScreenWidth - Margin, bottom = ScreenHeight - Margin;
@@ -251,6 +251,19 @@ namespace Blink.UI
             Text(new Rect(numRect.x, numRect.y - PxText(6f), numRect.width, numRect.height), reserveText, NumberSmall, Fade(Muted, alpha));
             var loadedRect = new Rect(numRect.x - reserveW - PxText(10f), numRect.y, numRect.width, numRect.height);
             Text(loadedRect, loaded.ToString(), Number, Fade(Bone, alpha * (reloading ? 0.55f : 1f)));
+
+            // One bullet per magazine slot, left of the count: loaded ones solid, spent ones a faint outline.
+            float bx = loadedRect.xMax - Measure(loaded.ToString(), Number) - PxText(18f);
+            float bw = PxText(7f), bh = PxText(22f), step = bw + PxText(5f), by = bottom - PxText(30f) - bh * 0.5f;
+            for (int i = 0; i < capacity; i++)
+            {
+                var r = new Rect(bx - (i + 1) * step + PxText(5f), by, bw, bh);
+                bool full = capacity - 1 - i < loaded;
+                var col = full ? Fade(Bone, alpha * (reloading ? 0.55f : 0.9f)) : Fade(Muted, alpha * 0.35f);
+                float tip = bw * 0.5f, edge = full ? 0f : Mathf.Max(1f, PxText(1.2f));
+                GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, col,
+                    new Vector4(edge, edge, edge, edge), new Vector4(tip, tip, PxText(1f), PxText(1f)));
+            }
         }
 
         /// <summary>
