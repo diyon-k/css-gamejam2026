@@ -10,7 +10,7 @@ namespace Blink.Interaction
     /// </summary>
     public sealed class PickupGlint : MonoBehaviour
     {
-        const float Range = 8f, Period = 2.2f, FlashSeconds = 0.5f, BasePixels = 64f, Rescan = 1f;
+        const float Range = 8f, Period = 2.2f, FlashSeconds = 0.5f, BasePixels = 110f, Rescan = 1f;
         static readonly Color Tint = new(1f, 0.93f, 0.75f);
 
         static Texture2D _star;
