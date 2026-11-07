@@ -196,7 +196,7 @@ Each room lists the ref it is based on and why. Material names are defined in §
 
 ---
 
-## 3. Materials (19 of ≤ 20)
+## 3. Materials (20 of ≤ 20)
 
 **Conventions:**
 - Every texture is **1024²** (CC0 1K downloads, used as is or repacked by script).
@@ -236,12 +236,123 @@ Each room lists the ref it is based on and why. Material names are defined in §
 **Shared textures and atlases:**
 - `M_Wall_Damask` and `M_Wall_Pale` share one normal and one mask.
 - The whole modular kit shares the `M_Trim` trim sheet.
-- All modular pieces share one 1K **kit wear atlas** on UV2: R = baked AO, G = edge wear, B = dirt (cavity × upward-facing), A = polish (nosings, handrail tops, door edges). How URP uses it is open question Q2.
+- All modular pieces share one 1K **kit wear atlas** on UV2 (Unity `mesh.uv2` = TEXCOORD1, shared with the lightmap layout): R = baked AO, G = edge wear, B = dirt (cavity × upward-facing), A = polish (nosings, handrail tops, door edges). URP reads it through `SG_BungalowLit` (§3.0.2; Q2 answered by decision 2).
 - Props are packed into 4 atlases.
+
+### 3.0 As built (Phase 4: surface materials #1–#15)
+
+Built by script, re-runnable:
+1. `python -I tools/textures/bungalow_surfaces.py fetch <cache>` downloads the 1K PNG maps (one new folder per asset, outside the repo) and writes `<cache>/sources.json` with the authors and real-world sizes from the live APIs.
+2. `python -I tools/textures/bungalow_surfaces.py build <cache>` repacks, grades and authors everything into `Art/Environment/Bungalow/Textures/<MaterialName>/` (1024² PNG).
+3. `python -I tools/textures/bungalow_shadergraph.py` writes `Shaders/SG_BungalowLit.shadergraph`.
+4. Unity menu **BLINK/Bungalow/Build Surface Materials** (`Materials/Editor/BungalowMaterialsBuilder.cs`) applies the import settings and creates or updates `Materials/M_*.mat` in place. It also wires `Textures/Trim/` and `Textures/KitWear/` as soon as Phase 3 delivers them.
+5. **BLINK/Bungalow/Build Material Preview Scene** (`BungalowMatPreview.cs`) builds the throwaway `Scenes/House_Bungalow_MatPreview.unity`.
+
+#### 3.0.1 Material table (as built)
+
+**UV0 contract** (Phase 3, `bungalow_layout.SURFACE_TILE_M`): kit surfaces are box-mapped at **1 UV = one texture tile**, so every kit material uses **tiling 1**, and the tile size column below is the real-world size of one texture repeat. The grey-box is metric (1 UV = 1 m); the preview scene divides its UV0 by the same table. `BungalowMaterialsBuilder.SurfaceTileM` mirrors the table; keep them in sync.
+
+| # | Material | Shader | Textures (all 1024², BC7, mipmaps) | Tile (m), material tiling | Source (CC0) and processing |
+|---|---|---|---|---|---|
+| 1 | `M_FloorPlank` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 2.0, 1 | Poly Haven `dark_wooden_planks` (Amal Kumar). Graded to mean sRGB (66, 52, 41), warm dark brown (refs 1, 3) |
+| 2 | `M_Parquet` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 3.4, 1 | Poly Haven `herringbone_parquet` (Jenelle van Heerden, Sergej Majboroda). Tinted dark, mean (76, 53, 38), sat 0.8. Smoothness ×0.7 (the scan is too glossy for ref 2) |
+| 3 | `M_Lino` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 2.0, 1 | Poly Haven `old_linoleum_flooring_01` (Charlotte Baglioni). Desaturated (0.45) and dulled to (128, 112, 86) |
+| 4 | `M_Concrete` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 2.5, 1 | Poly Haven `concrete_floor_damaged_01` (Rob Tuytel). Real size 5 m, shown at 2.5 m for crisper cracks |
+| 5 | `M_Wall_Damask` | SG_BungalowLit | `M_Wall_Damask_Base` + **shared** `M_Wall_Shared_Normal` / `_Mask` | 2.0, 1 | Paper: Poly Haven `decrepit_wallpaper` (Rob Tuytel); stains carried by its luminance. Pattern self-authored: half-drop **ogee lattice** of leafy vines, a mirrored palmette medallion per cell, rosettes at the tips, 4 × 4 per tile (50 cm repeat), deep maroon tone-on-tone: ground (66, 17, 17), motif (96, 27, 24) |
+| 6 | `M_Wall_Pale` | SG_BungalowLit | `M_Wall_Pale_Base` + shared normal and mask | 2.0, 1 | Same paper. Self-authored small sprig motif (4 petals, stem, 2 leaves, alternate flips), half-drop 10 × 10 (20 cm repeat). Cream ground (194, 184, 160), motif (138, 116, 92) |
+| 7 | `M_Wall_Floral` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 2.0, 1 | ambientCG `Wallpaper002C` (mouldy paper: mould = multiply, normal, roughness; AO from its displacement). Self-authored trailing floral (cabbage roses, buds, stems, leaves), 4 × 4 half-drop (50 cm), seeded flips/rotations. Sage ground (98, 112, 84), leaves (56, 72, 48), roses (128, 130, 100) |
+| 8 | `M_Plaster` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 1.5, 1 | Poly Haven `white_plaster_02` (Rob Tuytel). Real size 1 m, shown at 1.5 m to hide repeats on the big ceilings. Warm off-white (176, 170, 156) |
+| 9 | `M_BrickWhite` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 2.0, 1 | Poly Haven `whitewashed_brick` (Charlotte Baglioni). Whitened (196, 190, 180), sat 0.55, contrast 0.85 (ref 3's painted fireplace) |
+| 10 | `M_Tile` | SG_BungalowLit | `_Base`, `_Normal`, `_Mask` | 1.5, 1 | ambientCG `Tiles133D` (Color, NormalGL, Roughness, AO). Shown at 1.5 m per tile repeat: ~11.5 cm period tiles (changed from 1.0 in Phase 3) |
+| 11 | `M_Trim` | SG_BungalowLit | from `Textures/Trim/` (Phase 3) | sheet, 1 | Material asset built. Until the trim sheet lands it is a flat dark-varnish placeholder: base (62, 42, 30), smoothness 0.42 |
+| 12 | `M_Shade` | URP Lit, opaque, both faces, emission | `_Base` (also the emission map), `_Normal`, `_Mask` | 0.5, 2 (props: metric UVs assumed) | ambientCG `Fabric032`, tinted aged parchment (226, 212, 186). Emission #FFD9A0 × 1.5, GI flag None (the point lights carry the light). Per-fixture colour and strength (§5.1) is a Phase 6 job |
+| 13 | `M_Glass` | URP Lit, transparent alpha, preserve specular, both faces | `_Base` (RGB tint, A = dirt cover 0.10–0.65), `_Mask` | 1.0, 1 | Self-authored: tiling fBm smudge, finger smears, specks. Smoothness 0.96 drops to 0.4 on the smudges |
+| 14 | `M_Water` | URP Lit, transparent alpha, preserve specular | `_Normal`, `_Mask` | 4.0, 1 | Self-authored tiling ripple (periodic spectral noise + 3 wave trains → GL normal), scum patches in the mask. Base colour (34, 32, 22, α 0.86), normal 0.55 |
+| 15 | `M_Decals` | URP Lit, transparent alpha (queue −20, before glass and water) | `_Base` (RGBA), `_Normal`, `_Mask`, plus `M_Decals_atlas.json` (cell UV rects) | atlas, 1 | Cells: `leak_streaks` (ambientCG `Leaking017B` displacement as the streak mask), `ceiling_stain`, `mould_bloom` (cut from `Wallpaper002C`), `floor_stain`, `scuffs`, `rust_streaks` (`Leaking013A` displacement), `paper_scraps` (4 sheets), `plaster_crumbs`, `peel_edge`, `tide_line` and `grime_band` (both seamless left to right). All self-authored except the noted scan cuts |
+
+**Map conventions as built:**
+- `_Base`: sRGB. Alpha only on M_Glass and M_Decals.
+- `_Normal`: OpenGL Y+, imported as Normal Map.
+- `_Mask`: linear, R metallic, G AO, B 0, A smoothness. Poly Haven `arm` gives R = arm.B, G = arm.R, A = 1 − arm.G; ambientCG gives A = 1 − Roughness, G = AO.
+- **Import:** max 1024, mipmaps on, trilinear, aniso 8 (decals 2), Standalone override **BC7**, CompressedHQ. Repeat wrap; the decal atlas uses Clamp.
+- **Grading:** done in linear (per-channel gain to a target mean, then saturation and contrast about the mean). Albedo is clamped to sRGB ≈ 0.1–0.94.
+
+**Sources (all CC0 1.0; Poly Haven and ambientCG need no credit, but the coordinator lists them in CREDITS.md):**
+- Poly Haven: dark_wooden_planks (Amal Kumar), herringbone_parquet (Jenelle van Heerden, Sergej Majboroda), old_linoleum_flooring_01 (Charlotte Baglioni), concrete_floor_damaged_01 (Rob Tuytel), decrepit_wallpaper (Rob Tuytel), white_plaster_02 (Rob Tuytel), whitewashed_brick (Charlotte Baglioni).
+- ambientCG: Wallpaper002C, Tiles133D, Fabric032, Leaking013A, Leaking017B.
+- The decal atlas, the three wallpaper patterns, the glass smudge and the water ripple are self-authored (seeded numpy and PIL).
+
+#### 3.0.2 `SG_BungalowLit` (kit wear shader)
+
+`Shaders/SG_BungalowLit.shadergraph` is a **URP Lit** Shader Graph: metallic workflow, opaque, front faces.
+- The URP target supplies the ForwardLit, GBuffer, ShadowCaster, DepthOnly, DepthNormals, MotionVectors and **Meta** passes.
+- It therefore works with lightmaps, light probes, **shadowmask**, Forward+ and the SRP Batcher.
+- The surface maths lives in `Shaders/BungalowWear.hlsl`, a Custom Function node in file mode, so the graph stays small: properties, UV0 and UV2 feed one node, whose outputs go to Base Color, Normal (TS), Metallic, Smoothness and Occlusion.
+
+**Properties:**
+- **URP Lit names:** `_BaseMap` (tiling and offset drive Base, Normal and Mask), `_BaseColor`, `_BumpMap`, `_BumpScale`, `_MaskMap` (R metallic, G AO, A smoothness), `_Metallic` and `_Smoothness` (scales), `_OcclusionStrength`.
+- **Wear:** `_WearMap`, the kit wear atlas on **"UV2" = Unity `mesh.uv2` = TEXCOORD1** (Shader Graph channel UV1). This is the same non-overlapping layout the lightmapper uses: Blender's `UVLightmap` layer, packed by `bungalow_wear.py`. The atlas reads the raw mesh UV, not the lightmap scale and offset.
+- **Wear strengths and tints:** `_WearAOStrength`, `_EdgeWearStrength`, `_EdgeWearColor` (A = tint amount), `_EdgeWearLighten`, `_DirtStrength`, `_DirtColor` (multiply), `_DirtRoughen`, `_PolishStrength`, `_PolishSmoothness`.
+
+**Wear maths:**
+- **Edge wear (G):** lerps the base towards `saturate(base × (1 + Lighten))`, tinted by `_EdgeWearColor`, i.e. exposed lighter wood, backing paper or chipped whitewash.
+- **Dirt (B):** multiplies the albedo towards `_DirtColor` and scales smoothness by (1 − `_DirtRoughen`).
+- **Polish (A):** raises smoothness to at least `_PolishSmoothness` and darkens the albedo by 10%.
+- **Atlas AO (R):** multiplies into Occlusion.
+
+**Neutral when unassigned:** an empty `_WearMap` or `_MaskMap` falls back to Unity's 4 × 4 default texture. The node detects that through the texel size (< 8 px) and treats the slot as neutral: no wear, AO 1, metallic and smoothness from the scalars. Kit materials therefore work before the atlas exists.
+
+**Per-material wear presets** (in `BungalowMaterialsBuilder`):
+- Wood: lighter raw-wood edges, polish on.
+- Wallpapers: backing-paper edges, no polish.
+- Brick: chips show red brick.
+- Tile: grey chips.
+- Plaster: pale chips.
+
+#### 3.0.3 Checkpoint renders (Phase 4)
+
+The renders are in the session scratch folder `bungalow/phase4/`.
+- **Blender 5.1 Cycles vs Unity URP** on the same wall-and-floor sample under matched neutral light (`tools/blender/bungalow_materials_compare.py` vs `BungalowMatPreview.RenderCompare`). Mean sRGB deltas: wall / floor −6 / −9 (Damask), −2 / −5 (FloorPlank), −11 / −12 (BrickWhite). Unity is slightly darker because URP applies the mask AO to ambient light; Cycles adds wall-to-floor bounce.
+- **Swatch sheet** of all 15 materials.
+- **CAM-1/2/3 grey-box previews** with these materials (preview point lights at the §5.1 positions, no GI, no post) next to refs 1–3.
 
 **Atlas texel density (1K):**
 - `M_Atlas_Soft` holds about 6 m² of visible upholstery, so roughly 4 px/cm. That's adequate at night under fog; if it isn't, use the spare slot.
 - `M_Atlas_Small` holds about 40 small items.
+
+#### 3.0.4 `M_Trim` trim sheet and the kit UV contract (Phase 3)
+
+**Build:** `python -I tools/blender/bungalow_trim.py --download <dir>` (one new folder per source) then `python -I tools/blender/bungalow_trim.py --src <dir>` composites `Textures/Trim/Trim_Albedo.png` (sRGB), `Trim_Normal.png` (OpenGL Y+) and `Trim_Mask.png` (linear: R metallic, G AO, B 0, A smoothness), all 1024². The strip table is `bungalow_trim.STRIPS`; the kit reads it, so the geometry and the texture can't drift apart.
+
+**Layout:** 8 horizontal strips of 128 px. Strip *k* covers V = *k*/8 .. (*k*+1)/8, with V = 0 the bottom row of the image (Blender and Unity UVs). Kit UVs stay **4 px inside** their strip (the V ranges below), so mips don't bleed. Every strip tiles along U. **1 UV = 2 m** in both directions, so the wood grain runs along U at its real scale and a strip is 0.25 m tall. A profile or face wider than 0.25 m is compressed across the grain to fit.
+
+| Strip | V range (inset) | Key | Look | Used on | Source (CC0) |
+|---|---|---|---|---|---|
+| 0 | 0.0039–0.1211 | `varnish` | Dark-stained varnished wood, long grain, smoothness 0.3–0.7 | Skirting, dado and picture rails, cornice, door and window casings, linings, A1–A4 and O1 casings, stringers, sashes (varnished rooms) | Poly Haven `dark_wood` (Dimitrios Savva, Dario Barresi, Rico Cilliers), de-reddened |
+| 1 | 0.1289–0.2461 | `varnish_door` | Warmer varnish, more worn | Door leaves in varnished rooms (D1), risers, thresholds | `dark_wood`, another band |
+| 2 | 0.2539–0.3711 | `varnish_turned` | Darkest varnish, tight grain | Turned balusters, newels, handrails, O1 transom spindles | `dark_wood`, another band |
+| 3 | 0.3789–0.4961 | `paint_dark` | Dark olive-brown paint over wood (ref 3) | Bedroom trim, D2 leaf, WR1, the mantel | ambientCG `PaintedWood008C` |
+| 4 | 0.5039–0.6211 | `paint_light` | Off-white chipped paint | Kitchen and bathroom trim, D3 / D4 leaves, their windows, the bathroom tile cap | `PaintedWood008C`, recoloured |
+| 5 | 0.6289–0.7461 | `raw` | Raw weathered board (one board, grain along U) | Joists, trimmers, header, under-stair boarding, D5 ledged door and its casings, WL1 boards | Poly Haven `worn_planks` (Dimitrios Savva), rotated 90° |
+| 6 | 0.7539–0.8711 | `metal_paint` | Cream paint on iron, ~20 % rust | Radiators, pipes and hangers, G1 gate, firebox lintel, hopper sashes | Poly Haven `rusty_metal_02` (Rob Tuytel), tiled to 2 m |
+| 7 | 0.8789–0.9961 | `brass` | Tarnished brass, **metallic** (R 1, 0.2 where tarnished) | Knobs, backplates, hinges, gate pins and latch, radiator valves | `rusty_metal_02` normals / tarnish mask, self-authored brass |
+
+**Which strip a piece uses** comes from the room it faces: `ROOM_FINISH[room].trim` → `TRIM_STYLE` (halls and living = varnish 0/1/2, bedroom = 3, kitchen and bathroom = 4, basement = 5). Casings are styled per wall face, so a door between the hall and the bedroom is varnished on the hall side and painted on the bedroom side. The arches A1–A4 and O1 are always varnished (refs 1 and 2).
+
+**UV0 contract** (all kit meshes): surface materials are world box-mapped at **1 UV = one tile** of `bungalow_layout.SURFACE_TILE_M` metres, so their materials use tiling 1. The table is exported to `bungalow_layout.json` (`surfaceTiles`), and `BungalowMaterialsBuilder.SurfaceTileM` reads it from there. `M_FloorPlank` boards are cut on the scan's own seams (`FLOOR_PLANK_SEAMS_PX`), so the material must keep the scan unrotated with offset 0. Stair treads each map one scan board.
+
+**UV2 contract** (Blender layer `UVLightmap` = Unity `mesh.uv2` / TEXCOORD1): one non-overlapping layout for the whole shell, shared by the lightmapper and the wear atlas.
+- Each mesh is Smart-UV-unwrapped on its own and placed as **one compact, pixel-snapped rectangle** in the atlas, so its UV2 bounds are tight. Islands are at least 3 px apart.
+- Texel density is weighted per mesh: trim and detail pieces ~37 px/m, plank floors ~29, walls ~19, joists ~19, ceilings ~12 (AO in the corners only), outside faces ~7, the ground ~4.
+- `Textures/KitWear/KitWear.png` (1024², RGBA, **linear**, clamp, BC7) holds the wear:
+  - **R**: AO (Cycles, 0.35 m). 1 = open.
+  - **G**: edge wear. Convex edges (bevel normal vs face normal, 3 cm, gated by local AO, noise-broken), plus foot-traffic wear on up-facing surfaces away from walls (worn paths on the floors, tread middles).
+  - **B**: dirt. Cavity × up-facing, grime along the skirting and in floor corners, and a 0.5 m kick / mop band up vertical faces.
+  - **A**: polish. From the kit's `polish` face attribute: nosings and tread fronts, handrail tops, newel caps, latch stiles, knobs, thresholds, sills.
+  - Outside every island: R = 1, G = B = A = 0.
+- Regenerate with `build_all.py --target bungalow Bungalow_Shell`. The bake takes ~8 min on the GPU (OptiX). The atlas is only valid with the UV2 of the same build.
+
+**20th material:** `M_Plaster_Kitchen` (kitchen walls only; ceilings stay `M_Plaster`) reuses M_Plaster's maps tinted blue-white (#CCDEF2). It is in `ROOM_FINISH`, `SURFACE_TILE_M` (1.5) and `BungalowMaterialsBuilder`, and uses the spare slot, so the count is now **20 of ≤ 20**.
 
 ### 3.1 Reuse from `Unity/Assets/Art/Mansion/PolyHaven/`
 
@@ -304,25 +415,39 @@ Everything else is self-built with `lib.py` primitives: fixtures, boxes, bottles
 
 Sources: **R** = reuse Mansion/PolyHaven, **N** = new Poly Haven CC0, **S** = self-built in Blender. Tris are after decimation.
 
-### 4.1 Modular kit (shell)
+### 4.1 Modular kit (shell), as built in Phase 3
 
-| Item | Tris |
+`tools/blender/bungalow_kit.py` builds the whole shell from the layout tables (`Kit/Bungalow_Shell.fbx`, 97 meshes). The Phase 1 estimate was 26.4k and the revision-2 estimate 39.5k. Decision 13 raised the level cap to ~200k, so the kit carries real bevels, turned work and per-board floors.
+
+| Piece (all generated from `bungalow_layout`) | Tris |
 |---|---|
-| Floors: plank strips with sag in the hall, bedroom and entrance; parquet, lino and concrete slabs | 2,600 |
-| Walls: 0.5 m-snapped modular pieces, both faces, opening cuts, chimney breast | 2,600 |
-| Ceilings, basement slab underside, joists | 1,200 |
-| Mouldings: skirting, dado and picture rails, cornice (swept profiles) | 2,000 |
-| Door leaves D1–D5 (panelled, hung off-square) | 2,000 |
-| Casings for 5 doors, A1–A4, O1 + transom | 2,400 |
-| Windows ×6 + 2 hoppers (sashes, WL1 boards) | 2,000 |
-| Stair: 14 risers, 13 treads with chipped nosings, 2 stringers | 1,800 |
-| Balustrades: 5 m landing guard + stair rail, about 62 turned balusters at about 64 tris, 4 newels, rails | 5,000 |
-| Fireplace and hearth | 900 |
-| Radiators ×3 | 1,200 |
-| Basement retaining walls, partition, pipes and conduit | 1,400 |
-| Wallpaper peel holes, lath strips, plaster chunks | 1,200 |
-| Flood water plane and scum | 100 |
-| **Kit subtotal** | **26,400** |
+| Walls, inside faces: thickness, openings cut from `OPENINGS`, faces split at room edges and wall bands (bathroom tile to 1.20, kitchen splashback 0.90–1.50), arch spandrels | 2,440 |
+| Walls, outside faces (`<wall>_Outside`, low UV2 density) | 870 |
+| Floors: plank boards cut on the scan's seams (chamfered V-grooves, ±1.5 mm per-board height, sag by the well and in the bedroom's damp corner, ~0.9 chipped edges per board-metre), parquet / lino / concrete slabs, basement-ceiling undersides, well edges | 12,112 |
+| Ceilings (undersides only) | 12 |
+| Mouldings: skirting, dado (halls), tile cap (bathroom), picture rail, coved cornice; broken at openings, the well and A4, wrapped round the chimney breast | 3,806 |
+| Door frames D1–D5: linings, stop beads, moulded casings on both faces (styled per room), plinth blocks, thresholds | 2,290 |
+| Door leaves: D1 double (right leaf ajar 18° and **hung 3° off**, latch corner dropped onto the floor), D2–D4 four-panel raised-and-fielded with beads, brass knobs, backplates and hinges, D5 ledged-and-braced raw boards with strap hinges | 9,700 |
+| Arches A1–A3 (lining, wide casings, keystones, plinths), A4 overhead arch (soffit, casings, corbels), O1 cased opening (transom rail and 5 turned spindles) | 4,754 |
+| Windows ×6 + 2 hoppers: linings, casings, stools, aprons, outside sills, double-hung sashes (lower sash lifted on some), parting beads, hoppers tilted 14°, WL1 boards | 4,920 |
+| Window glass (`<id>_Glass`, panes) | 336 |
+| Stair: 14 bullnosed treads + landing nosing with **chipped nosings** cut into the profile, 15 risers, wall and outer stringers on the pitch, under-stair boarding | 4,986 |
+| Stair rail: 21 turned balusters on the outer string (the top ones stop under the header), handrail on the pitch, foot newel | 5,580 |
+| Well balustrade: 3 panelled newels (**NE cap cracked**: split, one half dropped and tilted, finial knocked askew), shoe rails, handrails, 45 turned balusters with **2 missing** (stubs) | 12,096 |
+| G1 gate: painted iron frame, spear-top bars, brass pins and latch, pivot at the hinge | 636 |
+| Basement joists (each sagging 2–9 mm), trimmers, header | 1,716 |
+| Radiators ×5 (column type, valves and tails) | 15,048 |
+| Basement heating pipes: mains, drops to the radiators, elbows, hangers | 2,476 |
+| Fireplace: whitewashed brick breast and firebox, steel lintel, concrete hearth, moulded mantel with corbels | 192 |
+| Flood water plane (y −2.77, cut round the flight) | 8 |
+| Exterior: ground, steps, light wells | 218 |
+| **Shell total** | **84,196** |
+
+- `Kit/Bungalow_Kit.fbx` is the piece library: one copy of each type (walls, floors, ceiling, mouldings, door frame, three leaf styles, arch, A4, O1, window, glass, hopper, stair, rail, balustrade, gate, joists, radiator, pipes, fireplace, mantel), 44.6k tris, re-centred at the origin and laid out along +X. The pieces keep the shell's UV2, so they share the wear atlas. The library is not placed in the level.
+- The heaviest items are the radiators (15k) and the balustrade (12k). Both can be halved (6-sided columns, 6-segment balusters) if the batch / tris budget needs it in Phase 7.
+- Colliders: `Kit/Bungalow_Shell_colliders.json` carries the **grey-box boxes unchanged** (146 boxes, taken from `bungalow_greybox` at build time, keyed to the same object names), so the navmesh sources are identical. The only additions are one nav-ignored box per door leaf. `check()` passes, including the new kit checks: every room has a finish, every door has a leaf, the radiators are on their walls, and the basement headroom under the pipes is 2.21 m.
+- Visual clearances vs the grey-box: the stringers stand 3–5 cm above the treads (clear width between them 1.18 m, capsule 0.70), the radiators stand 0.17 m off their walls, and the casings stand 2.4 cm proud of the walls. Board sag is ≤ 24 mm below the collider top (by the well).
+- Not in the kit yet: wallpaper peel holes, lath strips and plaster chunks (they need the decal pass, §3 #15, and the room dressing, Phase 5/6).
 
 ### 4.2 Fixtures (all S)
 
@@ -724,13 +849,25 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 
 ---
 
-### 6.5 Phase 2 status (implemented)
+### 6.5 Status
+
+**Phase 2 (implemented)**
 
 - `bungalow_layout.py`: the data model (levels, rooms with floor / ceiling holes, walls, openings, stair, beams, fixtures, furniture footprints, spawns, routes, cameras, reserved FUTURE entries) plus `check()` (≥ 3× areas, doorway sizes, hallway widths, stair maths, every room side closed by walls). Writes `Art/Environment/Bungalow/bungalow_layout.json`.
 - `bungalow_greybox.py`: builds every piece from the tables (walls cut by their openings with no internal faces, per-room floor and ceiling slabs cut by their holes, arches, casings, windows, stair, balustrade, G1, beams, fireplace, exterior), UV0 box mapping, UV2 lightmap layout, and `Greybox/Bungalow_Greybox_colliders.json` (box colliders, Unity space).
 - `bungalow_floorplan.py`: regenerates `docs/bungalow/floorplan.png` from the same data.
 - `build_all.py --target bungalow`, `unity_setup.py --target bungalow` (importer settings), `lib.uv_lightmap` and the `GB_*` grey-box colours in `lib.MATERIALS`. The mansion target is unchanged.
 - `Assets/Editor/BungalowGreyboxBuilder.cs` (menu **BLINK/Bungalow/Build Grey-box Scene**): builds `House_Bungalow.unity` from the FBX and the two JSON files and bakes the navmesh with the BungalowZombie agent.
+
+**Phase 3 (implemented): modular kit, trim sheet, wear bakes**
+- `bungalow_layout.py`: new kit tables. `SURFACE_TILE_M` (also in the JSON as `surfaceTiles`), `FLOOR_PLANK_SEAMS_PX`, `TRIM_STYLE`, `ROOM_FINISH` (floor / wall / ceiling materials, board direction, trim style, mouldings, wall bands), `MOULDING_Y`, `DOOR_LEAVES`, `RADIATORS`, `PIPES`, `DECAY` (sag zones, missing balusters, cracked newel, chip rate, water level). `check()` validates them. A new room needs a `ROOM_FINISH` row; new radiators, pipes, leaves and decay spots are rows too.
+- `bungalow_kit.py`: the shell from those tables (`Bungalow_Shell`, see §4.1), the piece library (`Bungalow_Kit`), and `Kit/Bungalow_Shell_colliders.json` (grey-box boxes plus leaf boxes).
+- `bungalow_trim.py`: the trim sheet (§3.0.4).
+- `bungalow_wear.py`: the UV2 atlas packing and the four-channel wear bake (§3.0.4), plus `preview_materials()` for Blender before / after renders.
+- `build_all.py --target bungalow [Bungalow_Shell] [Bungalow_Kit] [--no-wear]`; the mansion target is unchanged.
+- `unity_setup.py --target bungalow` adds `kit_textures()` (Trim / KitWear importers: 1024, mips, BC7 Standalone override, normal flagged, masks and the atlas linear, the atlas clamped) and `kit_remaps()` (Kit FBX material names → `Materials/M_*.mat`). The FBX importer has no cameras or lights, and Generate Lightmap UVs is off.
+- Unity: `Scenes/House_Bungalow_KitPreview.unity` is the shell with preview copies of the Phase 4 materials (`Kit/Preview/PV_*.mat`, wear atlas wired) and preview point lights. `House_Bungalow.unity` is untouched; swapping the grey-box for `Bungalow_Shell.fbx` and its colliders JSON is a builder change (`ModelPath` / `CollidersPath`).
+- Known limits: the 1K atlas spread over ~1,500 m² gives 2.5–5 cm wear texels, so the wear reads as broad AO, grime and traffic patterns rather than crisp chips; the chips themselves are geometry. The UV2 rect-per-mesh layout assumes Unity packs lightmaps by each mesh's UV2 bounds; verify the lightmap texel density at the Phase 6 bake.
 
 ## 7. Risks and open questions
 

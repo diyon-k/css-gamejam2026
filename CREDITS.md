@@ -30,6 +30,22 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Zombie moans](https://opengameart.org/content/zombie-moans-01-by-emopreben) | EmoPreben | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie idle groans |
 | [Zombie noises and moans](https://opengameart.org/content/zombie-noises-and-moans) | ianzazz | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie groans and an alert growl |
 | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | Kenney | kenney.nl | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Player footsteps (wood), hit thuds, bullet-on-wall hits, door burst |
+| [dark_wood](https://polyhaven.com/a/dark_wood) | Dimitrios Savva, Dario Barresi, Rico Cilliers | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow trim sheet varnish |
+| [worn_planks](https://polyhaven.com/a/worn_planks) | Dimitrios Savva | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow trim raw wood |
+| [rusty_metal_02](https://polyhaven.com/a/rusty_metal_02) | Rob Tuytel | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow trim metal |
+| [dark_wooden_planks](https://polyhaven.com/a/dark_wooden_planks) | Amal Kumar | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow floor planks |
+| [herringbone_parquet](https://polyhaven.com/a/herringbone_parquet) | Jenelle van Heerden, Sergej Majboroda | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow living-room parquet |
+| [old_linoleum_flooring_01](https://polyhaven.com/a/old_linoleum_flooring_01) | Charlotte Baglioni | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow kitchen and bathroom lino |
+| [concrete_floor_damaged_01](https://polyhaven.com/a/concrete_floor_damaged_01) | Rob Tuytel | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow basement concrete |
+| [decrepit_wallpaper](https://polyhaven.com/a/decrepit_wallpaper) | Rob Tuytel | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow damask and pale wallpaper base |
+| [white_plaster_02](https://polyhaven.com/a/white_plaster_02) | Rob Tuytel | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow plaster |
+| [whitewashed_brick](https://polyhaven.com/a/whitewashed_brick) | Charlotte Baglioni | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow fireplace and basement brick |
+| [PaintedWood008C](https://ambientcg.com/view?id=PaintedWood008C) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow trim painted wood |
+| [Wallpaper002C](https://ambientcg.com/view?id=Wallpaper002C) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow floral wallpaper base and mould decals |
+| [Tiles133D](https://ambientcg.com/view?id=Tiles133D) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow bathroom and kitchen tiles |
+| [Fabric032](https://ambientcg.com/view?id=Fabric032) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow lamp shades |
+| [Leaking013A](https://ambientcg.com/view?id=Leaking013A) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow leak decals |
+| [Leaking017B](https://ambientcg.com/view?id=Leaking017B) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow leak decals |
 
 ## Licence notes
 
