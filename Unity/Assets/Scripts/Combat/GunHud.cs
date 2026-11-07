@@ -3,15 +3,16 @@ using UnityEngine;
 namespace Blink.Combat
 {
     /// <summary>
-    /// Bare-bones combat HUD on the player: a crosshair that flashes a hit marker (red X on a kill),
-    /// the ammo count with a reload bar, and the player's health. Drawn with IMGUI so it needs no
-    /// Canvas; the HUD workstream can replace it with proper UI driven by the same Gun/Health events.
+    /// Bare-bones combat HUD on the player: a crosshair that flashes a hit marker (red X on a kill, from any
+    /// weapon), the weapon in hand with its ammo and a reload bar (nothing for the hands and the axe), and the
+    /// player's health. Drawn with IMGUI so it needs no Canvas; the HUD workstream can replace it with proper UI
+    /// driven by the same <see cref="PlayerWeapons"/>/<see cref="Health"/> events.
     /// Timing is unscaled so it doesn't speed up during fast-forward.
     /// </summary>
     public sealed class GunHud : MonoBehaviour
     {
-        [Tooltip("Defaults to the Gun under this object.")]
-        [SerializeField] Gun gun;
+        [Tooltip("Defaults to the PlayerWeapons on this object.")]
+        [SerializeField] PlayerWeapons weapons;
         [Tooltip("Defaults to the Health on this object (the player's).")]
         [SerializeField] Health health;
 
@@ -27,26 +28,32 @@ namespace Blink.Combat
 
         void Awake()
         {
-            if (gun == null) gun = GetComponentInChildren<Gun>();
+            if (weapons == null) weapons = GetComponent<PlayerWeapons>();
             if (health == null) health = GetComponent<Health>();
         }
 
         void OnEnable()
         {
-            if (gun != null) gun.Fired += OnFired;
+            if (weapons == null) return;
+            weapons.RayFired += OnRayFired;
+            weapons.MeleeHit += OnMeleeHit;
         }
 
         void OnDisable()
         {
-            if (gun != null) gun.Fired -= OnFired;
+            if (weapons == null) return;
+            weapons.RayFired -= OnRayFired;
+            weapons.MeleeHit -= OnMeleeHit;
         }
 
-        void OnFired(bool hit, RaycastHit info)
+        void OnRayFired(ShotRay shot) => ShowMarker(shot.Target);
+
+        void OnMeleeHit(MeleeHitInfo hit) => ShowMarker(hit.Target);
+
+        void ShowMarker(IDamageable target)
         {
-            if (!hit || info.collider == null) return;
-            var target = info.collider.GetComponentInParent<IDamageable>();
             if (target == null) return;
-            _markerWasKill = target.IsDead; // Fired is raised after the damage is applied.
+            _markerWasKill = target.IsDead; // raised after the damage is applied
             _markerUntil = Time.unscaledTime + markerSeconds;
         }
 
@@ -56,7 +63,7 @@ namespace Blink.Combat
             EnsureStyles();
 
             if (health == null || !health.IsDead) DrawCrosshair();
-            if (gun != null) DrawAmmo();
+            if (weapons != null) DrawWeapon(weapons.ActiveWeapon);
             if (health != null) DrawHealth();
         }
 
@@ -84,24 +91,26 @@ namespace Blink.Combat
             }
         }
 
-        void DrawAmmo()
+        void DrawWeapon(IWeaponStatus weapon)
         {
             const float w = 180f, margin = 24f;
             var area = new Rect(Screen.width - w - margin, Screen.height - 70f - margin, w, 70f);
+            if (!weapon.UsesAmmo) return; // hands and axe: nothing to count
 
-            string ammo = $"{gun.AmmoInMagazine} <size=18>/ {gun.ReserveAmmo}</size>";
+            GUI.Label(new Rect(area.x, area.y - 18f, w, 18f), weapon.Kind.ToString().ToUpperInvariant(), _smallStyle);
+            string ammo = $"{weapon.AmmoLoaded} <size=18>/ {weapon.AmmoReserve}</size>";
             GUI.Label(new Rect(area.x, area.y, w, 42f), ammo, _ammoStyle);
 
-            if (gun.IsReloading)
+            if (weapon.IsReloading)
             {
                 var bar = new Rect(area.x + w - 120f, area.y + 46f, 120f, 6f);
                 Fill(bar, new Color(0f, 0f, 0f, 0.5f));
-                Fill(new Rect(bar.x, bar.y, bar.width * gun.ReloadProgress01, bar.height), Color.white);
+                Fill(new Rect(bar.x, bar.y, bar.width * weapon.ReloadProgress01, bar.height), Color.white);
                 GUI.Label(new Rect(area.x, area.y + 52f, w, 18f), "RELOADING", _smallStyle);
             }
-            else if (gun.AmmoInMagazine == 0)
+            else if (weapon.AmmoLoaded == 0)
             {
-                GUI.Label(new Rect(area.x, area.y + 46f, w, 18f), gun.ReserveAmmo > 0 ? "R TO RELOAD" : "NO AMMO", _smallStyle);
+                GUI.Label(new Rect(area.x, area.y + 46f, w, 18f), weapon.AmmoReserve > 0 ? "R TO RELOAD" : "NO AMMO", _smallStyle);
             }
         }
 

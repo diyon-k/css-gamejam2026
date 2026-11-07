@@ -11,12 +11,16 @@ namespace Blink.Combat
     /// Hitscan pistol fired from the centre of the camera. The reload runs on a <see cref="WorldTimer"/>,
     /// so blinking or shutting your eyes finishes it faster: the reference example of a skip that helps.
     /// Effects (muzzle flash, sound, recoil) belong in separate scripts listening to the events.
+    /// On the player it is the pistol slot of <see cref="PlayerWeapons"/>, which turns <see cref="ReadsInput"/>
+    /// off and calls <see cref="TryFire"/> / <see cref="TryStartReload"/> itself while the pistol is out.
     /// </summary>
     public sealed class Gun : MonoBehaviour, ISkippable
     {
         [SerializeField] Camera aimCamera;
         [Tooltip("Where effects spawn. Optional.")]
         [SerializeField] Transform muzzle;
+        [Tooltip("Read the fire and reload input itself. PlayerWeapons turns this off and drives the gun instead.")]
+        [SerializeField] bool readsInput = true;
 
         [Header("Shooting")]
         [SerializeField] float damage = 34f;
@@ -46,6 +50,7 @@ namespace Blink.Combat
 
         public int AmmoInMagazine { get; private set; }
         public int ReserveAmmo => reserveAmmo;
+        public int MagazineSize => magazineSize;
         public bool IsReloading => _reloadTimer.IsRunning;
         public float ReloadProgress01 => _reloadTimer.Progress01;
         /// <summary>World seconds the current (or last) reload takes in total.</summary>
@@ -53,6 +58,15 @@ namespace Blink.Combat
         /// <summary>True if the current (or last) reload started with an empty magazine.</summary>
         public bool IsEmptyReload { get; private set; }
         public Transform Muzzle => muzzle;
+        /// <summary>Furthest a shot reaches, in metres.</summary>
+        public float Range => range;
+
+        /// <summary>When false, Update ignores the fire and reload input (something else calls TryFire).</summary>
+        public bool ReadsInput
+        {
+            get => readsInput;
+            set => readsInput = value;
+        }
 
         InputAction _fireAction;
         InputAction _reloadAction;
@@ -92,7 +106,7 @@ namespace Blink.Combat
         {
             _reloadTimer.Advance(Time.deltaTime);
 
-            if (GrabQte.BlocksInput) return; // clicks belong to the grab QTE
+            if (!readsInput || GrabQte.BlocksInput) return; // clicks belong to the grab QTE
             if (_fireAction != null && _fireAction.WasPressedThisFrame()) TryFire();
             if (_reloadAction.WasPressedThisFrame()) TryStartReload();
         }
@@ -132,6 +146,11 @@ namespace Blink.Combat
             _reloadTimer.Start();
             ReloadStarted?.Invoke();
         }
+
+        /// <summary>
+        /// Abandons a reload in progress without loading anything (the weapon was put away). Raises no event.
+        /// </summary>
+        public void CancelReload() => _reloadTimer.Cancel();
 
         public void AddAmmo(int amount) => reserveAmmo += Mathf.Max(0, amount);
 
