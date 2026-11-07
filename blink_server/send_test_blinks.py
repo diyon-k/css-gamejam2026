@@ -1,6 +1,6 @@
 """Send fake eye-state packets to Unity, to test the UDP path without a webcam.
 
-Speaks the same protocol as the real sidecar (blink_server.py, not written yet):
+Speaks the same protocol as the real sidecar (blink_server.py):
     {"t": <ms>, "present": bool, "closed": bool}  ->  UDP 127.0.0.1:5065, ~30 Hz
 
 Usage:

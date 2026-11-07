@@ -21,7 +21,8 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 | F1 | Toggle the blink debug overlay |
 | Esc | Free the cursor (click to lock again) |
 
-3. To test the webcam path without a webcam, run `python blink_server/send_test_blinks.py demo` while in Play mode.
+3. **Real webcam:** one-time setup `py -3.13 -m venv blink_server/.venv` then `blink_server/.venv/Scripts/pip install -r blink_server/requirements.txt`. While in Play mode run `blink_server/.venv/Scripts/python blink_server/blink_server.py --preview` (the model downloads itself on first run). Too twitchy or not triggering? Tune `--close` / `--open`.
+4. **No webcam:** run `python blink_server/send_test_blinks.py demo` while in Play mode.
 
 ## Data flow
 
