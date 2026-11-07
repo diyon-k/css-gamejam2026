@@ -27,6 +27,8 @@ namespace Blink.Interaction
         public float ajarDegrees = 9f;
         [Tooltip("How far you can turn your head left/right inside.")]
         public float maxYaw = 60f;
+        [Tooltip("Noise range (metres) of the doors opening as you get in or out.")]
+        public float doorLoudness = 4f;
 
         /// <summary>The spot the player is hiding in, or null. Zombies treat the player as unseen while set.</summary>
         public static HidingSpot Occupant { get; private set; }
@@ -144,6 +146,7 @@ namespace Blink.Interaction
         void SetDoors(bool open)
         {
             foreach (var d in _doors) if (d != null) d.SetOpen(open);
+            if (open && _doors.Length > 0) World.Noise.Make(transform.position, doorLoudness);
         }
 
         void Release()

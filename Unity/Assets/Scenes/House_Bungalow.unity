@@ -10145,9 +10145,10 @@ MonoBehaviour:
   clownPrefab: {fileID: 6963140950601576065, guid: 90a473e905928f04587c1075c01a73e4, type: 3}
   maxAlive: 2
   spawnDelay: 15
-  minPlayerDistance: 8
+  minPlayerDistance: 12
   spawnPoints: []
   agentType: BungalowZombie
+  layout: {fileID: 4900000, guid: 2d20d9e4c9184044ebfebb2e8329f6cb, type: 3}
 --- !u!4 &687569487
 Transform:
   m_ObjectHideFlags: 0
