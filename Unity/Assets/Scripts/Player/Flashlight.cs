@@ -1,0 +1,88 @@
+using System;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace Blink.Player
+{
+    /// <summary>
+    /// The player's torch: a spot light on the camera, toggled with F (keyboard) or d-pad up (gamepad).
+    /// Switching on stutters for a moment like a worn switch (real seconds, so it isn't stretched by the
+    /// eyes-shut fast-forward); switching off is instant. Other systems can call <see cref="Set"/>.
+    /// </summary>
+    [RequireComponent(typeof(Light))]
+    public sealed class Flashlight : MonoBehaviour
+    {
+        [SerializeField] bool startOn = true;
+        [Tooltip("Real seconds the switch-on stutter lasts. 0 = instant.")]
+        [SerializeField, Min(0f)] float switchOnSeconds = 0.14f;
+
+        /// <summary>Raised with the new state whenever the torch is switched.</summary>
+        public event Action<bool> Toggled;
+
+        public bool IsOn { get; private set; }
+
+        /// <summary>The toggle action (keyboard F, gamepad d-pad up), for prompts and glyphs.</summary>
+        public InputAction ToggleInput => _toggle;
+
+        Light _light;
+        float _intensity, _switchedAt = float.NegativeInfinity;
+        InputAction _toggle;
+
+        void Awake()
+        {
+            _light = GetComponent<Light>();
+            _intensity = _light.intensity;
+            IsOn = startOn;
+            _toggle = new InputAction("Flashlight", InputActionType.Button);
+            _toggle.AddBinding("<Keyboard>/f");
+            _toggle.AddBinding("<Gamepad>/dpad/up");
+            Apply();
+        }
+
+        void OnEnable() => _toggle?.Enable();
+        void OnDisable() => _toggle?.Disable();
+        void OnDestroy() => _toggle?.Dispose();
+
+        void Update()
+        {
+            if (_toggle.WasPressedThisFrame()) Set(!IsOn);
+            Apply();
+        }
+
+        public void Set(bool on)
+        {
+            if (on == IsOn) return;
+            IsOn = on;
+            _switchedAt = Time.unscaledTime;
+            Apply();
+            Toggled?.Invoke(on);
+        }
+
+        void Apply()
+        {
+            float level = FlashlightMath.Level(IsOn, Time.unscaledTime - _switchedAt, switchOnSeconds);
+            _light.intensity = _intensity * level;
+            _light.enabled = level > 0f;
+        }
+    }
+
+    /// <summary>Pure brightness curve for <see cref="Flashlight"/>.</summary>
+    public static class FlashlightMath
+    {
+        /// <summary>
+        /// Brightness 0..1. Off is 0. On: a short stutter over <paramref name="duration"/> real seconds
+        /// (dim, a near-black drop, a flash, then settling) and 1 afterwards.
+        /// </summary>
+        public static float Level(bool on, float sinceSwitch, float duration)
+        {
+            if (!on) return 0f;
+            if (duration <= 0f || float.IsNaN(sinceSwitch) || sinceSwitch >= duration || sinceSwitch < 0f) return 1f;
+            float t = sinceSwitch / duration;
+            if (t < 0.25f) return 0.55f;
+            if (t < 0.45f) return 0.08f;
+            if (t < 0.6f) return 1f;
+            if (t < 0.75f) return 0.6f;
+            return 1f;
+        }
+    }
+}
