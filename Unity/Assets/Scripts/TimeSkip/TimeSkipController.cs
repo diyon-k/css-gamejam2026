@@ -7,8 +7,9 @@ using UnityEngine;
 namespace Blink.TimeSkip
 {
     /// <summary>
-    /// Owns world time. A blink instantly skips the world forward by <see cref="blinkSkipSeconds"/>
-    /// (every registered <see cref="ISkippable"/> jumps). Eyes held shut run the world at
+    /// Owns world time. A blink skips the world forward by <see cref="blinkSkipSeconds"/>
+    /// (every registered <see cref="ISkippable"/> jumps): instantly, or, when a <see cref="Transition"/>
+    /// is set (the eyelids), at the moment the screen is covered. Eyes held shut run the world at
     /// <see cref="fastForwardScale"/> via Time.timeScale until they reopen.
     ///
     /// World systems (zombies, timers) use scaled time. The player is not part of world time: it
@@ -40,6 +41,12 @@ namespace Blink.TimeSkip
         public float TotalSkippedSeconds { get; private set; }
         public float BlinkSkipSeconds => blinkSkipSeconds;
 
+        /// <summary>
+        /// Optional screen transition (the eyelids) that hides each blink skip. When set, a blink plays
+        /// it and the world jumps once the screen is covered, instead of instantly.
+        /// </summary>
+        public static IBlinkTransition Transition { get; set; }
+
         bool _interruptedWhileShut;
 
         // Clears the static registry when entering play mode with domain reload disabled.
@@ -48,6 +55,7 @@ namespace Blink.TimeSkip
         {
             Skippables.Clear();
             Instance = null;
+            Transition = null;
         }
 
         public static void Register(ISkippable skippable)
@@ -121,7 +129,18 @@ namespace Blink.TimeSkip
         // Space doubles as the keyboard blink key, so blinks during/just after a grab QTE are ignored.
         void OnBlinked()
         {
-            if (!GrabQte.BlocksInput) SkipWorld(blinkSkipSeconds);
+            if (GrabQte.BlocksInput) return;
+            if (Transition is UnityEngine.Object obj && obj == null) Transition = null; // destroyed
+            if (Transition == null)
+            {
+                SkipWorld(blinkSkipSeconds);
+                return;
+            }
+            // Jump while the screen is black. A grab that started meanwhile has frozen the world: drop the skip.
+            Transition.Play(() =>
+            {
+                if (this != null && !GrabQte.Active) SkipWorld(blinkSkipSeconds);
+            });
         }
 
         void OnEyesShutBegan()
