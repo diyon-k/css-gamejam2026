@@ -12,10 +12,11 @@ namespace Blink.EditorTools
     ///   1. Imports Art/Zombies/WhiteClown/WhiteClown.fbx (Mixamo) as a Humanoid with its own avatar, so the
     ///      shared humanoid clips in Art/Zombies/Animations retarget onto it.
     ///   2. Extracts its embedded textures and builds URP Lit materials (remapped onto the model).
-    ///   3. Writes Prefabs/ZombieClown.prefab: a copy of Prefabs/Zombie.prefab (AI, health, audio, hit reactions,
-    ///      same Zombie.controller) with the ZombieGirl model swapped for the clown. The tuned ragdoll on the
-    ///      ZombieGirl bones is re-created on the clown's bones via the humanoid bone map, sized to the new rig.
-    /// Safe to re-run: materials are updated in place and the prefab is overwritten (GUID kept).
+    ///   3. Rewrites Prefabs/Zombie.prefab in place (GUID kept, so scenes keep their zombies): the old ZombieGirl
+    ///      model is swapped for the clown, keeping AI, health, audio, hit reactions and Zombie.controller. The tuned
+    ///      ragdoll on the old bones is re-created on the clown's bones via the humanoid bone map, sized to the new rig.
+    ///   4. Puts glowing red eyes (HDR unlit spheres, picked up by Bloom) on the clown's eye bones.
+    /// Safe to re-run: once the clown is in, only the materials and eyes are refreshed.
     /// </summary>
     public static class ClownZombieBuilder
     {
@@ -23,10 +24,12 @@ namespace Blink.EditorTools
         const string ModelPath = Folder + "/WhiteClown.fbx";
         const string TexturesFolder = Folder + "/Textures";
         const string MaterialsFolder = Folder + "/Materials";
-        const string BasePrefabPath = "Assets/Prefabs/Zombie.prefab";
-        const string OutputPrefabPath = "Assets/Prefabs/ZombieClown.prefab";
-        const string PrefabName = "ZombieClown";
+        const string EyeMaterialPath = MaterialsFolder + "/WhiteClown_Eyes.mat";
+        const string PrefabPath = "Assets/Prefabs/Zombie.prefab";
         const string ModelChildName = "WhiteClown";
+        const string EyeName = "GlowEye";
+        static readonly Color EyeColor = new Color(1f, 0.04f, 0.02f) * 6f; // HDR so Bloom catches it
+        const float EyeDiameter = 0.024f; // metres
 
         [MenuItem("BLINK/Zombies/Build White Clown Zombie")]
         public static void Build()
@@ -147,13 +150,21 @@ namespace Blink.EditorTools
 
         static void BuildPrefab(Avatar clownAvatar)
         {
-            var root = PrefabUtility.LoadPrefabContents(BasePrefabPath);
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
             try
             {
                 var girlAnimator = root.GetComponentInChildren<Animator>(true);
                 if (girlAnimator == null || girlAnimator.avatar == null || !girlAnimator.avatar.isHuman)
                 {
                     Debug.LogError("[ClownZombie] Zombie.prefab has no humanoid Animator to copy from.");
+                    return;
+                }
+                if (girlAnimator.avatar == clownAvatar)
+                {
+                    // Already the clown: just refresh the eyes.
+                    AddGlowEyes(HumanBones(clownAvatar, girlAnimator.transform));
+                    PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+                    Debug.Log("[ClownZombie] Zombie.prefab is already the clown; eyes refreshed.");
                     return;
                 }
                 var girlModel = girlAnimator.transform;
@@ -179,22 +190,59 @@ namespace Blink.EditorTools
                 float heightRatio = ModelHeight(clownBones, clownModel) / ModelHeight(girlBones, girlModel);
                 int bodies = CopyRagdoll(girlModel, girlBones, clownBones, heightRatio);
                 ScaleRootToHeight(root, heightRatio);
+                AddGlowEyes(clownBones);
 
                 Object.DestroyImmediate(girlModel.gameObject);
-                root.name = PrefabName;
-                PrefabUtility.SaveAsPrefabAsset(root, OutputPrefabPath, out bool saved);
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath, out bool saved);
                 if (!saved)
                 {
-                    Debug.LogError("[ClownZombie] Failed to save " + OutputPrefabPath);
+                    Debug.LogError("[ClownZombie] Failed to save " + PrefabPath);
                     return;
                 }
-                Debug.Log($"[ClownZombie] Built {OutputPrefabPath}: {bodies} ragdoll bodies, height x{heightRatio:0.00} " +
+                Debug.Log($"[ClownZombie] Built {PrefabPath}: {bodies} ragdoll bodies, height x{heightRatio:0.00} " +
                           $"vs ZombieGirl, controller '{clownAnimator.runtimeAnimatorController?.name}'.",
-                          AssetDatabase.LoadAssetAtPath<GameObject>(OutputPrefabPath));
+                          AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath));
             }
             finally
             {
                 PrefabUtility.UnloadPrefabContents(root);
+            }
+        }
+
+        /// <summary>A small HDR-red unlit sphere on each eye bone, no collider or shadow. Replaces any previous pair.</summary>
+        static void AddGlowEyes(Dictionary<string, Transform> bones)
+        {
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(EyeMaterialPath);
+            if (mat == null)
+            {
+                mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                AssetDatabase.CreateAsset(mat, EyeMaterialPath);
+            }
+            mat.SetColor("_BaseColor", EyeColor);
+            EditorUtility.SetDirty(mat);
+
+            var sphereMesh = Resources.GetBuiltinResource<Mesh>("New-Sphere.fbx");
+            foreach (string side in new[] { "LeftEye", "RightEye" })
+            {
+                if (!bones.TryGetValue(side, out var eyeBone))
+                {
+                    Debug.LogWarning($"[ClownZombie] No {side} bone on the clown; no glowing eye there.");
+                    continue;
+                }
+                var old = eyeBone.Find(EyeName);
+                if (old != null) Object.DestroyImmediate(old.gameObject);
+
+                var eye = new GameObject(EyeName, typeof(MeshFilter), typeof(MeshRenderer));
+                eye.layer = eyeBone.gameObject.layer;
+                eye.transform.SetParent(eyeBone, false);
+                float s = EyeDiameter / Mathf.Max(1e-6f, eyeBone.lossyScale.x);
+                eye.transform.localScale = Vector3.one * s;
+                eye.GetComponent<MeshFilter>().sharedMesh = sphereMesh;
+                var r = eye.GetComponent<MeshRenderer>();
+                r.sharedMaterial = mat;
+                r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                r.receiveShadows = false;
+                r.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
             }
         }
 
