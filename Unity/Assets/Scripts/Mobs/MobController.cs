@@ -213,6 +213,9 @@ namespace Blink.Mobs
             if (_agent.isOnNavMesh) StartPatrol();
         }
 
+        /// <summary>For spawned mobs, before Awake (the prefab can't reference scene objects).</summary>
+        public void SetPatrolRoute(Transform route) => patrolRoute = route;
+
         /// <summary>Back to where it started, calm (used when the player respawns). Corpses stay put.</summary>
         public void ResetToSpawn()
         {

@@ -9743,6 +9743,56 @@ Transform:
   m_Children: []
   m_Father: {fileID: 298065221}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &687569485
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 687569487}
+  - component: {fileID: 687569486}
+  m_Layer: 0
+  m_Name: ClownSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &687569486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687569485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ef9f151bd35bbe4bbb3b99e596c1ae8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Mobs.ClownSpawner
+  clownPrefab: {fileID: 6963140950601576065, guid: 90a473e905928f04587c1075c01a73e4, type: 3}
+  maxAlive: 2
+  spawnDelay: 15
+  minPlayerDistance: 8
+  spawnPoints: []
+  agentType: BungalowZombie
+--- !u!4 &687569487
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 687569485}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &696764848
 GameObject:
   m_ObjectHideFlags: 0
@@ -23650,3 +23700,4 @@ SceneRoots:
   - {fileID: 1653714182}
   - {fileID: 295753436}
   - {fileID: 2073120449}
+  - {fileID: 687569487}
