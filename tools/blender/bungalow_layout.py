@@ -28,7 +28,7 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_JSON = os.path.abspath(os.path.join(HERE, "..", "..", "Unity", "Assets", "Art", "Environment", "Bungalow",
                                         "bungalow_layout.json"))
-REVISION = 3   # revision 3: north wing (Corridor, MasterBedroom, Parlour) and the Attic, see SPEC 8
+REVISION = 3   # revision 3: north wing (Corridor, MasterBedroom, Parlour), see SPEC 8
 
 # ------------------------------------------------------------------ building
 GRID = 0.5
@@ -48,18 +48,13 @@ SILL, HEAD = 0.90, 2.40
 DOOR_W, DOOR_H = 1.20, 2.20   # doorway minimum (decisions 11 / 12): >= 1.2 clear wide, >= 2.2 clear high
 CASING = 0.12         # door / arch casing width (door casing top = 2.32)
 HALL_MIN = 1.80       # minimum clear hallway width (decision 11)
-ATTIC_BOARDS = 0.04   # attic floorboards laid on top of the ground-floor ceiling slab (no coplanar faces at 3.20)
-ATTIC_FLOOR = CEILING_TOP + ATTIC_BOARDS   # 3.24
-ATTIC_CLEAR = 2.40
-ATTIC_CEILING = ATTIC_FLOOR + ATTIC_CLEAR  # 5.64
-ATTIC_TOP = ATTIC_CEILING + 0.20           # 5.84, top of the attic ceiling slab and its walls
 
 # Floor levels. floor = finished floor y; ceiling = finished ceiling y; slab = structure under the floor.
+# The attic is reserved (direction 12): its floor is the top of the ground-floor ceiling slab.
 LEVELS = {
     "basement": dict(floor=BASEMENT, ceiling=-SLAB, slab=BASEMENT_SLAB, ceiling_piece=False),
     "ground": dict(floor=0.0, ceiling=CEILING, slab=SLAB, ceiling_piece=True, ceiling_top=CEILING_TOP),
-    "attic": dict(floor=ATTIC_FLOOR, ceiling=ATTIC_CEILING, slab=ATTIC_BOARDS, ceiling_piece=True,
-                  ceiling_top=ATTIC_TOP),
+    # "attic": dict(floor=CEILING_TOP, ceiling=None, slab=0.0, ceiling_piece=False),   # future, see SPEC 8
 }
 
 # Rooms: clear interior (inside finished walls). floor y; ref = the reference image it is based on.
@@ -67,8 +62,7 @@ LEVELS = {
 ROOMS = {
     "EntranceHall": dict(level="ground", x=(7.075, 11.425), z=(0.300, 3.925), ref="ref1", phase1=5.0),
     "CentralHall": dict(level="ground", x=(7.075, 11.425), z=(4.075, 14.700), ref="ref1", phase1=13.2,
-                        floor_holes=[dict(id="StairWell", x=(7.075, 8.325), z=(6.0, 10.5))],
-                        ceiling_holes=[dict(id="AtticWell", x=(10.5, 11.425), z=(10.75, 13.5))]),
+                        floor_holes=[dict(id="StairWell", x=(7.075, 8.325), z=(6.0, 10.5))]),
     "Living": dict(level="ground", x=(11.575, 19.700), z=(0.300, 6.925), ref="ref2", phase1=17.0),
     "Kitchen": dict(level="ground", x=(11.575, 19.700), z=(7.075, 14.700), ref="ref2/ref3", phase1=15.0),
     "Bedroom": dict(level="ground", x=(0.300, 6.925), z=(0.300, 9.425), ref="ref3", phase1=18.6),
@@ -82,10 +76,7 @@ ROOMS = {
     "MasterBedroom": dict(level="ground", x=(0.300, 7.925), z=(16.950, 25.700), ref="ref3", phase1=0.0,
                           name="Master Bedroom"),
     "Parlour": dict(level="ground", x=(8.075, 19.700), z=(16.950, 25.700), ref="ref2", phase1=0.0),
-    "Attic": dict(level="attic", x=(0.300, 19.700), z=(7.075, 14.700), ref="", phase1=0.0,
-                  floor_holes=[]),
 }
-ROOMS["Attic"]["floor_holes"] = ROOMS["CentralHall"]["ceiling_holes"]   # one well: hall ceiling = attic floor
 for _r in ROOMS.values():
     _r["y"] = LEVELS[_r["level"]]["floor"]
 
@@ -118,11 +109,6 @@ WALLS = {
     "Wall_Ext_E2": dict(axis="z", t=(19.7, 20.0), a=(15.0, 25.7), y=(GRADE, CEILING_TOP), openings=["WC2"]),
     "Wall_Z16p875": dict(axis="x", t=(16.8, 16.95), a=(0.3, 19.7), y=(-SLAB, CEILING_TOP), openings=["DC2", "DC3"]),
     "Wall_X8p0": dict(axis="z", t=(7.925, 8.075), a=(16.95, 25.7), y=(-SLAB, CEILING_TOP), openings=["AC1"]),
-    # revision 3, attic: walls stand on the ground-floor ceiling slab (top 3.20)
-    "Wall_A_S": dict(axis="x", t=(6.775, 7.075), a=(0.0, 20.0), y=(CEILING_TOP, ATTIC_TOP), openings=[]),
-    "Wall_A_N": dict(axis="x", t=(14.7, 15.0), a=(0.0, 20.0), y=(CEILING_TOP, ATTIC_TOP), openings=[]),
-    "Wall_A_W": dict(axis="z", t=(0.0, 0.3), a=(7.075, 14.7), y=(CEILING_TOP, ATTIC_TOP), openings=["WA1"]),
-    "Wall_A_E": dict(axis="z", t=(19.7, 20.0), a=(7.075, 14.7), y=(CEILING_TOP, ATTIC_TOP), openings=["WA2"]),
     "Wall_B_W": dict(axis="z", t=(6.775, 7.075), a=(4.075, 14.7), y=(_BW, -SLAB), openings=[]),
     "Wall_B_E": dict(axis="z", t=(19.7, 20.0), a=(3.775, 15.0), y=(_BW, GRADE), openings=["BW2"]),
     "Wall_B_X13p5": dict(axis="z", t=(13.425, 13.575), a=(4.075, 14.7), y=(_BW, -SLAB), openings=["D5"]),
@@ -169,9 +155,6 @@ OPENINGS = {
     "WP2": dict(kind="window", wall="Wall_Ext_N2", span=(15.5, 17.1), y=(SILL, HEAD), boarded=True),
     "WC1": dict(kind="window", wall="Wall_Ext_W2", span=(15.3, 16.5), y=(SILL, HEAD)),
     "WC2": dict(kind="window", wall="Wall_Ext_E2", span=(15.3, 16.5), y=(SILL, HEAD)),
-    "WA1": dict(kind="window", wall="Wall_A_W", span=(10.3, 11.5), y=(ATTIC_FLOOR + 0.65, ATTIC_FLOOR + 1.65)),
-    "WA2": dict(kind="window", wall="Wall_A_E", span=(10.3, 11.5), y=(ATTIC_FLOOR + 0.65, ATTIC_FLOOR + 1.65),
-                boarded=True),
 }
 # A4: overhead hall arch spanning the hall at the well's north end (no wall below the springing)
 A4 = dict(x=(7.075, 11.425), z=(10.425, 10.575), spring=2.40, crown=2.85)
@@ -193,15 +176,6 @@ BALUSTRADE = dict(height=0.95, newel=0.08, newel_h=1.10, baluster=0.04, spacing=
 # closed = yaw -90 about the hinge.
 GATE = dict(id="G1", hinge=(8.305, 0.0, 6.0), leaf=1.20, height=0.95, open_yaw=0.0, closed_yaw=-90.0)
 # Basement beams around the well (undersides): trimmers -0.50, header along the well's east edge
-# Revision 3 attic stair: a steep straight service flight along the hall's east wall, rising SOUTH from the north
-# landing (z 14.5) to the attic floor (z 10.75). 16 x 0.2025 = 3.24 (ATTIC_FLOOR), 15 treads x 0.25. Its upper half
-# runs through AtticWell (the hall's ceiling hole = the attic's floor hole); the hole's north edge keeps >= 2.0 headroom.
-ATTIC_STAIR = dict(x=(10.5, 11.425), z_bottom=14.5, rise=round(ATTIC_FLOOR / 16, 4), run=0.25, risers=16, treads=15,
-                   direction=-1, opening=ROOMS["CentralHall"]["ceiling_holes"][0], rail_side="W",
-                   handrail_above_pitch=0.90)
-ATTIC_STAIR["z_top"] = round(ATTIC_STAIR["z_bottom"] - ATTIC_STAIR["treads"] * ATTIC_STAIR["run"], 4)   # 10.75
-# attic guard rail round the well on the W, N and E sides; the S side stays open (the stair arrives there)
-ATTIC_RAIL = dict(height=0.95, sides=("W", "N", "E"))
 BEAMS = {
     "Trimmer_N": dict(x=(7.075, 13.425), z=(10.5, 10.65), y=(TRIMMER_UNDERSIDE, -SLAB)),
     "Trimmer_S": dict(x=(7.075, 13.425), z=(5.85, 6.0), y=(TRIMMER_UNDERSIDE, -SLAB)),
@@ -227,7 +201,6 @@ SPAWNS = {
     "Z4": dict(pos=(2.5, 0.0, 12.5), yaw=90.0, kind="zombie", route=None, room="Bathroom", note="dormant"),
     "Z5": dict(pos=(2.0, 0.0, 15.9), yaw=90.0, kind="zombie", route="R5", room="Corridor"),
     "Z6": dict(pos=(16.0, 0.0, 23.0), yaw=270.0, kind="zombie", route="R6", room="Parlour"),
-    "Z7": dict(pos=(17.0, ATTIC_FLOOR, 11.0), yaw=270.0, kind="zombie", route=None, room="Attic", note="dormant"),
 }
 ROUTES = {  # closed loops, waypoint order = patrol order
     "R1": [(12.5, 0.0, 6.2), (18.8, 0.0, 6.2), (18.8, 0.0, 1.4), (16.0, 0.0, 1.4)],
@@ -257,8 +230,7 @@ FIXTURES = {
     # rev 3: H2 / H3 flank the new DC1 door (were x 8.45 / 10.05 round the removed hall radiator)
     "H2": dict(kind="sconce", pos=(8.20, 1.90, 14.62), col="#FFC680", i=0.5, range=5.0, mode="Baked"),
     "H3": dict(kind="sconce", pos=(10.30, 1.90, 14.62), col="#FFC680", i=0.5, range=5.0, mode="Baked"),
-    # rev 3: the console + H4 move off the north landing's E wall (the attic stair is there) to the hall E wall south
-    "H4": dict(kind="lamp", pos=(11.0, 1.05, 7.6), col="#FFCB85", i=1.4, range=4.0, mode="Mixed", hero=True),
+    "H4": dict(kind="lamp", pos=(11.0, 1.05, 13.8), col="#FFCB85", i=1.4, range=4.0, mode="Mixed", hero=True),
     "H5": dict(kind="sconce", pos=(7.13, 2.10, 8.0), col="", i=0.0, range=0.0, mode="off", off=True),
     "H6": dict(kind="sconce", pos=(11.37, 1.90, 6.6), col="#FFC680", i=0.45, range=5.0, mode="Baked"),
     "L1": dict(kind="fan", pos=(14.6, 2.55, 2.9), col="#FFD9A0", i=2.0, range=7.0, mode="Mixed"),
@@ -287,25 +259,23 @@ FIXTURES = {
     "CO2": dict(kind="dome", pos=(15.00, 2.92, 15.9), col="#F2DFA8", i=0.6, range=5.5, mode="Baked"),
     "CO3": dict(kind="sconce", pos=(12.0, 2.00, 16.72), col="", i=0.0, range=0.0, mode="off", off=True),
     "P1": dict(kind="chand", pos=(13.9, 2.45, 21.3), col="#FFD6A0", i=1.1, range=7.5, mode="Baked"),
-    "P2": dict(kind="lamp", pos=(17.0, 1.00, 24.6), col="#FFE6C2", i=1.4, range=4.5, mode="Baked"),
+    "P2": dict(kind="lamp", pos=(17.2, 0.97, 25.45), col="#FFE6C2", i=1.4, range=4.5, mode="Baked"),
     "M1": dict(kind="fan", pos=(4.1, 2.55, 21.3), col="#FFD9A0", i=1.6, range=7.0, mode="Baked"),
-    "M2": dict(kind="lamp", pos=(5.6, 0.95, 24.9), col="#F5E6A8", i=0.6, range=4.0, mode="Baked"),
-    "A1": dict(kind="bulb", pos=(6.0, ATTIC_CEILING - 0.35, 11.0), col="#F0DC9A", i=1.2, range=7.0, mode="Baked"),
-    "A2": dict(kind="bulb", pos=(15.0, ATTIC_CEILING - 0.35, 11.0), col="#F0DC9A", i=0.0, range=7.0, mode="off",
-               off=True),
+    "M2": dict(kind="lamp", pos=(4.75, 0.93, 25.45), col="#F5E6A8", i=0.6, range=4.0, mode="Baked"),
     "MW1": dict(kind="area", pos=(3.8, 1.65, 25.68), col="#A9B3A2", i=0.9, mode="Baked", size=(1.6, 1.5), face="-Z"),
     "MW2": dict(kind="area", pos=(0.32, 1.65, 21.3), col="#A9B3A2", i=0.7, mode="Baked", size=(1.6, 1.5), face="+X"),
     "PW1": dict(kind="area", pos=(11.8, 1.65, 25.68), col="#8E9AA6", i=0.6, mode="Baked", size=(1.6, 1.5), face="-Z"),
     "CW3": dict(kind="area", pos=(0.32, 1.65, 15.9), col="#8E9AA6", i=0.4, mode="Baked", size=(1.2, 1.5), face="+X"),
     "CW4": dict(kind="area", pos=(19.68, 1.65, 15.9), col="#8E9AA6", i=0.4, mode="Baked", size=(1.2, 1.5), face="-X"),
-    "AW1": dict(kind="area", pos=(0.32, ATTIC_FLOOR + 1.15, 10.9), col="#8A96A0", i=0.5, mode="Baked",
-                size=(1.2, 1.0), face="+X"),
 }
-# Reserved for later (direction 12), NOT built. Corridor_N and the attic were built in revision 3.
+# Reserved for later (direction 12), NOT built. Corridor_N was built in revision 3.
 FUTURE = {
     "Wing_E": dict(kind="wing", level="ground", x=(20.3, 26.0), z=(9.0, 14.7),
                    attach=dict(wall="Wall_Ext_E", span=(12.4, 13.6), note="through D4"),
                    note="utility wing off the kitchen back door"),
+    "AtticHatch": dict(kind="hatch", level="ground", room="CentralHall", x=(9.7, 10.9), z=(12.1, 12.8),
+                       note="ceiling hole for a pull-down ladder (lands at z ~11.0 on the north landing); "
+                            "attic floor y = CEILING_TOP 3.2"),
 }
 
 # Key furniture footprints (real-world scale) for the plan: (x0, z0, x1, z1) or rotated (cx, cz, w, d, yaw).
@@ -313,7 +283,7 @@ FURNITURE = {
     "bed": (2.6, 7.2, 4.2, 9.4), "nightstand": (4.35, 8.7, 4.85, 9.2), "plaid settee": (0.35, 2.2, 1.1, 3.8),
     "rocker": (3.9, 2.0, 0.7, 0.85, 20), "wardrobe": (0.35, 6.0, 0.95, 7.6), "dresser": (5.3, 9.0, 6.9, 9.4),
     "reading chair": (1.4, 5.0, 0.8, 0.8, 120),
-    "console": (10.95, 6.9, 11.4, 8.3), "attic stair": (10.5, 10.75, 11.425, 14.5), "hall bench": (11.0, 4.6, 11.4, 6.0),
+    "console": (10.95, 13.0, 11.4, 14.6), "hall bench": (11.0, 4.6, 11.4, 6.0),
     "sideboard": (12.5, 0.32, 14.3, 0.88), "sofa": (15.2, 3.9, 2.0, 0.9, 297), "c.table": (14.0, 3.3, 1.0, 0.55, 297),
     "armchair": (12.8, 1.6, 0.85, 0.8, 117), "reading corner": (18.4, 5.4, 1.0, 1.0, 225),
     "counter": (12.0, 14.1, 16.0, 14.68), "fridge": (16.5, 14.05, 17.3, 14.68), "stove": (19.1, 7.4, 19.68, 8.2),
@@ -334,10 +304,10 @@ SURFACE_TILE_M = {"M_FloorPlank": 2.0, "M_Parquet": 3.4, "M_Lino": 2.0, "M_Concr
                   "M_Wall_Pale": 2.0, "M_Wall_Floral": 2.0, "M_Plaster": 1.5, "M_Plaster_Kitchen": 1.5,
                   "M_BrickWhite": 2.0, "M_Tile": 1.5, "M_Glass": 1.0, "M_Water": 4.0,
                   # revision 3 (juliovii.itch.io scans, Poly Haven fallback; tile sizes confirmed by the texture pass)
-                  "M_AtticBoard": 2.0, "M_Wall_Parlour": 2.0}
-# Revision 3 triangle cap for everything the north wing + attic add (shell pieces + props + fixtures): <= 100k.
+                  "M_Wall_Parlour": 2.0}
+# Revision 3 triangle cap for everything the north wing adds (shell pieces + props + fixtures): <= 100k.
 REV3_TRI_CAP = 100_000
-REV3_ROOMS = ("Corridor", "MasterBedroom", "Parlour", "Attic")
+REV3_ROOMS = ("Corridor", "MasterBedroom", "Parlour")
 # (exported to bungalow_layout.json as "surfaceTiles"; Materials/Editor/BungalowMaterialsBuilder reads it from there)
 # Board seams of the M_FloorPlank scan (Poly Haven dark_wooden_planks 1K, image rows from the top, boards along U).
 # The kit cuts its floor boards on these lines, so geometry seams sit on the texture's seams.
@@ -375,8 +345,6 @@ ROOM_FINISH = {
                           trim="paint_dark", mouldings=("skirting", "picture", "cornice")),
     "Parlour": dict(floor="M_Parquet", wall="M_Wall_Parlour", ceiling="M_Plaster", trim="varnish",
                     mouldings=("skirting", "dado", "picture", "cornice")),
-    "Attic": dict(floor="M_AtticBoard", boards="x", wall="M_BrickWhite", ceiling="M_AtticBoard", trim="raw",
-                  mouldings=()),
 }
 # Moulding heights (profiles are geometry, in bungalow_kit.PROFILES). y = bottom of the profile.
 MOULDING_Y = {"skirting": 0.0, "dado": 0.88, "tilecap": 1.18, "picture": 2.56, "cornice": CEILING - 0.11}
@@ -516,15 +484,6 @@ def check():
                 abs(s["risers"] * s["rise"] - drop) < 1e-6 and 0.18 <= s["rise"] <= 0.20))
     need = s["z_top"] + (2.2 - TRIMMER_UNDERSIDE) * s["run"] / s["rise"]
     out.append((f"well end {s['opening']['z'][1]} >= headroom line {need:.2f}", s["opening"]["z"][1] >= need))
-    # revision 3 attic stair: rises exactly to the attic floor, and the well's north edge keeps >= 2.0 headroom
-    a = ATTIC_STAIR
-    out.append((f"attic stair {a['risers']} x {a['rise']} = {a['risers'] * a['rise']:.3f} (attic floor {ATTIC_FLOOR})",
-                abs(a["risers"] * a["rise"] - ATTIC_FLOOR) < 1e-3))
-    edge = a["opening"]["z"][1]
-    tread = a["rise"] * math.ceil((a["z_bottom"] - edge) / a["run"] - 1e-9)
-    out.append((f"attic stair headroom at the well edge {CEILING - tread:.2f}", CEILING - tread >= 2.0 - 1e-6))
-    out.append(("attic well inside the hall ceiling and the attic floor",
-                a["opening"] in ROOMS["Attic"]["floor_holes"] and a["z_top"] >= a["opening"]["z"][0] - 1e-6))
     # Phase 3 kit tables
     out.append(("every room has a ROOM_FINISH", set(ROOMS) <= set(ROOM_FINISH)))
     out.append(("every door has a DOOR_LEAVES entry",
