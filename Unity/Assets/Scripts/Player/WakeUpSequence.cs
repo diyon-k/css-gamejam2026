@@ -50,6 +50,12 @@ namespace Blink.Player
         [SerializeField] float knockRoll = 75f;
         [SerializeField] string respawnPrompt = "You were knocked out\nBLINK to wake up";
 
+        /// <summary>True from lying down in bed until fully sat up and in control (the HUD hides the crosshair).</summary>
+        public static bool Asleep { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => Asleep = false;
+
         BlinkEyelids _eyelids;
         PlayerController _player;
         Transform _cam;
@@ -93,6 +99,8 @@ namespace Blink.Player
             TimeSkipController.Locked = true;
             if (_player != null) _player.InputEnabled = false;
             if (_eyelids != null) _eyelids.Hold01 = 1f;
+            ShowHands(false); // nothing in hand until we're up
+            Asleep = true;
             Pose(0f);
 
             _detector = BlinkDetector.Instance;
@@ -103,6 +111,7 @@ namespace Blink.Player
 
         void OnDestroy()
         {
+            Asleep = false;
             Unsubscribe();
             if (_health != null) _health.Died -= OnDied;
         }
@@ -193,7 +202,15 @@ namespace Blink.Player
             Time.timeScale = 1f;
             TimeSkipController.Locked = false;
             if (_player != null) _player.InputEnabled = true;
+            ShowHands(true);
+            Asleep = false;
             enabled = false;
+        }
+
+        /// <summary>Shows or hides the view model in hand (hands or weapon) by toggling the weapons holster.</summary>
+        static void ShowHands(bool show)
+        {
+            if (PlayerWeapons.Instance is { Holster: { } holster }) holster.gameObject.SetActive(show);
         }
 
         void OnGUI()
