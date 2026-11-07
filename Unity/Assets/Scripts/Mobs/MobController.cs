@@ -193,6 +193,11 @@ namespace Blink.Mobs
             bool targetAlive = TargetAlive();
 
             if (!targetAlive) _seesTarget = false;
+            else if (Interaction.HidingSpot.Occupant != null)
+            {
+                _seesTarget = false;
+                _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
+            }
             else if ((_senseTimer -= dt) <= 0f)
             {
                 _seesTarget = CanSeeTarget();

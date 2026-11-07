@@ -146,6 +146,10 @@ public static partial class HouseBlockout
             door.noun = name.ToLowerInvariant();
             door.openAngle = side * 100f; // both swing out towards the room
         }
+        var hide = g.gameObject.AddComponent<HidingSpot>();
+        hide.noun = name.ToLowerInvariant();
+        hide.eye = new Vector3(0, Mathf.Min(h * 0.6f, 1.5f), 0.05f); // wardrobe: under the shelf; cupboard: curled up
+        hide.exit = new Vector3(0, 0, d / 2 + 0.6f);
         return g;
     }
 
