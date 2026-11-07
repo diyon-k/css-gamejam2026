@@ -43,6 +43,13 @@ flowchart LR
     BD -- "SecondsSinceLastBlink · BlinkCount" --> UI["StareFX · HUD · end screen<br/>(to build)"]
 ```
 
+## Zombie senses
+
+- **Patrol:** set `patrolRoute` on a zombie's `MobController` to an empty whose children are waypoints. It loops them, pausing at each. No route = stands still.
+- **Sight:** chases when you're inside `sightRange` and its view cone with nothing in the way (or within `touchRange`). Out of sight for `loseSightTime` = goes to where it last saw you.
+- **Noise:** call `Noise.Make(position, loudness)` from anything. Loudness is the audible range in metres, measured as walking distance on the navmesh, so walls muffle it. Zombies that hear it (and can't see you) walk over and search. Add a `NoiseSource` to props for drop/impact noise, or call its `Emit()` from cupboards etc.
+- Current sources: gunshot 35, dry-fire 4, sprint step 8, forcing a door 10/s, door bursting open 20. All Inspector fields.
+
 ## Folder map
 
 ```
