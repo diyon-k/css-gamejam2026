@@ -41,7 +41,9 @@ namespace Blink.Player
         {
             _eyelids = FindAnyObjectByType<BlinkEyelids>();
             _player = FindAnyObjectByType<PlayerController>();
-            _cam = _player != null ? _player.GetComponentInChildren<Camera>()?.transform : null;
+            // Pose the pitch pivot above the camera, not the camera: CameraFeel rewrites the camera's own pose every frame.
+            var cam = _player != null ? _player.GetComponentInChildren<Camera>() : null;
+            _cam = cam == null ? null : cam.transform.parent != _player.transform ? cam.transform.parent : cam.transform;
             if (_cam != null) { _camPos = _cam.localPosition; _camRot = _cam.localRotation; }
 
             Time.timeScale = 0f;
