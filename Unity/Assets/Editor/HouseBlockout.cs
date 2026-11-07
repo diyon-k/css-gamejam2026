@@ -231,23 +231,23 @@ public static class HouseBlockout
     {
         RenderSettings.skybox = null;
         RenderSettings.ambientMode = AmbientMode.Flat;
-        RenderSettings.ambientLight = new Color(0.025f, 0.025f, 0.03f);
+        RenderSettings.ambientLight = new Color(0.12f, 0.12f, 0.14f);
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.ExponentialSquared;
-        RenderSettings.fogDensity = 0.12f;
-        RenderSettings.fogColor = new Color(0.015f, 0.017f, 0.02f);
+        RenderSettings.fogDensity = 0.05f;
+        RenderSettings.fogColor = new Color(0.04f, 0.045f, 0.05f);
         RenderSettings.defaultReflectionMode = DefaultReflectionMode.Custom;
 
-        var moon = NewLight("Moonlight", p, LightType.Directional, new Color(0.55f, 0.62f, 0.8f), 0.08f, Vector3.zero);
+        var moon = NewLight("Moonlight", p, LightType.Directional, new Color(0.55f, 0.62f, 0.8f), 0.3f, Vector3.zero);
         moon.transform.rotation = Quaternion.Euler(28, 70, 0); // slants in through the west windows
         RenderSettings.sun = moon;
 
-        var bulb = NewLight("Kitchen_DyingBulb", p, LightType.Point, new Color(1f, 0.72f, 0.45f), 1.2f, new Vector3(3.5f, 2.5f, 6f));
-        bulb.range = 6;
-        var stair = NewLight("Stairwell_Faint", p, LightType.Point, new Color(0.6f, 0.65f, 0.8f), 0.4f, new Vector3(12f, 4.5f, 3.5f));
-        stair.range = 5;
-        var gen = NewLight("Basement_WorkLamp", p, LightType.Point, new Color(1f, 0.35f, 0.2f), 1.5f, new Vector3(4.5f, -1.0f, 2.0f));
-        gen.range = 7;
+        var bulb = NewLight("Kitchen_DyingBulb", p, LightType.Point, new Color(1f, 0.72f, 0.45f), 3f, new Vector3(3.5f, 2.5f, 6f));
+        bulb.range = 8;
+        var stair = NewLight("Stairwell_Faint", p, LightType.Point, new Color(0.6f, 0.65f, 0.8f), 1.5f, new Vector3(12f, 4.5f, 3.5f));
+        stair.range = 7;
+        var gen = NewLight("Basement_WorkLamp", p, LightType.Point, new Color(1f, 0.35f, 0.2f), 3f, new Vector3(4.5f, -1.0f, 2.0f));
+        gen.range = 9;
     }
 
     static void BuildMarkers(Transform p)
@@ -262,21 +262,16 @@ public static class HouseBlockout
         Marker("ZombieSpawn_07", p, new Vector3(13.0f, -3f, 1.8f)); // flooded corner
         Marker("ZombieSpawn_08", p, new Vector3(9.5f, -3f, 2.5f));  // generator approach
 
-        // Placeholder player with flashlight, for previewing only. Faces the jammed door.
-        var player = new GameObject("Player");
-        player.transform.position = new Vector3(2.8f, 3f, 8.0f);
+        // Real Player + GameSystems prefabs so the house is walkable in Play mode. Faces the jammed door.
+        PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/GameSystems.prefab"));
+        var player = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Player.prefab"));
+        player.transform.position = new Vector3(2.8f, 3.05f, 8.0f);
         player.transform.rotation = Quaternion.LookRotation(new Vector3(3.3f - 2.8f, 0, 5f - 8.0f));
-        var camGo = new GameObject("Camera");
-        camGo.tag = "MainCamera";
-        camGo.transform.SetParent(player.transform, false);
-        camGo.transform.localPosition = new Vector3(0, 1.6f, 0);
-        var cam = camGo.AddComponent<Camera>();
+        var cam = player.GetComponentInChildren<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = Color.black;
-        cam.nearClipPlane = 0.05f;
-        camGo.AddComponent<AudioListener>();
-        var flash = NewLight("Flashlight", camGo.transform, LightType.Spot, new Color(1f, 0.95f, 0.85f), 4f, new Vector3(0.2f, -0.15f, 0));
-        flash.range = 18;
+        var flash = NewLight("Flashlight", cam.transform, LightType.Spot, new Color(1f, 0.95f, 0.85f), 12f, new Vector3(0.2f, -0.15f, 0));
+        flash.range = 25;
         flash.spotAngle = 50;
         flash.innerSpotAngle = 25;
     }
