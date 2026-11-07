@@ -42,7 +42,10 @@ namespace Blink.Effects
         float _builtCurve = -1f, _builtSoftness = -1f;
 
         public bool IsCovered => _timeline != null && _timeline.IsCovered;
-        public float Closed01 => _timeline?.Closed01 ?? 0f;
+        public float Closed01 => Hold01 ?? _timeline?.Closed01 ?? 0f;
+
+        /// <summary>When set, draws the lids at this closure (0 open .. 1 shut) instead of the blink timeline, e.g. the wake-up.</summary>
+        public float? Hold01 { get; set; }
 
         void Awake() => _timeline = new EyelidTimeline(closeSeconds, shutSeconds, openSeconds);
 
@@ -93,7 +96,7 @@ namespace Blink.Effects
         void OnGUI()
         {
             if (Event.current.type != EventType.Repaint || _timeline == null) return;
-            float closed = _timeline.Closed01;
+            float closed = Closed01;
             if (closed <= 0f) return;
 
             GUI.depth = guiDepth;

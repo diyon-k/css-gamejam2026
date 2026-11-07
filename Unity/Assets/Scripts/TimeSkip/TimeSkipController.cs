@@ -47,6 +47,9 @@ namespace Blink.TimeSkip
         /// </summary>
         public static IBlinkTransition Transition { get; set; }
 
+        /// <summary>While true, blinks and eyes-shut don't touch world time (e.g. the wake-up intro).</summary>
+        public static bool Locked { get; set; }
+
         bool _interruptedWhileShut;
 
         // Clears the static registry when entering play mode with domain reload disabled.
@@ -56,6 +59,7 @@ namespace Blink.TimeSkip
             Skippables.Clear();
             Instance = null;
             Transition = null;
+            Locked = false;
         }
 
         public static void Register(ISkippable skippable)
@@ -129,7 +133,7 @@ namespace Blink.TimeSkip
         // Space doubles as the keyboard blink key, so blinks during/just after a grab QTE are ignored.
         void OnBlinked()
         {
-            if (GrabQte.BlocksInput) return;
+            if (GrabQte.BlocksInput || Locked) return;
             if (Transition is UnityEngine.Object obj && obj == null) Transition = null; // destroyed
             if (Transition == null)
             {
@@ -145,7 +149,7 @@ namespace Blink.TimeSkip
 
         void OnEyesShutBegan()
         {
-            if (GrabQte.BlocksInput) return;
+            if (GrabQte.BlocksInput || Locked) return;
             _interruptedWhileShut = false;
             IsFastForwarding = true;
             Time.timeScale = fastForwardScale;
