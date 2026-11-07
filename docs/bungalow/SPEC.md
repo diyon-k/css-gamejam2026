@@ -55,11 +55,11 @@ There is no basement under the bedroom, bathroom, entrance hall or the south par
 
 | ID | Where | Clear size | Notes |
 |---|---|---|---|
-| D1 front door | S exterior wall, x 8.45–10.05 | 1.60 × 2.20 | **Double door** (2 × 0.80 leaves), swings in. On the D1–A2–hall sightline |
-| D2 bedroom | Wall x = 7.0, z 1.5–2.7 | 1.20 × 2.20 | Hinge S, swings into the bedroom. Visible through A1 (ref 2's door through the arch); on the D2–A1 sightline |
-| D3 bathroom | Wall x = 7.0, z 12–13.2 | 1.20 × 2.20 | Hinge N, swings into the bathroom. Reached from the north landing |
-| D4 kitchen back door | E exterior wall, z 12.4–13.6 | 1.20 × 2.20 | Hinge N, swings in. Locked (exit or story use); attach point for a future east wing |
-| D5 basement | Partition x = 13.5, z 12.4–13.6 | 1.20 × 2.20 | Hinge N, swings into B2. In line with the B1 landing (long basement view) |
+| D1 front door | S exterior wall, x 8.45–10.05 | 1.60 × 2.20 | **Double door** (2 × 0.80 leaves), modelled swinging in. On the D1–A2–hall sightline. **Starts shut and locked: one key per puzzle room, any order** (`key_dorm` from Lily's doll, `key_workshop` from the flooded basement, `key_front_3` from the third room; the last two are placeholders until their rooms exist), put in one at a time ("Locked · n/3 keys"), then an ordinary door. Unlocking or opening it ends nothing yet (`Door.Unlocked` / `Opened` are the hooks) |
+| D2 bedroom | Wall x = 7.0, z 1.5–2.7 | 1.20 × 2.20 | Hinge S, modelled swinging into the bedroom. Visible through A1 (ref 2's door through the arch); on the D2–A1 sightline. **Starts shut and locked: 1 × `key_bedroom`**, in the top drawer of the chest of drawers beside the bed; the folded note lies on top (Set Up Start Bedroom) |
+| D3 bathroom | Wall x = 7.0, z 12–13.2 | 1.20 × 2.20 | Hinge N, modelled swinging into the bathroom. Reached from the north landing. **Starts shut, unlocked** |
+| D4 kitchen back door | E exterior wall, z 12.4–13.6 | 1.20 × 2.20 | Hinge N, modelled swinging in. **Shut and locked for good (story lock: no key)**, rattles; attach point for a future east wing |
+| D5 basement | Partition x = 13.5, z 12.4–13.6 | 1.20 × 2.20 | Hinge N, modelled swinging into B2. In line with the B1 landing (long basement view). **Starts shut, unlocked** |
 | A1 arch | Entrance hall ↔ living, x = 11.5, z 1.2–3.2 | 2.00, springs 2.30, crown 2.65 | Ref 2's arched doorway |
 | A2 arch | Entrance hall ↔ central hall, z = 4.0, x 7.6–10.6 | 3.00, springs 2.30, crown 2.75 | Frames the CAM-1 view (the big arch at the top of ref 1) |
 | A3 arch | Central hall ↔ kitchen, x = 11.5, z 8.4–10.2 | 1.80, springs 2.30, crown 2.70 | Ref 1's arched doorway on the right |
@@ -937,7 +937,7 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
     - 40 shell renderers were rescaled (0 more after the November riser rebake: the scene is at the normalised state).
   - `RenderMatchCameras` / `Render`: player-eye renders with the Player camera's post, and optionally the flashlight.
   - `RefreshLook`: re-applies the grade and fog without a rebake.
-- **BLINK/Bungalow/Build Shell Scene** (`BungalowGreyboxBuilder.Build(bake, shell: true)`) builds `House_Bungalow.unity` from `Kit/Bungalow_Shell.fbx` and its colliders JSON, opens the door leaves (§6.5) and keeps them in the navmesh build.
+- **BLINK/Bungalow/Build Shell Scene** (`BungalowGreyboxBuilder.Build(bake, shell: true)`) builds `House_Bungalow.unity` from `Kit/Bungalow_Shell.fbx` and its colliders JSON, and sets up the doors (BLINK/Bungalow/Setup Doors: every leaf a `Door`, shut at start, left out of the navmesh bake).
 
 **Lightmapping (`LS_Bungalow`):**
 - GPU Progressive, Shadowmask, no realtime GI.
@@ -1174,15 +1174,16 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 - The lighting rig, probes, volumes, atmosphere, lightmapping, Player flashlight and post are described in §5.4.
 - `House_Bungalow.unity` is the playable level: the textured Phase 3 shell, the 143 Phase 5 props, the Player, GameSystems, Effects, the markers, the BungalowZombie navmesh and the final bake.
 - **Rebuild order** (each step is re-runnable):
-  1. **BLINK/Bungalow/Build Shell Scene**: shell, colliders, door leaves opened (below), markers, prefabs.
+  1. **BLINK/Bungalow/Build Shell Scene**: shell, colliders, doors (below), markers, prefabs.
   2. **BLINK/Bungalow/Place Props**, then rebake the navmesh (`BungalowGreyboxBuilder.Bake`). Props sit under the NavMeshSurface, so the furniture carves the navmesh.
   3. **BLINK/Bungalow/Build Lighting**: lights attach to the `FX_<id>` emitters (18 of 18); NightSky is tuned and enabled and the cameras clear to `globals.sky`.
   4. Bake, `NormalizeLightmapDensity`, bake again, save.
-- **Door leaves** (shell-scene step in `BungalowGreyboxBuilder`; the FBX is unchanged):
-  - Every unlocked leaf hung less than fully open is swung to 90° about its hinge, in the direction it already swings: D1 left 84→90°, D1 right 18→90°, D2 78→90°, D3 62→90°. D5 (96°) is kept, and D4 stays closed (locked).
-  - Leaves are no longer ignored by the navmesh build, so no navmesh lies on any leaf (checked: 0 navmesh samples on every leaf footprint) and D4's navmesh strip is 0 (zombies can't path through the locked door).
-  - Player capsule spare: D1 +0.433 m (was −0.009), D2 / D3 / D5 +0.226 m, D4 −0.249 (closed, intended).
-- **Checks with the props in:** Phase 5's furniture-aware walk test gives 45 / 45 legs with 0 stuck. Navmesh: 534 tris; every door except D4, every arch, O1 and G1 are open; all paths from P0 and all three patrol routes are complete; every spawn is on the navmesh. Room coverage is 65–89 %, which is the furniture.
+- **Doors** (BLINK/Bungalow/Setup Doors, `BungalowDoorSetup`; the FBX is unchanged; see ARCHITECTURE.md, Doors):
+  - Every leaf (found by name) is a `Door`: non-static (light probes, Contribute GI off), turned about its hinge, **shut at start**. Interact opens it away from the player in about 0.5 s (real time), or closes it; it never sweeps the player. Swing measured against walls and jambs: 90° to the front (the modelled side), 70° to the back.
+  - Locks (`DOOR_STATE`): D1 one key per puzzle room, D2 the bedroom key, D4 a story lock. Keys go in one at a time (one hand).
+  - Navmesh: every leaf is left out of the bake and carves a `NavMeshObstacle` while locked (D1, D2, D4: no path) or open and still. Closed unlocked doors (D3, D5) keep their 0.56 m strip and zombies shove them open. Checked before locking: no patrol route or spawn path uses D1 or D4.
+  - Player capsule spare with the leaves fully open: D1 +0.433 m, D2 / D3 / D5 +0.226 m (front); D1 +0.333 m, D2 / D3 / D5 +0.171 m (back, 70°).
+- **Checks with the props in (doors pass):** the furniture-aware walk test gives 45 / 45 legs with 0 stuck with every leaf fully open to its front; with every leaf at its 70° back limit, 43 / 45 (the two misses are the walker's fixed waypoint beside D5 on the B1 side, where that open leaf stands; the doorway still fits the capsule). Navmesh with D1 and D4 locked and D2–D5 unlocked: 549 tris; D1 and D4 carved shut (0 m strip), D2, D3, D5 0.56 m; all three patrol routes complete; every spawn on the navmesh; P0 reaches every room. Unlocking D1 reopens its 0.96 m strip at runtime. Room coverage 66–96 %. Not re-checked since: D2 locked (the start bedroom, so P0 is shut in until the bedroom key) and Lily's doll placed in the bathroom; navmesh now 541 tris.
 - **Totals:** 194.5k tris (shell 84.2k, props and fixtures 110.0k, decals 0.4k), 20 materials.
 
 ## 7. Risks and open questions
