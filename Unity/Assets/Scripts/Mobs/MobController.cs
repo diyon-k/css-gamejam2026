@@ -123,6 +123,8 @@ namespace Blink.Mobs
         float _toppleElapsed;
         Quaternion _toppleFrom, _toppleTo;
         Vector3 _toppleFromPos, _toppleToPos;
+        Vector3 _spawnPos;
+        Quaternion _spawnRot;
 
         void Awake()
         {
@@ -163,6 +165,17 @@ namespace Blink.Mobs
                 _targetHealth = target.GetComponentInParent<IDamageable>();
                 _targetCollider = target.GetComponentInChildren<Collider>();
             }
+            _spawnPos = transform.position;
+            _spawnRot = transform.rotation;
+            if (_agent.isOnNavMesh) StartPatrol();
+        }
+
+        /// <summary>Back to where it started, calm (used when the player respawns). Corpses stay put.</summary>
+        public void ResetToSpawn()
+        {
+            if (CurrentState == State.Dead || !_agent.enabled) return;
+            _agent.Warp(_spawnPos);
+            transform.rotation = _spawnRot;
             if (_agent.isOnNavMesh) StartPatrol();
         }
 

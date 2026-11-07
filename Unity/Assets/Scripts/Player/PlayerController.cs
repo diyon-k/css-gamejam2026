@@ -7,7 +7,8 @@ namespace Blink.Player
 {
     /// <summary>
     /// First-person walk/look on a CharacterController, driven by the project-wide input actions
-    /// (Player/Move, Player/Look). No jumping or sprinting by design.
+    /// (Player/Move, Player/Look, Player/Jump, Player/Crouch). Crouch is held to crawl: the capsule and
+    /// camera drop, and the player stays down while something is overhead. No sprinting by design.
     ///
     /// The player stands outside world time: it is deliberately NOT an <see cref="ISkippable"/>, so a
     /// blink skip leaves it where it is while the zombies jump, and movement runs on real time, so
@@ -22,6 +23,13 @@ namespace Blink.Player
         [SerializeField] float walkSpeed = 3.5f;
         [SerializeField] float acceleration = 20f;
         [SerializeField] float gravity = -20f;
+        [SerializeField] float jumpHeight = 1f;
+
+        [Header("Crawl")]
+        [SerializeField] float crawlSpeed = 1.5f;
+        [SerializeField] float crawlHeight = 0.8f;
+        [Tooltip("Metres per second the capsule shrinks or grows when going down or getting up.")]
+        [SerializeField] float crawlTransitionSpeed = 4f;
 
         [Header("Look")]
         [SerializeField] float mouseSensitivity = 0.1f;
@@ -31,18 +39,23 @@ namespace Blink.Player
 
         public Vector3 Velocity => _velocity;
         public bool InputEnabled { get; set; } = true;
+        public bool IsCrawling { get; private set; }
 
         CharacterController _controller;
         Health _health;
-        InputAction _move, _look;
+        InputAction _move, _look, _jump, _crouch;
         Vector3 _velocity;
         float _pitch;
+        float _standHeight, _feetY, _standPivotY;
 
         void Awake()
         {
             _controller = GetComponent<CharacterController>();
             _health = GetComponent<Health>();
             if (cameraPivot == null && GetComponentInChildren<Camera>() is { } cam) cameraPivot = cam.transform;
+            _standHeight = _controller.height;
+            _feetY = _controller.center.y - _standHeight * 0.5f;
+            if (cameraPivot != null) _standPivotY = cameraPivot.localPosition.y;
 
             var actions = InputSystem.actions;
             if (actions == null)
@@ -52,12 +65,16 @@ namespace Blink.Player
             }
             _move = actions.FindAction("Player/Move");
             _look = actions.FindAction("Player/Look");
+            _jump = actions.FindAction("Player/Jump");
+            _crouch = actions.FindAction("Player/Crouch");
         }
 
         void OnEnable()
         {
             _move?.Enable();
             _look?.Enable();
+            _jump?.Enable();
+            _crouch?.Enable();
             if (_health != null) _health.Died += OnDied;
         }
 
@@ -106,12 +123,47 @@ namespace Blink.Player
             // Real time, not world time: the player must not gain ground from time skipping.
             float dt = RealDeltaTime(Time.deltaTime, Time.timeScale);
 
-            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * walkSpeed;
+            Crawl(dt);
+
+            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * (IsCrawling ? crawlSpeed : walkSpeed);
             Vector3 horizontal = Vector3.MoveTowards(new Vector3(_velocity.x, 0f, _velocity.z), wish, acceleration * dt);
 
             float vertical = _controller.isGrounded ? -2f : _velocity.y + gravity * dt;
+            if (_controller.isGrounded && !IsCrawling && _jump != null && _jump.WasPressedThisFrame())
+                vertical = Mathf.Sqrt(-2f * gravity * jumpHeight);
             _velocity = new Vector3(horizontal.x, vertical, horizontal.z);
-            _controller.Move(_velocity * dt);
+            var flags = _controller.Move(_velocity * dt);
+            if ((flags & CollisionFlags.Above) != 0 && _velocity.y > 0f) _velocity.y = 0f; // bonk the ceiling
+        }
+
+        /// <summary>Holding Crouch shrinks the capsule (feet stay put) and drops the camera with it.</summary>
+        void Crawl(float dt)
+        {
+            bool held = _crouch != null && _crouch.IsPressed();
+            IsCrawling = held || (IsCrawling && !HeadroomToStand());
+
+            SetHeight(Mathf.MoveTowards(_controller.height, IsCrawling ? crawlHeight : _standHeight, crawlTransitionSpeed * dt));
+        }
+
+        void SetHeight(float height)
+        {
+            if (Mathf.Approximately(height, _controller.height)) return;
+            _controller.height = height;
+            _controller.center = new Vector3(_controller.center.x, _feetY + height * 0.5f, _controller.center.z);
+            if (cameraPivot != null)
+            {
+                Vector3 p = cameraPivot.localPosition;
+                cameraPivot.localPosition = new Vector3(p.x, _standPivotY - (_standHeight - height), p.z);
+            }
+        }
+
+        bool HeadroomToStand()
+        {
+            float r = _controller.radius * 0.9f;
+            // Starts inside our own capsule, which casts ignore, so only real ceilings count.
+            Vector3 origin = transform.TransformPoint(new Vector3(0f, _feetY + _controller.height - _controller.radius, 0f));
+            float distance = _standHeight - _controller.height;
+            return !Physics.SphereCast(origin, r, Vector3.up, out _, distance, ~0, QueryTriggerInteraction.Ignore);
         }
 
         void HandleCursor()
@@ -127,6 +179,18 @@ namespace Blink.Player
         {
             Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !locked;
+        }
+
+        /// <summary>Moves the player (e.g. back to bed on respawn), facing level ahead and standing still.</summary>
+        public void Teleport(Vector3 position, Quaternion rotation)
+        {
+            _controller.enabled = false; // a CharacterController overrides transform moves while enabled
+            transform.SetPositionAndRotation(position, rotation);
+            _controller.enabled = true;
+            _velocity = Vector3.zero;
+            _pitch = 0f;
+            IsCrawling = false;
+            SetHeight(_standHeight);
         }
 
         void OnDied()
