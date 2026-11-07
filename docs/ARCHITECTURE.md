@@ -51,8 +51,8 @@ Unity/Assets/
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
     TimeSkip/                  TimeSkipController, ISkippable, WorldTimer
     Player/                    PlayerController
-    Mobs/                      MobController, NavPathUtility
-    Combat/                    Health, IDamageable, Gun
+    Mobs/                      MobController, NavPathUtility, ZombieRagdoll, RagdollSkipper
+    Combat/                    Health, IDamageable, Hitbox, Gun
   Tests/EditMode/              unit tests (Window > General > Test Runner)
   Prefabs/                     Player, Zombie, GameSystems  <- the integration points
   Scenes/Sandbox.unity         test level with a baked navmesh
@@ -92,6 +92,7 @@ Unity/Assets/
 
 ### Combat (`Blink.Combat`)
 - **`IDamageable`**: `IsDead`, `TakeDamage(amount, point, direction)`. Bullets find it with `GetComponentInParent`.
+- **`Hitbox`**: an `IDamageable` on one body-part collider (a zombie's ragdoll bones). Forwards `damage x multiplier` to the `Health` on a parent (head x2) and raises `Struck` first, so the ragdoll knows where the killing shot landed.
 - **`Health`**: `Damaged(amount, point)`, `Healed(amount)`, `Died`; `Current`, `Max`, `Fraction`, `Heal()`, `ResetHealth()`.
 - **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead.
 - **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
@@ -106,8 +107,10 @@ Unity/Assets/
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
   - On a skip it jumps along its navmesh path by speed × seconds, and can land a hit if it was already in range.
   - Events `StateChanged(State)`, `Attacked`.
-  - On death: agent and colliders off, then it falls over (procedural, only when there's no `Dead` animator param) and the body is removed after `corpseLifetime` world seconds (6 s). It stays an `ISkippable`, so blinking makes bodies vanish sooner.
+  - On death: agent and root collider off. With a `ZombieRagdoll` it goes limp (see below); without one it plays the `Dead` clip, or falls over procedurally when there's no `Dead` param. The body is removed after `corpseLifetime` world seconds (6 s). It stays an `ISkippable`, so blinking makes bodies vanish sooner.
   - Animation hook: if the Animator has a float `Speed`, a trigger `Attack` or a bool `Dead`, they're set automatically. Build an Animator Controller with those parameters and it just works.
+- **`ZombieRagdoll`** (on the Zombie root; bones built with Unity's Ragdoll wizard): while alive the bone bodies are kinematic and each bone collider gets a `Hitbox`. On death the Animator stops and the bodies go limp with the zombie's running speed, knocked back by the killing shot (`knockbackSpeed`, `hitImpulse`). The body freezes once at rest or after `settleSeconds` (3 s) of world time. `RagdollSkipper` (on GameSystems) steps physics on a blink so falling bodies jump forward too.
+- **Layers**: `Zombie` (root capsule: blocks the player, not bullets), `ZombieHitbox` (bone colliders while alive: collide with nothing, only raycasts), `Corpse` (bone colliders once dead: level and other corpses only), `Player`. The gun's `hitMask` skips `Zombie`, `Corpse`, `Player` and `Ignore Raycast`, so shots land on limbs and pass over bodies. A zombie without a ragdoll must keep its root on `Default` to stay shootable.
 - Levels need a **NavMeshSurface** (AI Navigation package, already installed) baked over the floor.
 
 ## Workstreams
