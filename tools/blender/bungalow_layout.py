@@ -307,7 +307,10 @@ DOOR_LEAVES = {
 # A keyed door is only locked in Unity once a Pickup of its key is in the scene, so the player can't be shut in.
 # open: starts open toward its swing side. Unlisted unlocked doors start closed.
 DOOR_STATE = {
-    "D1": dict(locked=True, keys=3, open=False, note="front door; needs 3 key_front"),
+    "D1": dict(locked=True, keys=3, key="key_dorm", also=("key_workshop", "key_front_3"), open=False,
+               note="front door; one key per puzzle room, any order: key_dorm (Lily's doll), key_workshop "
+                    "(flooded basement), key_front_3 (third room). Placeholders stand in for unbuilt rooms "
+                    "(BLINK/Bungalow/Place Front Door Keys)"),
     "D2": dict(locked=True, keys=1, key="key_bedroom", open=False,
                note="the start bedroom: shut and locked, key on the chest of drawers (BLINK/Bungalow/Set Up Start Bedroom)"),
     "D3": dict(locked=False, open=False),
@@ -379,7 +382,7 @@ def to_json():
         "gate": dict(id=GATE["id"], hinge=v3(GATE["hinge"]), openYaw=GATE["open_yaw"],
                      closedYaw=GATE["closed_yaw"]),
         "doors": [dict(id=k, locked=bool(v.get("locked", False)), keys=int(v.get("keys", 0)), key=v.get("key", KEY_ITEM),
-                       open=bool(v.get("open", False)))
+                       also=list(v.get("also", ())), open=bool(v.get("open", False)))
                   for k, v in DOOR_STATE.items()],
         "keyItem": KEY_ITEM,
         "surfaceTiles": [dict(material=k, tileM=float(v)) for k, v in SURFACE_TILE_M.items()],

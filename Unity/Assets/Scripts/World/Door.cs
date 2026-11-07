@@ -65,6 +65,8 @@ namespace Blink.World
         [Tooltip("Keys that unlock it (0 = never unlocks).")]
         [Min(0)] public int keysRequired;
         public string keyItemId = "key_front";
+        [Tooltip("Other item ids that also fit the lock (e.g. the front door: one key per puzzle room). Each counts as one of keysRequired.")]
+        public string[] alsoFits = Array.Empty<string>();
         [SerializeField] DoorLeafData[] leaves = Array.Empty<DoorLeafData>();
 
         [Header("Noise (audible range in metres; 0 = silent)")]
@@ -118,10 +120,11 @@ namespace Blink.World
         }
 
         /// <summary>Editor setup: fills the data and poses the leaves in the starting state.</summary>
-        public void Configure(string id, Vector3 frontDir, bool locked, bool open, int keys, string keyItem, DoorLeafData[] data)
+        public void Configure(string id, Vector3 frontDir, bool locked, bool open, int keys, string keyItem, DoorLeafData[] data,
+            string[] moreKeyItems = null)
         {
             doorId = id; front = frontDir; startLocked = locked; startOpen = open ? 1 : 0;
-            keysRequired = keys; keyItemId = keyItem; leaves = data;
+            keysRequired = keys; keyItemId = keyItem; alsoFits = moreKeyItems ?? Array.Empty<string>(); leaves = data;
             SnapToStart();
         }
 
@@ -213,7 +216,26 @@ namespace Blink.World
 
         public string Prompt(Interactor who) => Model.Prompt(KeysHeld(who));
 
-        int KeysHeld(Interactor who) => who != null && who.Inventory != null ? who.Inventory.Count(keyItemId) : 0;
+        /// <summary>True if <paramref name="itemId"/> fits this door's lock (<see cref="keyItemId"/> or one of <see cref="alsoFits"/>).</summary>
+        public bool Fits(string itemId) =>
+            !string.IsNullOrEmpty(itemId) && (itemId == keyItemId || (alsoFits != null && Array.IndexOf(alsoFits, itemId) >= 0));
+
+        int KeysHeld(Interactor who)
+        {
+            if (who == null || who.Inventory == null) return 0;
+            int n = 0;
+            foreach (var id in who.Inventory.Items) if (Fits(id)) n++;
+            return n;
+        }
+
+        /// <summary>Takes one fitting key from the player: the one in the hand first, else one from the inventory.</summary>
+        void UseUpOneKey(Interactor who)
+        {
+            if (Hand.Of(who) is { } hand && hand.Item != null && Fits(hand.Item.itemId) && hand.UseUp(hand.Item.itemId)) return;
+            if (who.Inventory == null) return;
+            foreach (var id in who.Inventory.Items)
+                if (Fits(id)) { who.Inventory.Remove(id); return; }
+        }
 
         public void Interact(Interactor who)
         {
@@ -222,8 +244,7 @@ namespace Blink.World
             if (who.Player != null && who.Player.TryGetComponent<CharacterController>(out var cc)) _playerRadius = cc.radius;
             var res = Model.Interact(SideOf(pos), KeysHeld(who), t => SweepHitsPlayer(Model.Angle, t, pos), handDelay);
             // Keys turned in the lock stay there: out of the hand for good, so a death can't put them back.
-            for (int i = 0; i < Model.LastKeysUsed; i++)
-                if (Hand.Of(who) is not { } hand || !hand.UseUp(keyItemId)) who.Inventory?.Remove(keyItemId);
+            for (int i = 0; i < Model.LastKeysUsed; i++) UseUpOneKey(who);
             Raise(res, true);
             PlayerUsed?.Invoke(this, res);
         }

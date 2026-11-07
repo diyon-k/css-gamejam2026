@@ -42,7 +42,7 @@ namespace Blink.EditorTools
         [Serializable] class Obj { public string name; public Box[] boxes; }
         [Serializable] class ColliderFile { public Obj[] objects; }
         [Serializable] class Opening { public string id; public string wall; public float[] span; }
-        [Serializable] class DoorRow { public string id; public bool locked; public int keys; public string key; public bool open; }
+        [Serializable] class DoorRow { public string id; public bool locked; public int keys; public string key; public string[] also; public bool open; }
         [Serializable] class Layout { public Opening[] openings; public DoorRow[] doors; public string keyItem; }
 #pragma warning restore 0649
 
@@ -114,14 +114,14 @@ namespace Blink.EditorTools
                 string note = "";
                 if (locked && row.keys > 0)
                 {
-                    int placed = KeysInScene(scene, key);
-                    if (placed < row.keys) { locked = false; note = $" UNLOCKED: {placed}/{row.keys} '{key}' pickups in the scene"; }
+                    int placed = KeysInScene(scene, key, row.also);
+                    if (placed < row.keys) { locked = false; note = $" UNLOCKED: {placed}/{row.keys} '{KeyList(key, row.also)}' pickups in the scene"; }
                 }
 
                 var go = FindOrCreate(scene, id, holder.transform);
                 go.transform.position = centre / data.Count;
                 var door = GetOrAdd<Door>(go);
-                door.Configure(id, front.Value, locked, row.open, row.keys, key, data.ToArray());
+                door.Configure(id, front.Value, locked, row.open, row.keys, key, data.ToArray(), row.also);
                 foreach (var leaf in kv.Value)
                 {
                     // One interactable per leaf: an Openable from an older setup (e.g. the start bedroom's D2), or a
@@ -131,7 +131,7 @@ namespace Blink.EditorTools
                     if (leaf.GetComponent<DoorLeaf>() is { } link) { link.door = door; EditorUtility.SetDirty(link); }
                 }
                 EditorUtility.SetDirty(door);
-                sb.Append($" {id} {(locked ? (row.keys > 0 ? $"locked({row.keys} x {key})" : "locked") : row.open ? "open" : "closed")}{note} x{data.Count};");
+                sb.Append($" {id} {(locked ? (row.keys > 0 ? $"locked({row.keys} x {KeyList(key, row.also)})" : "locked") : row.open ? "open" : "closed")}{note} x{data.Count};");
             }
             EditorSceneManager.MarkSceneDirty(scene);
             if (save) EditorSceneManager.SaveScene(scene);
@@ -221,17 +221,20 @@ namespace Blink.EditorTools
 
         // ---- placeholder keys
 
-        /// <summary>Placeholder positions: (name, x, z, floor y). Dropped onto whatever surface is there.</summary>
-        static readonly (string name, float x, float z)[] KeySpots =
+        /// <summary>
+        /// Placeholder keys for the puzzle rooms not built yet: (name, x, floor y, z, item id, display name). Dropped onto
+        /// whatever surface is there. Lily's doll room gives key_dorm (BLINK/Place Puzzle: Lily's Doll), so it has none;
+        /// delete a row when its room is built and hands out the real key.
+        /// </summary>
+        static readonly (string name, float x, float y, float z, string itemId, string displayName)[] KeySpots =
         {
-            ("Key_1_Bedroom", 2.0f, 6.5f),
-            ("Key_2_Kitchen", 17.0f, 11.5f),
-            ("Key_3_Basement", 15.0f, 10.5f),
+            ("Key_Workshop_Placeholder", 15.0f, -2.85f, 10.5f, "key_workshop", "Workshop key"), // flooded basement
+            ("Key_Front3_Placeholder", 17.0f, 0f, 11.5f, "key_front_3", "Front door key"),      // third puzzle room (kitchen spot)
         };
 
         /// <summary>
-        /// The three front-door keys (placeholders until the story gives them homes), under Keys_Placeholder: main's
-        /// KeyPickup (Key.fbx) as item <c>key_front</c>, each resting on whatever surface is at its spot. Idempotent.
+        /// The front door's placeholder keys (see <see cref="KeySpots"/>), under Keys_Placeholder: main's KeyPickup
+        /// (Key.fbx) with each spot's item id, resting on whatever surface is at its spot. Idempotent.
         /// </summary>
         public static string PlaceKeys(Scene scene, bool save)
         {
@@ -245,8 +248,7 @@ namespace Blink.EditorTools
             var sb = new StringBuilder("placeholder keys:");
             for (int i = 0; i < KeySpots.Length; i++)
             {
-                var (name, x, z) = KeySpots[i];
-                float y = name.Contains("Basement") ? -2.85f : 0f;
+                var (name, x, y, z, itemId, displayName) = KeySpots[i];
                 var from = new Vector3(x, y + 1.6f, z); // above the floor, below the ceiling
                 Vector3 at = new Vector3(x, y, z);
                 string on = "floor (no hit)";
@@ -264,8 +266,8 @@ namespace Blink.EditorTools
                     k.transform.position += Vector3.up * (at.y - b.min.y + 0.001f);
                 }
                 var pickup = k.GetComponent<Pickup>();
-                pickup.itemId = "key_front";
-                pickup.displayName = "Front door key";
+                pickup.itemId = itemId;
+                pickup.displayName = displayName;
                 // Held up like the bedroom key (BungalowStartBedroom): face on to the view, tipped to the right.
                 pickup.holdEuler = (Quaternion.AngleAxis(25f, Vector3.forward) * Quaternion.Euler(-90f, 0f, 0f)).eulerAngles;
                 pickup.holdScale = 0.8f;
@@ -277,14 +279,17 @@ namespace Blink.EditorTools
             return sb.ToString();
         }
 
-        static int KeysInScene(Scene scene, string itemId)
+        static int KeysInScene(Scene scene, string itemId, string[] also)
         {
             int n = 0;
             foreach (var r in scene.GetRootGameObjects())
                 foreach (var p in r.GetComponentsInChildren<Pickup>(true))
-                    if (p.itemId == itemId) n++;
+                    if (p.itemId == itemId || (also != null && Array.IndexOf(also, p.itemId) >= 0)) n++;
             return n;
         }
+
+        static string KeyList(string key, string[] also) =>
+            also == null || also.Length == 0 ? key : key + "/" + string.Join("/", also);
 
         // ---- helpers
 

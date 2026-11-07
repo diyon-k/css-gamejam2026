@@ -865,7 +865,11 @@
    "id": "D1",
    "locked": true,
    "keys": 3,
-   "key": "key_front",
+   "key": "key_dorm",
+   "also": [
+    "key_workshop",
+    "key_front_3"
+   ],
    "open": false
   },
   {
@@ -873,6 +877,7 @@
    "locked": true,
    "keys": 1,
    "key": "key_bedroom",
+   "also": [],
    "open": false
   },
   {
@@ -880,6 +885,7 @@
    "locked": false,
    "keys": 0,
    "key": "key_front",
+   "also": [],
    "open": false
   },
   {
@@ -887,6 +893,7 @@
    "locked": true,
    "keys": 0,
    "key": "key_front",
+   "also": [],
    "open": false
   },
   {
@@ -894,6 +901,7 @@
    "locked": false,
    "keys": 0,
    "key": "key_front",
+   "also": [],
    "open": true
   }
  ],
