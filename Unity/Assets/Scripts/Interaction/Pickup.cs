@@ -21,6 +21,7 @@ namespace Blink.Interaction
         Vector3 _homePos, _homeScale;
         Quaternion _homeRot;
 
+        public bool Taken => _taken;
         public string Prompt(Interactor who) => "Pick up " + displayName;
         public bool CanInteract(Interactor who) => !_taken && who.Inventory != null;
 
