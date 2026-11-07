@@ -237,6 +237,11 @@ namespace Blink.Mobs
                     _woken.RemoveAt(i); // the corpse was removed
                     continue;
                 }
+                if (!entry.Ragdoll.IsActive)
+                {
+                    _woken.RemoveAt(i); // knocked down, then got back up: the Animator owns the bones again
+                    continue;
+                }
 
                 float fastest = 0f;
                 for (int b = 0; b < entry.Bodies.Length; b++)
