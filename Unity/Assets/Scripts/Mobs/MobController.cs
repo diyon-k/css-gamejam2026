@@ -38,6 +38,8 @@ namespace Blink.Mobs
         [SerializeField] float attackInterval = 1.4f;
         [Tooltip("World seconds between reaching the player and the first hit.")]
         [SerializeField] float attackWindup = 0.5f;
+        [Tooltip("Metres the zombie is shoved back when you win the grab QTE.")]
+        [SerializeField] float grabKnockback = 2.5f;
 
         [Header("Death")]
         [Tooltip("World seconds the body stays before it's removed (blinking speeds this up). 0 = keep forever.")]
@@ -164,7 +166,7 @@ namespace Blink.Mobs
 
             if (distance <= attackRange)
             {
-                if (_attackCooldown <= 0f) Attack();
+                if (_attackCooldown <= 0f) Attack(grabbed: true);
                 return;
             }
             if (distance > detectionRange) return;
@@ -181,20 +183,47 @@ namespace Blink.Mobs
             FaceTarget(1f);
             _agent.SetDestination(target.position);
             _repathTimer = repathInterval;
+
+            // Closed the gap during your blink: it grabs you as your eyes open.
+            if (_attackCooldown <= 0f && FlatDistanceToTarget() <= attackRange) Attack(grabbed: true);
         }
 
-        void Attack()
+        /// <param name="grabbed">Reached you because you blinked: starts the grab QTE instead of plain damage.</param>
+        void Attack(bool grabbed = false)
         {
-            _attackCooldown = attackInterval;
-            if (_hasAttackParam) animator.SetTrigger(AttackParam);
-
-            Vector3 toTarget = target.position - transform.position;
-            _targetHealth?.TakeDamage(attackDamage, target.position + Vector3.up, toTarget.normalized);
+            if (GrabQte.Active) return; // world is frozen mid-QTE; another zombie already has you
 
             // A zombie reaching you while your eyes are shut snaps time back to normal.
             var timeSkip = TimeSkipController.Instance;
-            if (timeSkip != null && timeSkip.IsFastForwarding) timeSkip.InterruptFastForward();
+            if (timeSkip != null && timeSkip.IsFastForwarding)
+            {
+                timeSkip.InterruptFastForward();
+                grabbed = true;
+            }
 
+            _attackCooldown = attackInterval;
+            if (_hasAttackParam) animator.SetTrigger(AttackParam);
+            Vector3 toTarget = target.position - transform.position;
+
+            if (grabbed && GrabQte.TryBegin(OnGrabResolved)) return;
+            _targetHealth?.TakeDamage(attackDamage, target.position + Vector3.up, toTarget.normalized);
+            Attacked?.Invoke();
+        }
+
+        void OnGrabResolved(bool escaped)
+        {
+            if (this == null || target == null) return;
+            Vector3 away = transform.position - target.position;
+            away.y = 0f;
+            if (escaped)
+            {
+                // Shove it back so the same zombie doesn't re-grab on your next blink.
+                if (_agent.isOnNavMesh) _agent.Move(away.normalized * grabKnockback);
+            }
+            else
+            {
+                _targetHealth?.TakeDamage(float.MaxValue, target.position + Vector3.up, -away.normalized);
+            }
             Attacked?.Invoke();
         }
 
