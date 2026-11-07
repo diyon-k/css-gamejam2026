@@ -252,6 +252,90 @@ FURNITURE_B = {"shelves": (9.0, 4.1, 11.0, 4.6), "crates": (12.2, 4.3, 13.0, 5.0
                "gen": (16.0, 11.8, 17.2, 12.6), "bench": (19.1, 5.0, 19.68, 7.6), "shelves 2": (14.0, 4.1, 16.0, 4.6)}
 
 
+# ------------------------------------------------------------------ Phase 3 modular kit (bungalow_kit.py)
+# Everything the kit builds comes from the tables above plus these. A new room only needs a ROOM_FINISH entry; a new
+# radiator, pipe run, door leaf or decay spot is a row here.
+#
+# UV0 contract: surface materials are box-mapped in world space at 1 UV = one texture tile of SURFACE_TILE_M metres
+# (so their Unity materials use tiling 1). M_Trim pieces use the trim-sheet strips (bungalow_trim.STRIPS).
+SURFACE_TILE_M = {"M_FloorPlank": 2.0, "M_Parquet": 3.4, "M_Lino": 2.0, "M_Concrete": 2.5, "M_Wall_Damask": 2.0,
+                  "M_Wall_Pale": 2.0, "M_Wall_Floral": 2.0, "M_Plaster": 1.5, "M_Plaster_Kitchen": 1.5,
+                  "M_BrickWhite": 2.0, "M_Tile": 1.5, "M_Glass": 1.0, "M_Water": 4.0}
+# (exported to bungalow_layout.json as "surfaceTiles"; Materials/Editor/BungalowMaterialsBuilder reads it from there)
+# Board seams of the M_FloorPlank scan (Poly Haven dark_wooden_planks 1K, image rows from the top, boards along U).
+# The kit cuts its floor boards on these lines, so geometry seams sit on the texture's seams.
+FLOOR_PLANK_SEAMS_PX = (57, 164, 274, 388, 512, 628, 742, 850, 966)
+# Trim styles -> trim-sheet strip keys for casings / mouldings, door leaves, turned work
+TRIM_STYLE = {
+    "varnish": dict(trim="varnish", door="varnish_door", turned="varnish_turned", window="varnish"),
+    "paint_dark": dict(trim="paint_dark", door="paint_dark", turned="paint_dark", window="paint_dark"),
+    "paint_light": dict(trim="paint_light", door="paint_light", turned="paint_light", window="paint_light"),
+    "raw": dict(trim="raw", door="raw", turned="raw", window="metal_paint"),
+}
+EXTERIOR_FINISH = "M_Plaster"     # outside faces of the exterior walls, wall tops, slab edges, reveals
+# Per room: floor / wall / ceiling materials, board direction (plank floors), trim style, mouldings, wall bands
+# (a band re-skins the wall faces of that room between y0..y1, optionally only on one side / along span).
+ROOM_FINISH = {
+    "EntranceHall": dict(floor="M_FloorPlank", boards="z", wall="M_Wall_Pale", ceiling="M_Plaster", trim="varnish",
+                         mouldings=("skirting", "dado", "picture", "cornice")),
+    "CentralHall": dict(floor="M_FloorPlank", boards="z", wall="M_Wall_Pale", ceiling="M_Plaster", trim="varnish",
+                        mouldings=("skirting", "dado", "picture", "cornice")),
+    "Living": dict(floor="M_Parquet", wall="M_Wall_Damask", ceiling="M_Plaster", trim="varnish",
+                   mouldings=("skirting", "picture", "cornice")),
+    "Kitchen": dict(floor="M_Lino", wall="M_Plaster_Kitchen", ceiling="M_Plaster", trim="paint_light",   # blue-white
+                    mouldings=("skirting", "cornice"),
+                    bands=[dict(mat="M_Tile", y=(0.90, 1.50), side="N", span=(11.575, 16.20))]),
+    "Bedroom": dict(floor="M_FloorPlank", boards="x", wall="M_Wall_Floral", ceiling="M_Plaster", trim="paint_dark",
+                    mouldings=("skirting", "picture", "cornice")),
+    "Bathroom": dict(floor="M_Lino", wall="M_Plaster", ceiling="M_Plaster", trim="paint_light",
+                     mouldings=("tilecap", "cornice"), bands=[dict(mat="M_Tile", y=(0.0, 1.20))]),
+    "B1": dict(floor="M_Concrete", wall="M_BrickWhite", ceiling="M_Plaster", trim="raw", mouldings=()),
+    "B2": dict(floor="M_Concrete", wall="M_BrickWhite", ceiling="M_Plaster", trim="raw", mouldings=()),
+}
+# Moulding heights (profiles are geometry, in bungalow_kit.PROFILES). y = bottom of the profile.
+MOULDING_Y = {"skirting": 0.0, "dado": 0.88, "tilecap": 1.18, "picture": 2.56, "cornice": CEILING - 0.11}
+# Door leaves: style, open angle (deg from closed, towards the swing side), sag = in-plane droop (deg) of a leaf
+DOOR_LEAVES = {
+    "D1": dict(style="double", open=(84.0, 18.0), sag=(0.0, 3.0), note="right leaf ajar and hung 3 deg off"),
+    "D2": dict(style="panel4", open=78.0),
+    "D3": dict(style="panel4", open=62.0),
+    "D4": dict(style="panel4", open=0.0, note="locked, closed"),
+    "D5": dict(style="ledged", open=96.0),
+}
+# Radiators: wall run axis, wall face coordinate, inward direction (+1 / -1 across the face), span along the wall
+RADIATORS = {
+    "Radiator_Hall": dict(room="CentralHall", axis="x", face=14.7, inward=-1, span=(8.45, 10.05)),
+    "Radiator_Living": dict(room="Living", axis="z", face=19.7, inward=-1, span=(3.15, 4.45)),
+    "Radiator_Kitchen": dict(room="Kitchen", axis="z", face=19.7, inward=-1, span=(9.55, 10.85)),
+    "Radiator_Bedroom": dict(room="Bedroom", axis="z", face=0.3, inward=1, span=(4.35, 5.35)),
+    "Radiator_Bathroom": dict(room="Bathroom", axis="x", face=9.575, inward=1, span=(3.40, 4.40)),
+}
+RADIATOR = dict(y=(0.14, 0.78), depth=0.13, gap=0.04, column=0.065)
+# Basement heating pipes (polylines, Unity coordinates) under the joists, with drops to the radiators over B1 / B2
+PIPE_R = 0.018
+PIPES = {
+    "Pipe_Main_N": [(7.35, -0.56, 14.45), (19.40, -0.56, 14.45), (19.40, -0.56, 4.35)],
+    # drops start at floor level under the radiator tails (bungalow_kit.build_radiators: valve 0.045 outside the
+    # span, 0.03 in front of the radiator back); the living flow valve is over solid ground, so it runs in the floor
+    "Pipe_Hall_Flow": [(8.405, 0.0, 14.63), (8.405, -0.56, 14.63), (8.405, -0.56, 14.45)],
+    "Pipe_Hall_Return": [(10.095, 0.0, 14.63), (10.095, -0.62, 14.63), (10.095, -0.62, 14.30), (19.30, -0.62, 14.30),
+                         (19.30, -0.62, 4.35)],
+    "Pipe_Kitchen_Flow": [(19.63, 0.0, 9.505), (19.63, -0.56, 9.505), (19.40, -0.56, 9.505)],
+    "Pipe_Kitchen_Return": [(19.63, 0.0, 10.895), (19.63, -0.62, 10.895), (19.30, -0.62, 10.895)],
+    "Pipe_Living_Flow": [(19.63, -0.25, 4.25), (19.63, -0.56, 4.25), (19.40, -0.56, 4.25)],
+    "Pipe_Living_Return": [(19.63, 0.0, 4.495), (19.63, -0.40, 4.495), (19.30, -0.40, 4.495), (19.30, -0.62, 4.35)],
+}
+# Decay baked into the geometry (SPEC 2.2 / 2.1)
+DECAY = dict(
+    sag=[dict(room="CentralHall", x=(8.325, 9.9), z=(5.6, 11.2), depth=0.024),     # boards sagging by the well
+         dict(room="Bedroom", x=(0.3, 2.2), z=(0.3, 1.8), depth=0.010)],           # damp corner under the window
+    missing_balusters=[("east", 9), ("east", 23)],     # (balustrade run, index from the stair-top newel)
+    cracked_newel="NE",                                  # the NE newel cap is split
+    chip_rate=0.9,                                       # chipped board edges per metre of board, on average
+    water_y=BASEMENT + 0.08,                             # 0.08 m standing water in the basement
+)
+
+
 def stair_nosings():
     """[(z, y)] of the 15 nosing / riser lines, top (hall floor edge) to bottom."""
     s = STAIR
@@ -281,6 +365,7 @@ def to_json():
                           range=f.get("range", 0.0), mode=f["mode"]) for k, f in FIXTURES.items()],
         "gate": dict(id=GATE["id"], hinge=v3(GATE["hinge"]), openYaw=GATE["open_yaw"],
                      closedYaw=GATE["closed_yaw"]),
+        "surfaceTiles": [dict(material=k, tileM=float(v)) for k, v in SURFACE_TILE_M.items()],
         "agent": dict(NAV_AGENT),
         "player": dict(PLAYER),
     }
@@ -340,6 +425,19 @@ def check():
                 abs(s["risers"] * s["rise"] - drop) < 1e-6 and 0.18 <= s["rise"] <= 0.20))
     need = s["z_top"] + (2.2 - TRIMMER_UNDERSIDE) * s["run"] / s["rise"]
     out.append((f"well end {s['opening']['z'][1]} >= headroom line {need:.2f}", s["opening"]["z"][1] >= need))
+    # Phase 3 kit tables
+    out.append(("every room has a ROOM_FINISH", set(ROOMS) <= set(ROOM_FINISH)))
+    out.append(("every door has a DOOR_LEAVES entry",
+                {k for k, o in OPENINGS.items() if o["kind"] == "door"} <= set(DOOR_LEAVES)))
+    for k, r in RADIATORS.items():
+        rm = ROOMS[r["room"]]
+        along = rm["x"] if r["axis"] == "x" else rm["z"]
+        across = rm["z"] if r["axis"] == "x" else rm["x"]
+        ok = along[0] <= r["span"][0] < r["span"][1] <= along[1] and abs(r["face"] - across[0 if r["inward"] > 0
+                                                                                            else 1]) < 1e-6
+        out.append((f"{k} on the {r['room']} wall", ok))
+    low = min(p[1] for pts in PIPES.values() for p in pts if p[1] < -SLAB) - PIPE_R
+    out.append((f"basement headroom under the pipes {low - BASEMENT:.2f}", low - BASEMENT >= 2.2 - 1e-6))
     return out
 
 

@@ -184,6 +184,72 @@ def remaps():
         print(f, names)
 
 
+STANDALONE_BC7 = ("  - serializedVersion: 4\n    buildTarget: Standalone\n    maxTextureSize: 1024\n"
+                  "    resizeAlgorithm: 0\n    textureFormat: 25\n    textureCompression: 2\n    compressionQuality: 50\n"
+                  "    crunchedCompression: 0\n    allowsAlphaSplitting: 0\n    overridden: 1\n"
+                  "    ignorePlatformSupport: 0\n    androidETC2FallbackOverride: 0\n"
+                  "    forceMaximumCompressionQuality_BC6H_BC7: 0\n")
+
+
+def kit_textures():
+    """Bungalow kit textures (Phase 3): Textures/Trim (trim sheet) and Textures/KitWear (UV2 wear atlas).
+    Mips on, 1024, BC7 on Standalone; *_Normal = Normal Map; *_Mask and KitWear linear with alpha (smoothness /
+    polish); the albedo sRGB. KitWear is an atlas, so it clamps."""
+    for sub_dir in ("Trim", "KitWear"):
+        d = os.path.join(TEX, sub_dir)
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            p = os.path.join(d, f + ".meta")
+            if not f.endswith(".png") or not os.path.exists(p):
+                continue
+            s = read(p)
+            normal = f.endswith("_Normal.png")
+            linear = normal or f.endswith("_Mask.png") or sub_dir == "KitWear"
+            alpha = f.endswith("_Mask.png") or sub_dir == "KitWear"
+            s = sub(s, r"^(    enableMipMap:) \d+", r"\1 1")
+            s = sub(s, r"^(    sRGBTexture:) \d+", r"\g<1> %d" % (0 if linear else 1))
+            s = sub(s, r"^(  textureType:) \d+", r"\g<1> %d" % (1 if normal else 0))
+            s = sub(s, r"^(  alphaUsage:) \d+", r"\g<1> %d" % (1 if alpha else 0))
+            s = sub(s, r"^(  alphaIsTransparency:) \d+", r"\1 0")
+            s = sub(s, r"^(    aniso:) -?\d+", r"\1 8")
+            for ax in ("U", "V", "W"):
+                s = sub(s, r"^(    wrap%s:) -?\d+" % ax, r"\g<1> %d" % (1 if sub_dir == "KitWear" else 0))
+            s = sub(s, r"^(  maxTextureSize:) \d+", r"\1 1024")
+            s = sub(s, r"^(    maxTextureSize:) \d+", r"\1 1024")
+            s = sub(s, r"^(    textureCompression:) \d+", r"\1 2")
+            if re.search(r"^    buildTarget: Standalone$", s, re.M):
+                s = sub(s, r"(    buildTarget: Standalone\n(?:    .*\n)*?    textureFormat:) -?\d+", r"\1 25", 1)
+                s = sub(s, r"(    buildTarget: Standalone\n(?:    .*\n)*?    overridden:) \d+", r"\1 1", 1)
+            else:
+                s = sub(s, r"(  - serializedVersion: \d+\n    buildTarget: DefaultTexturePlatform\n(?:    .*\n)*)",
+                        r"\g<1>" + STANDALONE_BC7.replace("\\", "\\\\"), 1)
+            write(p, s)
+            print("texture", sub_dir + "/" + f)
+
+
+def kit_remaps():
+    """Remap the kit FBX material names (M_*) onto Materials/M_*.mat (owned by the materials pass)."""
+    d = os.path.join(ROOT, "Kit")
+    if not (os.path.isdir(MATS) and os.path.isdir(d)):
+        return
+    entry = ("  - first:\n      type: UnityEngine:Material\n      assembly: UnityEngine.CoreModule\n"
+             "      name: %s\n    second: {fileID: 2100000, guid: %s, type: 2}\n")
+    for f in sorted(os.listdir(d)):
+        p = os.path.join(d, f + ".meta")
+        if not f.endswith(".fbx") or not os.path.exists(p):
+            continue
+        with open(os.path.join(d, f), "rb") as fh:
+            data = fh.read()
+        names = [m[:-4] for m in sorted(os.listdir(MATS)) if m.endswith(".mat")
+                 and (m[:-4].encode() + b"\x00\x01Material") in data]
+        lines = "".join(entry % (n, guid_of(os.path.join(MATS, n + ".mat"))) for n in names)
+        s = read(p)
+        s = sub(s, r"^  externalObjects:.*\n((  - |    |      ).*\n)*", "  externalObjects:\n" + lines, count=1)
+        write(p, s)
+        print("Kit/" + f, names)
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
     set_target(args[args.index("--target") + 1] if "--target" in args else "mansion")
@@ -191,5 +257,7 @@ if __name__ == "__main__":
     materials()
     if TARGET == "bungalow":
         models()
+        kit_textures()
+        kit_remaps()
     remaps()
     sys.exit(0)

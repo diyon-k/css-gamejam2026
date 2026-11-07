@@ -4,8 +4,10 @@
           [--preview DIR] [--lit] [--no-export] [--textures]
 
 --target mansion (default, unchanged behaviour) builds the mansion hero assets below.
---target bungalow builds the Bungalow level (bungalow_greybox.py: Phase 2 grey-box) into
-  Unity/Assets/Art/Environment/Bungalow/<subdir>/ and writes its sidecar JSON (colliders, layout).
+--target bungalow builds the Bungalow level into Unity/Assets/Art/Environment/Bungalow/<subdir>/ with sidecar JSON:
+  Bungalow_Greybox (bungalow_greybox.py, Phase 2), Bungalow_Shell and Bungalow_Kit (bungalow_kit.py, Phase 3: the
+  modular kit + UV2 wear atlas bake via bungalow_wear.py; --no-wear skips the bake). The trim sheet textures come
+  from bungalow_trim.py (plain Python, run separately).
 Importing this module has no side effects (export / bake / preview can be reused); Blender's --python runs main().
 
 Mansion target:
@@ -62,9 +64,15 @@ def target_config(name):
         return dict(builders=assets.BUILDERS, bake=BAKE, sharp=assets.SHARP, subdir={}, textures=_mansion_textures,
                     after=None)
     if name == "bungalow":
-        import bungalow_greybox  # noqa: E402  (bpy-only module, imported on demand)
-        return dict(builders=bungalow_greybox.BUILDERS, bake={}, sharp=bungalow_greybox.SHARP,
-                    subdir=bungalow_greybox.SUBDIR, textures=None, after=bungalow_greybox.after_export)
+        import bungalow_greybox  # noqa: E402  (bpy-only modules, imported on demand)
+        import bungalow_kit  # noqa: E402
+
+        def after(asset, out_dir):
+            mod = bungalow_kit if asset in bungalow_kit.BUILDERS else bungalow_greybox
+            mod.after_export(asset, out_dir)
+        return dict(builders={**bungalow_greybox.BUILDERS, **bungalow_kit.BUILDERS}, bake={},
+                    sharp={**bungalow_greybox.SHARP, **bungalow_kit.SHARP},
+                    subdir={**bungalow_greybox.SUBDIR, **bungalow_kit.SUBDIR}, textures=None, after=after)
     raise SystemExit(f"unknown --target {name!r} (mansion, bungalow)")
 
 # asset: (target tris for the low-poly, bake resolution, cage extrusion m)
@@ -277,6 +285,9 @@ def main():
         del argv[i:i + 2]
     do_export = "--no-export" not in argv
     lit = "--lit" in argv
+    if target == "bungalow" and "--no-wear" in argv:
+        import bungalow_kit  # noqa: E402
+        bungalow_kit.OPTS["wear"] = False
     if cfg["textures"]:
         cfg["textures"](argv)
     names = [a for a in argv if not a.startswith("--")] or list(cfg["builders"])
