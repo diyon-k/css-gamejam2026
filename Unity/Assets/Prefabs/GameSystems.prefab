@@ -17,6 +17,11 @@ GameObject:
   - component: {fileID: 2109156320880567613}
   - component: {fileID: 3842554834860264839}
   - component: {fileID: 5182736490127365041}
+  - component: {fileID: 6427193058814430217}
+  - component: {fileID: 5200161662824935619}
+  - component: {fileID: 7233619342902630301}
+  - component: {fileID: 1429646944804865027}
+  - component: {fileID: 2923958057281167660}
   - component: {fileID: 6620184735510936172}
   - component: {fileID: 8105300627443483699}
   - component: {fileID: 6657893017002333534}
@@ -180,6 +185,103 @@ MonoBehaviour:
   curveHeight: 0.15
   edgeSoftness: 0.2
   guiDepth: -1000
+--- !u!114 &6427193058814430217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3d44ea52386491fbee692f554ed6c5d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.FilmGrain
+  shader: {fileID: 4800000, guid: f67a7709550d46c29cbadd616ca8ca78, type: 3}
+  amount: 0.02
+  framesPerSecond: 24
+  showInSceneView: 0
+--- !u!114 &5200161662824935619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a485c8ffacfda7469e366eec923d2c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.AudioService
+  voices2D: 8
+  voices3D: 16
+  defaultOutput: {fileID: 24300002, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+--- !u!114 &7233619342902630301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d35c80e978ceb914ea1151ab5531331f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.TimeAudio
+  timeSkip: {fileID: 0}
+  skipCue: {fileID: 11400000, guid: 014fac2804150d24db9120319bcb10fc, type: 2}
+  skipLayerCue: {fileID: 11400000, guid: 118aaf0b64dab9a4da274f89abd1a2dc, type: 2}
+  eyesOpenSnapshot: {fileID: 24500006, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  eyesShutSnapshot: {fileID: 4942417706681722364, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  shutFadeSeconds: 0.15
+  openFadeSeconds: 0.25
+  eyesShutCue: {fileID: 0}
+  eyesOpenCue: {fileID: 0}
+  grabStingCue: {fileID: 11400000, guid: 77796481d5257584199f331be48ab050, type: 2}
+  grabEscapedCue: {fileID: 0}
+--- !u!114 &1429646944804865027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7e81978fd0366a4391056a158c7b392, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.PlayerAudio
+  player: {fileID: 0}
+  footstepCue: {fileID: 11400000, guid: e2919fb6be4f744488eab07d8e4303f0, type: 2}
+  stepLength: 1.6
+  minStepSpeed: 0.5
+  hurtCue: {fileID: 11400000, guid: e86f86bc562b6774f9414829b343f8f5, type: 2}
+  hitThudCue: {fileID: 11400000, guid: 63065c0c00100264dacae1d55091f2b9, type: 2}
+  deathCue: {fileID: 0}
+  heartbeatCue: {fileID: 11400000, guid: e1a0091fc3ef4a940890d2b14adfaddb, type: 2}
+  heartbeatRange: 15
+  panicDistance: 2
+  bpm: {x: 65, y: 170}
+  heartbeatVolume: {x: 0.25, y: 1}
+  eyesOpenHeartbeat: 0.35
+  intensityResponse: 1.5
+  scanInterval: 0.25
+--- !u!114 &2923958057281167660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 189c22a934a2a75468257f93db427b81, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.WorldAudio
+  doorForcingLoopCue: {fileID: 11400000, guid: 72e2e3863d8bc9946a6dbf554dace780, type: 2}
+  doorForcingFadeOut: 0.2
+  doorBurstCue: {fileID: 11400000, guid: a92f60b6d270bdb4ebac444501875a85, type: 2}
+  rescanInterval: 2
 --- !u!114 &6620184735510936172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -192,72 +294,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c4e1b9a2d5f4e8a9b3c6d1e0f2a4b57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Player.WakeUpSequence
-  lids:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1.4
-      value: 0.6
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 2.1
-      value: 0.97
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 3.4
-      value: 0.35
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 3.9
-      value: 0.7
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 5.2
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  seconds: 6.5
-  sitUpAt: 3
-  lyingPitch: -70
-  lyingRoll: 12
-  lyingDrop: 0.9
-  prompt: BLINK to begin
 --- !u!114 &8105300627443483699
 MonoBehaviour:
   m_ObjectHideFlags: 0

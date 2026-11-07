@@ -5,9 +5,9 @@ using UnityEngine.Rendering;
 namespace Blink.Effects
 {
     /// <summary>
-    /// Draws a brief, thin tracer streak from the gun's muzzle to where the shot landed (or to the end of the
-    /// crosshair ray on a miss), plus an optional faint smoke wisp at the muzzle. Listens to <see cref="Gun.Fired"/>,
-    /// so it can live anywhere; if no gun is assigned it finds one at runtime. Uses a small pool of LineRenderers.
+    /// Draws a brief, thin tracer streak from the gun's muzzle to where the shot landed (or to the end of its range on
+    /// a miss), plus an optional faint smoke wisp at the muzzle. Listens to <see cref="PlayerWeapons.RayFired"/>, so it
+    /// can live anywhere; if no hub is assigned it finds the player's at runtime. Uses a small pool of LineRenderers.
     /// Runs on scaled time: it's a world effect, so fast-forward speeds it up like everything else.
     /// </summary>
     [DisallowMultipleComponent]
@@ -15,14 +15,12 @@ namespace Blink.Effects
     {
         const int TracerPoints = 6;
         const int SmokePoints = 6;
-        const float GunSearchInterval = 1f;
+        const float SearchInterval = 1f;
 
-        [Tooltip("Gun to listen to. If empty, the first Gun in the scene is used (searched again if it disappears).")]
-        [SerializeField] Gun gun;
-        [Tooltip("Camera the gun aims from. If empty, the camera above the gun, then Camera.main.")]
+        [Tooltip("Weapon hub to listen to. If empty, the player's (PlayerWeapons.Instance) is used, searched again if it disappears.")]
+        [SerializeField] PlayerWeapons weapons;
+        [Tooltip("Camera the player aims from (for the tracer width). If empty, the camera under the hub, then Camera.main.")]
         [SerializeField] Camera aimCamera;
-        [Tooltip("Where a missed shot's tracer ends along the crosshair ray. Match the gun's range.")]
-        [SerializeField, Min(1f)] float missDistance = 60f;
 
         [Header("Tracer")]
         [Tooltip("Additive URP particle material (HDR base colour, so it blooms if the volume has bloom).")]
@@ -62,16 +60,17 @@ namespace Blink.Effects
 
         Slot[] _slots;
         int _next;
-        Gun _subscribed;
+        Transform _poolRoot;
+        PlayerWeapons _subscribed;
         float _nextSearchTime;
 
         void Awake() => BuildPool();
 
-        void Start() => FindGun();
+        void Start() => FindWeapons();
 
         void OnEnable()
         {
-            if (gun != null) Subscribe(gun);
+            if (weapons != null) Subscribe(weapons);
         }
 
         void OnDisable()
@@ -83,7 +82,7 @@ namespace Blink.Effects
 
         void Update()
         {
-            if (_subscribed == null && Time.unscaledTime >= _nextSearchTime) FindGun();
+            if (_subscribed == null && Time.unscaledTime >= _nextSearchTime) FindWeapons();
         }
 
         void LateUpdate()
@@ -120,14 +119,10 @@ namespace Blink.Effects
             slot.SmokeSeed = Random.value * 100f;
         }
 
-        void OnFired(bool hit, RaycastHit info)
+        void OnRayFired(ShotRay shot)
         {
-            var cam = ResolveCamera();
-            if (cam == null) return;
-            var aim = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-            var muzzle = _subscribed != null ? _subscribed.Muzzle : null;
-            Vector3 from = muzzle != null ? muzzle.position : aim.origin + aim.direction * 0.3f;
-            Spawn(from, TracerFlight.EndPoint(hit, info.point, aim, missDistance));
+            Vector3 from = shot.Muzzle != null ? shot.Muzzle.position : shot.Ray.origin + shot.Ray.direction * 0.3f;
+            Spawn(from, TracerFlight.EndPoint(shot.Hit, shot.Info.point, shot.Ray, shot.Range));
         }
 
         void UpdateTracer(Slot slot, float dt, Vector3 eye)
@@ -206,48 +201,47 @@ namespace Blink.Effects
             slot.Smoke.enabled = true;
         }
 
-        void FindGun()
+        void FindWeapons()
         {
-            _nextSearchTime = Time.unscaledTime + GunSearchInterval;
-            if (gun == null) gun = FindAnyObjectByType<Gun>();
-            if (gun != null && isActiveAndEnabled) Subscribe(gun);
+            _nextSearchTime = Time.unscaledTime + SearchInterval;
+            if (weapons == null) weapons = PlayerWeapons.Instance != null ? PlayerWeapons.Instance : FindAnyObjectByType<PlayerWeapons>();
+            if (weapons != null && isActiveAndEnabled) Subscribe(weapons);
         }
 
-        void Subscribe(Gun target)
+        void Subscribe(PlayerWeapons target)
         {
             if (_subscribed == target) return;
             Unsubscribe();
             _subscribed = target;
-            _subscribed.Fired += OnFired;
+            _subscribed.RayFired += OnRayFired;
         }
 
         void Unsubscribe()
         {
-            if (_subscribed != null) _subscribed.Fired -= OnFired;
+            if (_subscribed != null) _subscribed.RayFired -= OnRayFired;
             _subscribed = null;
         }
 
         Camera ResolveCamera()
         {
             if (aimCamera != null) return aimCamera;
-            if (_subscribed != null) aimCamera = _subscribed.GetComponentInParent<Camera>();
+            if (_subscribed != null) aimCamera = _subscribed.GetComponentInChildren<Camera>();
             return aimCamera != null ? aimCamera : Camera.main;
         }
 
         void BuildPool()
         {
-            var root = new GameObject("BulletTracers").transform;
-            root.SetParent(transform, false);
+            _poolRoot = new GameObject("BulletTracers").transform;
+            _poolRoot.SetParent(transform, false);
             _slots = new Slot[poolSize];
-            for (int i = 0; i < poolSize; i++)
-            {
-                _slots[i] = new Slot
-                {
-                    Tracer = CreateLine(root, "Tracer " + i, tracerMaterial, TracerPoints, false),
-                    Smoke = CreateLine(root, "Smoke " + i, smokeMaterial, SmokePoints, true),
-                };
-            }
+            for (int i = 0; i < poolSize; i++) _slots[i] = CreateSlot(i);
         }
+
+        Slot CreateSlot(int i) => new()
+        {
+            Tracer = CreateLine(_poolRoot, "Tracer " + i, tracerMaterial, TracerPoints, false),
+            Smoke = CreateLine(_poolRoot, "Smoke " + i, smokeMaterial, SmokePoints, true),
+        };
 
         static LineRenderer CreateLine(Transform parent, string name, Material material, int points, bool lit)
         {

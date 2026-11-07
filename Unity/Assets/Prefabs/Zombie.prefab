@@ -13,9 +13,8 @@ GameObject:
   - component: {fileID: 9058201220350931150}
   - component: {fileID: 7601202578911143461}
   - component: {fileID: 6978270602319620792}
-  - component: {fileID: 3733218339216610282}
-  - component: {fileID: 7885029127904775568}
   - component: {fileID: 1268930743237078639}
+  - component: {fileID: 3775479674508525852}
   m_Layer: 6
   m_Name: Zombie
   m_TagString: Untagged
@@ -89,13 +88,27 @@ MonoBehaviour:
   target: {fileID: 0}
   moveSpeed: 2.6
   turnSpeed: 360
-  detectionRange: 40
   repathInterval: 0.25
   skipDistanceMultiplier: 2
+  patrolRoute: {fileID: 0}
+  patrolSpeed: 0.8
+  patrolWait: 2
+  sightRange: 15
+  fieldOfView: 120
+  touchRange: 2
+  eyeHeight: 1.6
+  sightBlockers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  loseSightTime: 3
+  hearing: 1
+  searchTime: 3
+  searchTurnSpeed: 90
   attackRange: 1.6
   attackDamage: 25
   attackInterval: 1.4
   attackWindup: 0.5
+  grabKnockback: 2.5
   corpseLifetime: 6
   toppleDuration: 0.45
   animator: {fileID: 0}
@@ -123,39 +136,6 @@ CapsuleCollider:
   m_Height: 1.8
   m_Direction: 1
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!114 &3733218339216610282
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6963140950601576065}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c1d0eedd0709433b824b40efdc2bc91e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.DamageFlash
-  flashColor: {r: 1, g: 0.12, b: 0.08, a: 1}
-  duration: 0.15
---- !u!114 &7885029127904775568
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6963140950601576065}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5cdbd67675e4d9db08dc78fe921dad7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.HealthBar
-  heightOffset: 2.1
-  size: {x: 70, y: 8}
-  referenceDistance: 6
-  maxDistance: 30
-  onlyWhenDamaged: 1
-  fillColor: {r: 0.85, g: 0.12, b: 0.1, a: 0.95}
-  backColor: {r: 0, g: 0, b: 0, a: 0.6}
 --- !u!114 &1268930743237078639
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -179,6 +159,33 @@ MonoBehaviour:
   solverIterations: 12
   maxDepenetrationVelocity: 2
   jointProjection: 1
+--- !u!114 &3775479674508525852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6963140950601576065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5ef52c92bd2c354187e810e9a7eb73e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.ZombieAudio
+  mob: {fileID: 0}
+  health: {fileID: 0}
+  mouthOffset: {x: 0, y: 1.6, z: 0}
+  groanCue: {fileID: 11400000, guid: 8e3d4f8222a4d464393c57e5e52e9a65, type: 2}
+  groanInterval: {x: 5, y: 12}
+  alertCue: {fileID: 11400000, guid: 9a68fec1f7e79754684a53e3807a0a07, type: 2}
+  searchCue: {fileID: 0}
+  attackCue: {fileID: 11400000, guid: 3cdd0c04111cf5646ab2a862ee79fb76, type: 2}
+  painCue: {fileID: 11400000, guid: 722a4ad2a49f4174d839fdbb066f4df0, type: 2}
+  painChance: 0.5
+  painCooldown: 0.8
+  deathCue: {fileID: 11400000, guid: 27c7e5e326e3e9143ae7280f27c074e2, type: 2}
+  footstepCue: {fileID: 11400000, guid: 017f47442888ce64fbfa2f04bc479ec9, type: 2}
+  stepLength: 0.8
+  minStepSpeed: 0.2
 --- !u!1001 &3141514465635760509
 PrefabInstance:
   m_ObjectHideFlags: 0

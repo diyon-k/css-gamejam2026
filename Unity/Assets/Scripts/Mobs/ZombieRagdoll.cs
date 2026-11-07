@@ -29,7 +29,8 @@ namespace Blink.Mobs
         [Tooltip("Speed (m/s) the killing shot adds to the whole body, flat along the shot, so it falls away from " +
                  "the shooter. The hit impulse alone mostly just flicks the limb it hits.")]
         [SerializeField, Min(0f)] float knockbackSpeed = 1.5f;
-        [Tooltip("Damage multiplier for shots to the head bone.")]
+        [Tooltip("Damage multiplier for shots to the head bone. The head hitbox is also flagged IsHead, so a " +
+                 "headshot kills outright whatever this is.")]
         [SerializeField, Min(0f)] float headDamageMultiplier = 2f;
 
         [Header("Settling")]
@@ -95,6 +96,7 @@ namespace Blink.Mobs
                     hitbox = body.gameObject.AddComponent<Hitbox>();
                     hitbox.DamageMultiplier = body.transform == head ? headDamageMultiplier : 1f;
                 }
+                if (body.transform == head) hitbox.IsHead = true; // headshots kill outright
                 hitbox.Struck += OnStruck;
             }
 

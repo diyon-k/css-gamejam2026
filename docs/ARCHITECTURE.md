@@ -13,9 +13,11 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 |---|---|
 | WASD / left stick | Move |
 | Mouse / right stick | Look |
-| Shift | Sprint |
-| Left click / right trigger | Shoot |
+| Left click / right trigger | Shoot / swing the axe |
 | R / gamepad West | Reload |
+| 1 / 2 / 3 | Hands / pistol / axe |
+| Mouse wheel, gamepad LB / RB or d-pad left / right | Previous / next weapon |
+| E / gamepad North | Interact (hold to force a door), with any weapon |
 | **Space: tap** | Blink (world skips 0.5 s) |
 | **Space: hold** | Eyes shut (world runs at 3× until released) |
 | F1 | Toggle the blink debug overlay |
@@ -47,19 +49,26 @@ flowchart LR
     BD -- "SecondsSinceLastBlink · BlinkCount" --> UI["StareFX · HUD · end screen<br/>(to build)"]
 ```
 
+## Zombie senses
+
+- **Patrol:** set `patrolRoute` on a zombie's `MobController` to an empty whose children are waypoints. It loops them, pausing at each. No route = stands still.
+- **Sight:** chases when you're inside `sightRange` and its view cone with nothing in the way (or within `touchRange`). Out of sight for `loseSightTime` = goes to where it last saw you.
+- **Noise:** call `Noise.Make(position, loudness)` from anything. Loudness is the audible range in metres, measured as walking distance on the navmesh, so walls muffle it. Zombies that hear it (and can't see you) walk over and search. Add a `NoiseSource` to props for drop/impact noise, or call its `Emit()` from cupboards etc.
+- Current sources: pistol shot 35, axe hitting something 6, dry-fire 4, forcing a door 10/s, door bursting open 20. All Inspector fields. The player's footsteps are silent (sprint was removed).
+
 ## Folder map
 
 ```
 blink_server/                  Python webcam sidecar (send_test_blinks.py = fake sender)
-docs/                          GAME_PLAN.md, ARCHITECTURE.md
+docs/                          GAME_PLAN.md, ARCHITECTURE.md, FEEL_KIT.md (sounds, music, haptics, VFX to use)
 Unity/Assets/
   Scripts/                     Blink.Runtime assembly (namespace Blink.*)
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
     TimeSkip/                  TimeSkipController, ISkippable, IBlinkTransition, WorldTimer
-    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer
+    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer, Blood*, GamepadHaptics, FilmGrain (subtle screen grain)
     Player/                    PlayerController
     Mobs/                      MobController, NavPathUtility, ZombieRagdoll, RagdollSkipper
-    Combat/                    Health, IDamageable, Hitbox, Gun
+    Combat/                    Health, IDamageable, Hitbox, PlayerWeapons (hub), Gun, MeleeWeapon, view models
   Tests/EditMode/              unit tests (Window > General > Test Runner)
   Prefabs/                     Player, Zombie, GameSystems  <- the integration points
   Scenes/Sandbox.unity         test level with a baked navmesh
@@ -100,16 +109,37 @@ Unity/Assets/
 
 ### Combat (`Blink.Combat`)
 - **`IDamageable`**: `IsDead`, `TakeDamage(amount, point, direction)`. Bullets find it with `GetComponentInParent`.
-- **`Hitbox`**: an `IDamageable` on one body-part collider (a zombie's ragdoll bones). Forwards `damage x multiplier` to the `Health` on a parent (head x2) and raises `Struck` first, so the ragdoll knows where the killing shot landed.
+- **`Hitbox`**: an `IDamageable` on one body-part collider (a zombie's ragdoll bones). Forwards `damage x multiplier` to the `Health` on a parent and raises `Struck` first, so the ragdoll knows where the killing shot landed. **`IsHead`** (set by `ZombieRagdoll` on the head bone): any damaging hit there kills outright, so a headshot is a one-shot kill with every weapon (the pistol and the axe). `Hitbox.IsHeadCollider(collider)` lets effects tell.
 - **`Health`**: `Damaged(amount, point)`, `Healed(amount)`, `Died`; `Current`, `Max`, `Fraction`, `Heal()`, `ResetHealth()`.
-- **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead.
+- **`PlayerWeapons`** (on the Player root; `PlayerWeapons.Instance`): the weapon hub. Owns the loadout, the input, the switch and which weapon is out, and re-raises every weapon's events as **weapon-agnostic events**. Listen here, not to a weapon:
+
+  | Event | When |
+  |---|---|
+  | `ShotFired(WeaponKind)` | once per trigger pull of a gun (after its rays): recoil, gunshot sound, rumble |
+  | `RayFired(ShotRay)` | per hitscan ray (one per pistol shot), after its damage. `Hit`, `Info`, `Ray`, `Range`, `Muzzle`, `EndPoint`, `Target`, `IsHead`. Tracers, blood, hit markers, impact sounds |
+  | `MeleeSwing(WeaponKind)` | an axe swing starts (whoosh) |
+  | `MeleeHit(MeleeHitInfo)` | the swing connects, after its damage: `Point`, `Normal`, `Direction`, `Collider`, `Target` (null = wall), `Killed`, `IsHead` |
+  | `DryFired`, `ReloadStarted`, `ReloadFinished(WeaponKind)` | as on `Gun`, for the pistol |
+  | `SwitchStarted(from, to)` / `WeaponSwitched(from, to)` | the old weapon starts going down / the new one is out and rising |
+
+  `ActiveWeapon` (`IWeaponStatus`: `Kind`, `UsesAmmo`, `AmmoLoaded`, `AmmoCapacity`, `AmmoReserve`, `IsReloading`, `ReloadProgress01`), `ActiveKind`, `IsSwitching`, `Select(kind)`, `Cycle(±1)`.
+- **Slots** live under `Player/CameraPivot/Camera/Weapons/Holster` (`Weapons` gets `CameraFeel`'s view model bob, `Holster` is lowered by the hub); only the one in hand is active:
+  1. **Hands** (`ViewModel_Hands`, `HandsViewModel`): our arms relaxed and open at the bottom corners, breathing sway. No attack.
+  2. **Pistol** (`Gun` + its `ViewModel`): unchanged. The hub turns `Gun.ReadsInput` off and calls `TryFire`/`TryStartReload`; `Gun`'s own events still fire, so `GunViewModelAnimator` is untouched.
+  3. **Axe** (`MeleeWeapon` + `ViewModel_Axe`): 60 damage, once per swing, on `AxeViewModel.StrikeApex` (also when a blink skips past it): a 0.35 m sphere swept 1.8 m from the eye picks the nearest living hitbox in sight, else the nearest wall (a thud). No ammo. The damage goes through the struck `Hitbox`, so `Hitbox.Struck` fires (hit point, view direction) just as for a bullet.
+- **Switching**: a 0.12 s lower and 0.14 s raise on unscaled time (the player's hands are outside world time). A reload is dropped when its gun is put away; a swing finishes before the switch starts. No switching or attacking during the grab QTE or once dead.
+- **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`, `Range`, `CancelReload()`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead. On its own (no hub) it reads its own input.
 - **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
-  - `GunHud` (on Player): crosshair with a hit marker (red on a kill), ammo count and reload bar, player HP.
+  - `GunHud` (on Player): crosshair with a hit marker (red on a kill) from any weapon, the active gun's name, ammo and reload bar (nothing for the hands and the axe), player HP.
+  - `BulletTracer` (GameSystems) draws a tracer per `RayFired` ray (one smoke wisp per shot); `BloodImpactSpawner` (Effects) bursts blood per damaging ray and per axe `MeleeHit`. Headshots get a much stronger burst (bigger, denser, extra fanned bursts, bigger exit spray, always a floor splat; `HeadshotBlood` settings).
   - `DamageFlash` (on Zombie): tints the renderers red for a moment on `Health.Damaged` via a MaterialPropertyBlock (`_BaseColor`).
   - `HealthBar` (on Zombie): bar above the head once hurt; hidden when dead, far away or behind a wall.
 
 ### Player (`Blink.Player`)
 - **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
+- **`CameraFeel`** (on the Camera): recoil per `ShotFired`, a small jolt on `MeleeHit`, the reload dip while a gun reloads (from `ActiveWeapon.ReloadProgress01`), head bob and strafe tilt.
+- **`GamepadHaptics`** (on Player): controller rumble for blinks, shots, axe hits, dry fire, reload, damage, the grab QTE (biggest jolt, when `GrabQte.Active` turns on), forcing and bursting the jammed door, and an eyes-shut heartbeat that speeds up as zombies close in. Unscaled time; one-shot pulses with a priority override the background layer. **Strength** (0–2) scales everything. DualSense/DS4 rumble only over USB. Patterns: [FEEL_KIT.md](FEEL_KIT.md#controller-haptics).
+- **`JammedDoor`** (World): hold Interact to force it on a `WorldTimer`. Exposes `IsForcing`, `Progress01` and an `Opened` event for sound, rumble and dust.
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
@@ -123,7 +153,7 @@ Unity/Assets/
 
 ## Workstreams
 
-Each workstream owns its folder and builds against the contracts above. Integration happens through the three prefabs.
+Each workstream owns its folder and builds against the contracts above. Integration happens through the three prefabs. Asset picks (with licences and hooks) for workstreams 2–4 are in [FEEL_KIT.md](FEEL_KIT.md).
 
 | # | Workstream | Owns | First tasks | Hooks into |
 |---|---|---|---|---|

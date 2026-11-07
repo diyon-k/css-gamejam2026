@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Zombie_Pain
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 6d0ebcaecaf48444abcd8158f25386c3, type: 3}
+  - {fileID: 8300000, guid: 847be87a77de5f34d94e50e2a57c1136, type: 3}
+  - {fileID: 8300000, guid: 3f73b23f906eef541934e7f97b85b661, type: 3}
+  - {fileID: 8300000, guid: a97726001ef081e43a9c78f81cc0c0a9, type: 3}
+  - {fileID: 8300000, guid: 0d8809500c19b3a45a3fcb76578b6b60, type: 3}
+  order: 1
+  volume: {x: 0.85, y: 1}
+  pitch: {x: 0.9, y: 1.1}
+  spatialBlend: 1
+  minDistance: 2
+  maxDistance: 25
+  output: {fileID: 9084193506014024576, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 60
+  cooldown: 0.1

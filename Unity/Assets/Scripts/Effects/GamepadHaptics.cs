@@ -23,7 +23,7 @@ namespace Blink.Effects
         [Tooltip("Zombies further than this don't speed the heartbeat up.")]
         [SerializeField] float beatRange = 15f;
 
-        Gun _gun;
+        PlayerWeapons _weapons;
         Health _health;
         BlinkDetector _eyes;
         JammedDoor[] _doors;
@@ -40,14 +40,14 @@ namespace Blink.Effects
 
         void Start()
         {
-            _gun = GetComponentInChildren<Gun>();
+            _weapons = GetComponent<PlayerWeapons>();
             _health = GetComponent<Health>();
             _eyes = BlinkDetector.Instance;
             // ponytail: doors cached once; re-find if doors ever spawn at runtime.
             _doors = FindObjectsByType<JammedDoor>();
 
             if (_eyes) { _eyes.Blinked += OnBlink; _eyes.EyesShutBegan += OnShut; _eyes.EyesShutEnded += OnOpened; }
-            if (_gun) { _gun.Fired += OnFired; _gun.DryFired += OnDryFire; _gun.ReloadFinished += OnReloaded; }
+            if (_weapons) { _weapons.ShotFired += OnFired; _weapons.DryFired += OnDryFire; _weapons.ReloadFinished += OnReloaded; _weapons.MeleeHit += OnMeleeHit; }
             if (_health) { _health.Damaged += OnDamaged; _health.Died += OnDied; }
             foreach (var d in _doors) d.Opened += OnDoorOpened;
         }
@@ -55,7 +55,7 @@ namespace Blink.Effects
         void OnDestroy()
         {
             if (_eyes) { _eyes.Blinked -= OnBlink; _eyes.EyesShutBegan -= OnShut; _eyes.EyesShutEnded -= OnOpened; }
-            if (_gun) { _gun.Fired -= OnFired; _gun.DryFired -= OnDryFire; _gun.ReloadFinished -= OnReloaded; }
+            if (_weapons) { _weapons.ShotFired -= OnFired; _weapons.DryFired -= OnDryFire; _weapons.ReloadFinished -= OnReloaded; _weapons.MeleeHit -= OnMeleeHit; }
             if (_health) { _health.Damaged -= OnDamaged; _health.Died -= OnDied; }
             if (_doors != null) foreach (var d in _doors) if (d) d.Opened -= OnDoorOpened;
         }
@@ -72,9 +72,10 @@ namespace Blink.Effects
         void OnBlink() => Pulse(0.1f, 0.6f, 0.06f, 0, decay: false);
         void OnShut() { _shut = true; _nextBeat = Time.unscaledTime; }
         void OnOpened(float closedSeconds) => _shut = false;
-        void OnFired(bool hit, RaycastHit info) => Pulse(0.45f, 0.9f, 0.09f, 1);
-        void OnDryFire() => Pulse(0f, 0.3f, 0.03f, 0, decay: false);
-        void OnReloaded() => Pulse(0f, 0.45f, 0.04f, 0, decay: false, taps: 2, gap: 0.07f);
+        void OnFired(WeaponKind kind) => Pulse(0.45f, 0.9f, 0.09f, 1);
+        void OnDryFire(WeaponKind kind) => Pulse(0f, 0.3f, 0.03f, 0, decay: false);
+        void OnReloaded(WeaponKind kind) => Pulse(0f, 0.45f, 0.04f, 0, decay: false, taps: 2, gap: 0.07f);
+        void OnMeleeHit(MeleeHitInfo hit) => Pulse(hit.Target != null ? 0.7f : 0.4f, 0.4f, 0.1f, 1); // thunk
         void OnDoorOpened() => Pulse(0.8f, 0.5f, 0.25f, 1);
         void OnDied() => enabled = false;
 
