@@ -11,7 +11,9 @@ Usage:
 
 import argparse
 import json
+import os
 import socket
+import sys
 import time
 import urllib.request
 from pathlib import Path
@@ -58,15 +60,33 @@ def blink_score(result) -> float | None:
 
 
 def process_alive(pid: int) -> bool:
-    """Windows: is process `pid` still running? (os.kill(pid, 0) would send CTRL_C on Windows.)"""
-    import ctypes
-    k32 = ctypes.windll.kernel32
-    handle = k32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
-    if not handle:
+    """Is process `pid` still running?"""
+    if sys.platform == "win32":
+        # os.kill(pid, 0) would send CTRL_C on Windows, so ask the kernel instead.
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        handle = k32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+        if not handle:
+            return False
+        alive = k32.WaitForSingleObject(handle, 0) == 0x102  # WAIT_TIMEOUT = still running
+        k32.CloseHandle(handle)
+        return alive
+    try:
+        os.kill(pid, 0)  # signal 0: existence check only, nothing is sent
+    except ProcessLookupError:
         return False
-    alive = k32.WaitForSingleObject(handle, 0) == 0x102  # WAIT_TIMEOUT = still running
-    k32.CloseHandle(handle)
-    return alive
+    except PermissionError:
+        return True  # exists, owned by someone else
+    return True
+
+
+def camera_backend(platform: str = sys.platform) -> int:
+    """OpenCV capture API for this OS. DirectShow opens much faster than MSMF on Windows but doesn't exist elsewhere."""
+    if platform == "win32":
+        return cv2.CAP_DSHOW
+    if platform == "darwin":
+        return cv2.CAP_AVFOUNDATION
+    return cv2.CAP_ANY
 
 
 def main() -> None:
@@ -84,9 +104,11 @@ def main() -> None:
         urllib.request.urlretrieve(MODEL_URL, part)
         part.replace(MODEL_PATH)
 
-    cap = cv2.VideoCapture(args.camera, cv2.CAP_DSHOW)  # DSHOW opens much faster than MSMF on Windows
+    cap = cv2.VideoCapture(args.camera, camera_backend())
     if not cap.isOpened():
-        raise SystemExit(f"could not open camera {args.camera}")
+        hint = (" On macOS, allow camera access for the app that started this (Terminal, or Unity when launched on Play)"
+                " in System Settings > Privacy & Security > Camera.") if sys.platform == "darwin" else ""
+        raise SystemExit(f"could not open camera {args.camera}.{hint}")
 
     options = vision.FaceLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=str(MODEL_PATH)),

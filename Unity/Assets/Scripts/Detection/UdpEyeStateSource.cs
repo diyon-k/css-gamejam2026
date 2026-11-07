@@ -79,14 +79,23 @@ namespace Blink.Detection
 
         void OnApplicationQuit() => StopSidecar();
 
+        // The venv's python and the one-time setup script differ per OS (see blink_server/setup.*).
+#if UNITY_EDITOR_WIN
+        const string SidecarPython = "blink_server/.venv/Scripts/python.exe";
+        const string SidecarSetup = "powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1";
+#else
+        const string SidecarPython = "blink_server/.venv/bin/python";
+        const string SidecarSetup = "sh blink_server/setup.sh";
+#endif
+
         void StartSidecar()
         {
-#if UNITY_EDITOR_WIN // ponytail: Editor only; standalone builds will launch a PyInstaller exe instead
+#if UNITY_EDITOR_WIN || UNITY_EDITOR_OSX // ponytail: Editor only; standalone builds will launch a PyInstaller exe instead
             string root = Path.GetFullPath(Path.Combine(Application.dataPath, "../.."));
-            string python = Path.Combine(root, "blink_server/.venv/Scripts/python.exe");
+            string python = Path.Combine(root, SidecarPython);
             if (!File.Exists(python))
             {
-                Debug.LogWarning($"[Blink] No webcam sidecar: {python} not found. Run blink_server/setup.ps1 once (Space still works).");
+                Debug.LogWarning($"[Blink] No webcam sidecar: {python} not found. Run `{SidecarSetup}` once from the repo folder (Space still works).");
                 return;
             }
             // Don't redirect stdout/stderr: nobody reads them, and a full pipe would freeze the sidecar.
@@ -120,8 +129,11 @@ namespace Blink.Detection
 
             if (_sidecar is { HasExited: true })
             {
-                Debug.LogWarning($"[Blink] Webcam sidecar exited (code {_sidecar.ExitCode}). Is the camera in use by another app? " +
-                                 "Run blink_server/.venv/Scripts/python blink_server/blink_server.py --preview to see the error. Space still works.");
+                Debug.LogWarning($"[Blink] Webcam sidecar exited (code {_sidecar.ExitCode}). Is the camera in use by another app" +
+#if UNITY_EDITOR_OSX
+                                 ", or is Unity missing camera access (System Settings > Privacy & Security > Camera)" +
+#endif
+                                 $"? Run {SidecarPython} blink_server/blink_server.py --preview to see the error. Space still works.");
                 _sidecar.Dispose();
                 _sidecar = null;
             }
