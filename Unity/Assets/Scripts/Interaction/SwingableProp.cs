@@ -1,3 +1,4 @@
+using Blink.Audio;
 using Blink.Combat;
 using UnityEngine;
 
@@ -40,11 +41,21 @@ namespace Blink.Interaction
         [Tooltip("World seconds a zombie lies stunned before getting back up (longer if it's still tumbling).")]
         [SerializeField, Min(0f)] float stunSeconds = 2.5f;
 
+        [Header("Sound (empty = the axe's)")]
+        [SerializeField] SoundCue swingCue;
+        [Tooltip("Into a zombie.")]
+        [SerializeField] SoundCue hitCue;
+        [Tooltip("Into a wall, floor or prop.")]
+        [SerializeField] SoundCue surfaceHitCue;
+
         public string DisplayName => displayName;
         public bool KnocksDown => knocksDown;
         public float Damage => damage;
         public float StunSeconds => stunSeconds;
         public bool IsHeld { get; private set; }
+        public SoundCue SwingCue => swingCue;
+        public SoundCue HitCue => hitCue;
+        public SoundCue SurfaceHitCue => surfaceHitCue;
 
         Rigidbody _body;
         Collider[] _colliders;
