@@ -1,4 +1,6 @@
+using System;
 using Blink.Combat;
+using Blink.Effects;
 using UnityEngine;
 
 namespace Blink.Audio
@@ -23,6 +25,8 @@ namespace Blink.Audio
         [SerializeField] SoundCue killCue;
         [Tooltip("Shot hit something that can't be hurt (wall, floor, prop). Optional.")]
         [SerializeField] SoundCue surfaceHitCue;
+        [Tooltip("Per-surface cue for a shot into the world (metal ricochet, soft thump on fabric...). A surface not listed uses Surface Hit Cue.")]
+        [SerializeField] SurfaceCue[] surfaceCues = Array.Empty<SurfaceCue>();
 
         Gun _subscribed;
         float _nextSearchTime;
@@ -45,19 +49,20 @@ namespace Blink.Audio
         {
             if (!hit || info.collider == null) return;
             var target = info.collider.GetComponentInParent<IDamageable>();
-            PlayImpact(target != null, target != null && target.IsDead, info.point);
+            PlayImpact(target != null, target != null && target.IsDead, info.point, target == null ? SurfaceTable.Of(info.collider) : default);
         }
 
         /// <summary>
         /// Plays the impact for one hit. Public so other weapons (or a test in the editor) can use it.
         /// </summary>
-        public void PlayImpact(bool hitDamageable, bool killed, Vector3 point)
+        public void PlayImpact(bool hitDamageable, bool killed, Vector3 point, SurfaceKind surface = SurfaceKind.Plaster)
         {
             var audio = AudioService.Instance;
             if (audio == null) return;
             if (!hitDamageable)
             {
-                if (surfaceHitCue != null) audio.PlayAt(surfaceHitCue, point);
+                var cue = SurfaceCue.Find(surfaceCues, surface) ?? surfaceHitCue;
+                if (cue != null) audio.PlayAt(cue, point);
                 return;
             }
             if (fleshHitCue != null) audio.PlayAt(fleshHitCue, point);
@@ -83,6 +88,23 @@ namespace Blink.Audio
         {
             if (_subscribed != null) _subscribed.Fired -= OnFired;
             _subscribed = null;
+        }
+    }
+
+    /// <summary>One row of a per-surface cue table (<see cref="ImpactAudio"/>, <see cref="MeleeAudio"/>).</summary>
+    [Serializable]
+    public struct SurfaceCue
+    {
+        public SurfaceKind surface;
+        public SoundCue cue;
+
+        /// <summary>The cue listed for <paramref name="kind"/>, or null.</summary>
+        public static SoundCue Find(SurfaceCue[] table, SurfaceKind kind)
+        {
+            if (table == null) return null;
+            foreach (var row in table)
+                if (row.surface == kind && row.cue != null) return row.cue;
+            return null;
         }
     }
 }
