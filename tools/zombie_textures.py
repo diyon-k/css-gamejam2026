@@ -33,8 +33,8 @@ def mix(a, b, m):
 BLOOD = np.array([0.35, 0.03, 0.03], np.float32)
 
 def bloater(rgb, lab):
-    skin = recolor(rgb, (0.55, 0.72, 0.32))
-    skin = mix(skin, skin * np.array([0.75, 0.45, 0.8]), noise(1, 24) ** 3 * 1.6)       # purple bruising
+    skin = recolor(rgb, (0.9, 0.9, 0.86), 1.3)
+    skin = mix(skin, skin * np.array([0.8, 0.7, 0.76]), noise(1, 24) ** 3 * 1.0)       # purple bruising
     skin = mix(skin, np.array([0.75, 0.8, 0.25]), (noise(2, 140) - 0.8).clip(0, 1) * 1.75)          # pus spots
     return {1: skin, 2: mix(skin, recolor(rgb, (0.35, 0.25, 0.15)), hair_mask(rgb)),
             3: recolor(rgb, (0.85, 0.72, 0.35)), 4: recolor(rgb, (0.3, 0.38, 0.6))}
