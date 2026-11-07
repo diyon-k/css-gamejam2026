@@ -1,0 +1,24 @@
+# pack.py <acgDir> <genDir> <outDir>: moss ARM pack + normal maps for generated foliage cards.
+import sys, os
+import numpy as np
+from PIL import Image, ImageFilter
+acg, gen, out = sys.argv[1:4]
+ao = np.asarray(Image.open(os.path.join(acg, 'Moss002_1K-JPG_AmbientOcclusion.jpg')).convert('L'))
+ro = np.asarray(Image.open(os.path.join(acg, 'Moss002_1K-JPG_Roughness.jpg')).convert('L'))
+Image.fromarray(np.stack([ao, ro, np.zeros_like(ao)], -1)).save(os.path.join(out, 'moss002_arm.jpg'), quality=92)
+print('moss002_arm.jpg')
+
+def normal_from(img_path, strength):
+    im = Image.open(img_path).convert('RGBA')
+    a = np.asarray(im.getchannel('A').filter(ImageFilter.GaussianBlur(2))).astype(np.float32) / 255
+    lum = np.asarray(im.convert('L').filter(ImageFilter.GaussianBlur(0.7))).astype(np.float32) / 255
+    h = a * 0.6 + lum * a * 0.8
+    dx = (np.roll(h, -1, 1) - np.roll(h, 1, 1)) * strength
+    dy = (np.roll(h, 1, 0) - np.roll(h, -1, 0)) * strength  # image rows go down; GL normal +Y is up
+    n = np.stack([-dx, -dy, np.ones_like(h)], -1)
+    n /= np.linalg.norm(n, axis=-1, keepdims=True)
+    return Image.fromarray(((n * 0.5 + 0.5) * 255).astype(np.uint8), 'RGB')
+
+for name, s in [('T_IvyWall', 6), ('T_Vine', 6), ('T_Grass', 4), ('T_PineBranch', 5), ('T_LeafCluster', 6), ('T_LeafLitter', 6), ('T_FloorHole', 4)]:
+    normal_from(os.path.join(gen, name + '.png'), s).save(os.path.join(out, name + '_nor.png'))
+    print(name + '_nor.png')
