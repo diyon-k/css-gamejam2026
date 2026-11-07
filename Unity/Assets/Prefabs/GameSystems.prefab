@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 7233619342902630301}
   - component: {fileID: 1429646944804865027}
   - component: {fileID: 2923958057281167660}
+  - component: {fileID: 6620184735510936172}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -278,3 +279,15 @@ MonoBehaviour:
   doorForcingFadeOut: 0.2
   doorBurstCue: {fileID: 11400000, guid: a92f60b6d270bdb4ebac444501875a85, type: 2}
   rescanInterval: 2
+--- !u!114 &6620184735510936172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c4e1b9a2d5f4e8a9b3c6d1e0f2a4b57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Player.WakeUpSequence
