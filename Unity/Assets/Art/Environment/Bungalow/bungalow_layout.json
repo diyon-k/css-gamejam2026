@@ -860,6 +860,60 @@
   "openYaw": 0.0,
   "closedYaw": -90.0
  },
+ "surfaceTiles": [
+  {
+   "material": "M_FloorPlank",
+   "tileM": 2.0
+  },
+  {
+   "material": "M_Parquet",
+   "tileM": 3.4
+  },
+  {
+   "material": "M_Lino",
+   "tileM": 2.0
+  },
+  {
+   "material": "M_Concrete",
+   "tileM": 2.5
+  },
+  {
+   "material": "M_Wall_Damask",
+   "tileM": 2.0
+  },
+  {
+   "material": "M_Wall_Pale",
+   "tileM": 2.0
+  },
+  {
+   "material": "M_Wall_Floral",
+   "tileM": 2.0
+  },
+  {
+   "material": "M_Plaster",
+   "tileM": 1.5
+  },
+  {
+   "material": "M_Plaster_Kitchen",
+   "tileM": 1.5
+  },
+  {
+   "material": "M_BrickWhite",
+   "tileM": 2.0
+  },
+  {
+   "material": "M_Tile",
+   "tileM": 1.5
+  },
+  {
+   "material": "M_Glass",
+   "tileM": 1.0
+  },
+  {
+   "material": "M_Water",
+   "tileM": 4.0
+  }
+ ],
  "agent": {
   "name": "BungalowZombie",
   "radius": 0.3,
