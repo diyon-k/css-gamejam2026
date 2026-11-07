@@ -15,8 +15,8 @@ namespace Blink.Player
     /// over control and starts world time. Lives on GameSystems next to <see cref="BlinkEyelids"/>.
     ///
     /// Also the respawn: when the player dies they slump to the floor as the screen fades to black, then
-    /// wake in the same bed the same way. World progress (doors, dead zombies, weapons) stays; carried
-    /// inventory items are lost and go back to where they were picked up.
+    /// wake in the same bed the same way. World progress (doors, dead zombies, weapons) stays; an item in
+    /// the hand is lost and goes back to where it was picked up.
     /// </summary>
     public sealed class WakeUpSequence : MonoBehaviour
     {
@@ -148,15 +148,16 @@ namespace Blink.Player
             Sleep();
         }
 
-        /// <summary>Empties the inventory and puts each item back where it was picked up.</summary>
+        /// <summary>Empties the hand and inventory and puts each item back where it was picked up.</summary>
         void DropItems()
         {
+            if (Hand.Instance != null) Hand.Instance.ReturnItemHome();
             if (_inventory == null) return;
             var pickups = FindObjectsByType<Pickup>(FindObjectsInactive.Include);
             foreach (var id in new System.Collections.Generic.List<string>(_inventory.Items))
             {
-                var spot = Array.Find(pickups, p => !p.gameObject.activeSelf && p.itemId == id);
-                if (spot != null) spot.gameObject.SetActive(true);
+                var spot = Array.Find(pickups, p => p.Taken && !p.gameObject.activeSelf && p.itemId == id);
+                if (spot != null) spot.ReturnHome();
                 _inventory.Remove(id);
             }
         }

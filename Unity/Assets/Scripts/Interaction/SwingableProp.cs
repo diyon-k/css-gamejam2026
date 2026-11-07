@@ -7,8 +7,8 @@ namespace Blink.Interaction
     /// <summary>
     /// A melee weapon lying in the world (golf club, plank, candlestick, or the axe once dropped). Interact puts it
     /// in the melee slot in place of the axe model: it hangs off the axe view model's grip and swings with the axe's
-    /// animation (<see cref="MeleeWeapon"/>). One melee item at a time: picking one up swaps it for the one in the slot,
-    /// which falls from the hands as a physics prop (as with <see cref="PlayerWeapons"/>' Drop key).
+    /// animation (<see cref="MeleeWeapon"/>). It takes the player's one <see cref="Hand"/>: picking one up swaps it for
+    /// whatever was held, and a melee item falls from the hands as a physics prop (as with <see cref="PlayerWeapons"/>' Drop key).
     ///
     /// A blunt item (<see cref="KnocksDown"/>) barely hurts: it knocks a zombie flying as a ragdoll and stuns it
     /// (<see cref="Mobs.MobController.KnockDown"/>). The axe isn't blunt and keeps its own damage.
@@ -71,12 +71,14 @@ namespace Blink.Interaction
 
         public string Prompt(Interactor who)
         {
-            var inHand = Weapons(who) is { Axe: { } melee } ? melee.Equipped : null;
-            return inHand != null ? $"Swap {inHand.DisplayName} for {displayName}" : "Pick up " + displayName;
+            if (Hand.Of(who) is { CanMakeRoom: false }) return "Hands full";
+            var inHand = Weapons(who) is { OneHanded: true } ? Hand.Of(who)?.HeldName
+                : Weapons(who) is { Axe: { Equipped: { } melee } } ? melee.DisplayName : null;
+            return inHand != null ? $"Swap {inHand} for {displayName}" : "Pick up " + displayName;
         }
 
         public bool CanInteract(Interactor who) =>
-            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: not null };
+            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: not null } && Hand.Of(who) is not { CanMakeRoom: false };
 
         public void Interact(Interactor who) => Weapons(who).EquipMelee(this);
 

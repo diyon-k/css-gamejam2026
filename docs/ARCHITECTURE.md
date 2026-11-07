@@ -15,8 +15,7 @@ The core is already working end to end: the webcam sidecar's UDP messages drive 
 | Mouse / right stick | Look |
 | Left click / right trigger | Shoot / swing the axe |
 | R / gamepad X (West) | Reload (on a pad, X interacts instead while something usable is in focus) |
-| 1 / 2 / 3 | Hands / pistol / axe |
-| Mouse wheel, gamepad LB / RB, d-pad left / right, or Y (North) | Previous / next weapon (Y = next) |
+| G / d-pad down | Drop whatever is in your hand (one hand: picking something up swaps it for what you hold) |
 | E / gamepad X (West) | Interact (hold to force a door), with any weapon. Reading a note: E / X, or B on a pad, puts it down |
 | **Blink** (webcam) | World skips 0.5 s |
 | **Eyes shut** (webcam) | World runs at 3× until you open them; the pad rumbles with your heartbeat the whole time |
@@ -139,7 +138,8 @@ Unity/Assets/
   1. **Hands** (`ViewModel_Hands`, `HandsViewModel`): our arms relaxed and open at the bottom corners, breathing sway. No attack.
   2. **Pistol** (`Gun` + its `ViewModel`): unchanged. The hub turns `Gun.ReadsInput` off and calls `TryFire`/`TryStartReload`; `Gun`'s own events still fire, so `GunViewModelAnimator` is untouched.
   3. **Axe** (`MeleeWeapon` + `ViewModel_Axe`): 60 damage, once per swing, on `AxeViewModel.StrikeApex` (also when a blink skips past it): a 0.35 m sphere swept 1.8 m from the eye picks the nearest living hitbox in sight, else the nearest wall (a thud). No ammo. The damage goes through the struck `Hitbox`, so `Hitbox.Struck` fires (hit point, view direction) just as for a bullet.
-- **Switching**: a 0.12 s lower and 0.14 s raise on unscaled time (the player's hands are outside world time). A reload is dropped when its gun is put away; a swing finishes before the switch starts. No switching or attacking during the grab QTE or once dead.
+- **One hand** (`oneHanded`, on by default; `Interaction.Hand` on the Player, added by the `Interactor`): the player holds one thing at a time: a `Pickup` item (key, candle), the pistol, a melee item or a `Carryable`. Taking anything drops what's held first (prompts read "Swap key for pistol"), G / d-pad down drops it, and there is no weapon switching (1/2/3, wheel, bumpers do nothing). A held item shows bottom right on the hands (`HandsViewModel.HoldPoint`) and is in the `Inventory` while held; a locked `Openable` uses its key up (`consumesKey`). Dropping the pistol puts its `Pickup` back on the floor, ammo kept. The player starts with empty hands (`startsWithPistol`, `startsWithAxe` off).
+- **Switching** (only with `oneHanded` off): a 0.12 s lower and 0.14 s raise on unscaled time (the player's hands are outside world time). A reload is dropped when its gun is put away; a swing finishes before the switch starts. No switching or attacking during the grab QTE or once dead.
 - **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`, `Range`, `CancelReload()`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead. On its own (no hub) it reads its own input.
 - **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
   - `GunHud` (on Player): crosshair with a hit marker (red on a kill) from any weapon, the active gun's name, ammo and reload bar (nothing for the hands and the axe), player HP.

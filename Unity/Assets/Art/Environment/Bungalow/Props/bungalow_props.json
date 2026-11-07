@@ -79,7 +79,7 @@
    "prefab": "GothicCommode_01",
    "room": "Bedroom",
    "pos": [
-    6.1,
+    5.59,
     0.0,
     9.13
    ],
@@ -96,14 +96,14 @@
    "kind": "furniture",
    "tris": 1600,
    "fixture": "",
-   "note": "second grouping"
+   "note": "chest of drawers beside the bed: key + note on top (Editor/BungalowStartBedroom.cs)"
   },
   {
    "id": "Bed_DresserVase",
    "prefab": "ceramic_vase_01",
    "room": "Bedroom",
    "pos": [
-    5.75,
+    6.02,
     1.21,
     9.15
    ],
