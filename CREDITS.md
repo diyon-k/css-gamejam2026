@@ -50,6 +50,7 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Fabric032](https://ambientcg.com/view?id=Fabric032) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow lamp shades |
 | [Leaking013A](https://ambientcg.com/view?id=Leaking013A) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow leak decals |
 | [Leaking017B](https://ambientcg.com/view?id=Leaking017B) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow leak decals |
+| [Wallpaper001C](https://ambientcg.com/view?id=Wallpaper001C) | ambientCG | ambientCG | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow parlour wallpaper base |
 | [Sofa_01](https://polyhaven.com/a/Sofa_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow living-room sofa |
 | [ArmChair_01](https://polyhaven.com/a/ArmChair_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow armchair |
 | [GothicCommode_01](https://polyhaven.com/a/GothicCommode_01) | Kirill Sannikov | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow commode |

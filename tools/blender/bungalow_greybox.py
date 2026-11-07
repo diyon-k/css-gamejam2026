@@ -31,6 +31,8 @@ _COLLIDERS = {}      # object name -> [dict(c=[x,y,z], s=[sx,sy,sz], r=[rx,ry,rz
 _NAV_IGNORE = []     # objects the navmesh bake skips (ceilings: their tops are not floors)
 _NON_STATIC = []     # objects that will move (G1 gate)
 _PIVOTS = {}         # object name -> Unity pivot (objects whose origin is not the world origin)
+# Outer x / z extent of every wall (revision 3: the north wing takes z to 26; L.FOOTPRINT is the rev-2 block)
+FOOTPRINT = tuple(max(v for w in L.WALLS.values() for v in (w["a"] if w["axis"] == ax else w["t"])) for ax in "xz")
 
 
 def U2B(x, y, z):
@@ -336,7 +338,7 @@ def window(oid):
     if o.get("boarded"):
         # boards on the outside face (the outside of a south wall is low z, of an east wall high x)
         # outside = the face away from the footprint centre (or o["outside"] = "low" / "high" for wings)
-        mid = L.FOOTPRINT[0 if w["axis"] == "z" else 1] / 2
+        mid = FOOTPRINT[0 if w["axis"] == "z" else 1] / 2
         on_low_side = o.get("outside", "low" if sum(w["t"]) / 2 < mid else "high") == "low"
         tb = (w["t"][0] - 0.03, w["t"][0]) if on_low_side else (w["t"][1], w["t"][1] + 0.03)
         boards = [block(f"{oid}_board{i}", *_xyz(w, (a0 - 0.08, a1 + 0.08), (yb, yb + 0.16), tb), "GB_Trim")
@@ -507,7 +509,7 @@ def fireplace():
 
 def exterior():
     ex = L.EXTERIOR
-    holes = [((0.0, L.FOOTPRINT[0]), (0.0, L.FOOTPRINT[1]))]
+    holes = [((0.0, FOOTPRINT[0]), (0.0, FOOTPRINT[1]))]
     for o in L.OPENINGS.values():
         if o.get("well"):
             holes.append((o["well"]["x"], o["well"]["z"]))
