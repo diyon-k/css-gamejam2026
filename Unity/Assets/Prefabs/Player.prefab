@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1607570296416809711}
   - component: {fileID: 4229830482227302727}
   - component: {fileID: 6127039504923669072}
+  - component: {fileID: 2525679010966593557}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -112,6 +113,22 @@ MonoBehaviour:
   hitColor: {r: 1, g: 1, b: 1, a: 1}
   killColor: {r: 1, g: 0.15, b: 0.1, a: 1}
   markerSeconds: 0.2
+--- !u!114 &2525679010966593557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370471841403644919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2752efc8ef1a8b04e9d3cf5f8bdfdb09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.GamepadHaptics
+  strength: 1.6
+  beatSlow: 0.9
+  beatFast: 0.35
+  beatRange: 15
 --- !u!1 &1406138421326163226
 GameObject:
   m_ObjectHideFlags: 0

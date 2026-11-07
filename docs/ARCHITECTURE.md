@@ -38,6 +38,7 @@ flowchart LR
     KEY --> BD
     BD["BlinkDetector<br/>Blinked · EyesShutBegan · EyesShutEnded"] --> TS
     TS["TimeSkipController<br/>Skip(0.5 s) · timeScale 3x"] -- "ISkippable.Skip(s)" --> W["MobController · Gun<br/>(anything with a WorldTimer)"]
+    TS -- "IBlinkTransition.Play" --> LID["BlinkEyelids<br/>skip when the lids meet"]
     TS -- "Skipped · FastForwardStarted/Ended" --> FX["SkipFX · EyesShutView · Audio<br/>(to build)"]
     BD -- "SecondsSinceLastBlink · BlinkCount" --> UI["StareFX · HUD · end screen<br/>(to build)"]
 ```
@@ -50,7 +51,8 @@ docs/                          GAME_PLAN.md, ARCHITECTURE.md
 Unity/Assets/
   Scripts/                     Blink.Runtime assembly (namespace Blink.*)
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
-    TimeSkip/                  TimeSkipController, ISkippable, WorldTimer
+    TimeSkip/                  TimeSkipController, ISkippable, IBlinkTransition, WorldTimer
+    Effects/                   BlinkEyelids (+ EyelidTimeline), BulletTracer
     Player/                    PlayerController, CameraFeel, GrabQte
     Mobs/                      MobController, NavPathUtility, ZombieRagdoll, RagdollSkipper
     Combat/                    Health, IDamageable, Hitbox, Gun
@@ -78,6 +80,7 @@ Unity/Assets/
 ### Time (`Blink.TimeSkip`)
 - **`TimeSkipController`** (singleton)
   - A blink calls `Skip(0.5)` on every registered `ISkippable`, then raises `Skipped(float seconds)`.
+  - `Transition` (static, optional `IBlinkTransition`): when set, a blink plays it and the skip happens once the screen is covered, so the jump is hidden. `BlinkEyelids` (Effects, on GameSystems) sets itself: black lids close from the top and bottom (0.07 s) and open again as soon as they meet (0.1 s), all on unscaled time. Blinking again while shut keeps them shut and skips straight away.
   - Eyes shut sets `Time.timeScale = 3` and raises `FastForwardStarted`; reopening restores 1 and raises `FastForwardEnded(bool interrupted)`.
   - `InterruptFastForward()`: called when a zombie hits you while your eyes are shut. Time snaps back to 1× until you open your eyes.
   - `IsFastForwarding`, `TotalSkippedSeconds`.
