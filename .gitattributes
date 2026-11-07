@@ -1,0 +1,26 @@
+# Git picks text vs binary; text is stored with LF.
+* text=auto
+
+# Unity YAML: merge with UnityYAMLMerge (one-time setup in README).
+*.unity      merge=unityyamlmerge
+*.prefab     merge=unityyamlmerge
+*.asset      merge=unityyamlmerge
+*.mat        merge=unityyamlmerge
+*.controller merge=unityyamlmerge
+*.anim       merge=unityyamlmerge
+*.meta       merge=unityyamlmerge
+
+# Baked data Unity writes as binary despite the .asset extension.
+NavMesh-*.asset     binary
+LightingData.asset  binary
+
+# Binaries: never diff, merge or convert line endings.
+*.[fF][bB][xX] binary
+*.[pP][nN][gG] binary
+*.[tT][gG][aA] binary
+*.jpg  binary
+*.psd  binary
+*.wav  binary
+*.mp3  binary
+*.ogg  binary
+*.task binary
