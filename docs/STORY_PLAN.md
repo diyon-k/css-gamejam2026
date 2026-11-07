@@ -21,7 +21,7 @@ Scope: the intro video, the wake-up, and Act 1 only (the whole demo). The 7 puzz
 
 No intro video. The game opens on black with **BLINK to begin**, and the world stays frozen.
 
-- The first blink (or Space) starts the wake-up: the eyelids open slowly with two heavy-eyed flutters, and the player sits up from lying on the bed (camera rises from the ceiling to level). About 6.5 seconds, then control and world time start.
+- The first blink starts the wake-up: the eyelids open slowly with two heavy-eyed flutters, and the player sits up from lying on the bed (camera rises from the ceiling to level). About 6.5 seconds, then control and world time start.
 - How you got here is never shown. The player pieces it together from the delivery docket on the nightstand and Ambrose's note on the floor.
 - Code: `Scripts/Player/WakeUpSequence.cs` on GameSystems. Timing, lid curve and lying pose are all inspector fields.
 

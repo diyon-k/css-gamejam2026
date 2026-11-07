@@ -22,7 +22,7 @@ Unity 6 (URP), C#, plus a small Python webcam sidecar.
 2. Once, for the real webcam, from the repo folder:
    - Windows: `powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1`
    - macOS / Linux: `sh blink_server/setup.sh`
-3. Open `Assets/Scenes/House.unity` and press Play. The sidecar starts automatically. No webcam? `Space` is the blink key.
+3. Open `Assets/Scenes/House.unity` and press Play. The sidecar starts automatically. No webcam? There is no keyboard blink (`Space` is Jump): run `python blink_server/send_test_blinks.py blink` (or `hold 2`, `demo`) while playing.
 
 Tuning and troubleshooting the sidecar: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#try-it).
 
@@ -36,8 +36,9 @@ Tuning and troubleshooting the sidecar: see [docs/ARCHITECTURE.md](docs/ARCHITEC
 | Left click / right trigger | Shoot |
 | R / gamepad West | Reload |
 | Hold E | Force the jammed door |
-| **Blink** (or tap Space) | World skips 0.5 s |
-| **Eyes shut** (or hold Space) | World runs at 3× until you open them |
+| **Blink** (webcam) | World skips 0.5 s |
+| **Eyes shut** (webcam) | World runs at 3× until you open them; a gamepad rumbles with your heartbeat |
+| Look away from the webcam | Nothing (counts as eyes open) |
 | F1 | Blink debug overlay |
 | Esc | Free the cursor |
 

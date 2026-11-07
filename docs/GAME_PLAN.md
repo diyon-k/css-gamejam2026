@@ -39,7 +39,8 @@ Time skipping helps and hurts in the same moment. Everything in the world moves 
 - Objectives are tuned so they take **too long with eyes open**. The generator alone would take 30 s of real time with zombies arriving every few seconds. With eyes shut it takes about 10 s. You have to close your eyes to escape.
 - The question every few seconds is **"Is it safe to close my eyes right now?"** Clear the nearby zombies, check the distance, then commit.
 - **If a zombie reaches you while your eyes are shut**, it grabs you: you take damage, the screen slams back to full view, and a jump-scare sound hits. Greed is punished, but not with instant death.
-- **Reading danger without looking:** while your eyes are shut, a heartbeat and zombie footsteps get louder and faster as they approach. A good player learns to open their eyes on the sound alone.
+- **Reading danger without looking:** while your eyes are shut, a heartbeat and zombie footsteps get louder and faster as they approach, and on a gamepad you feel it: a low rumble the whole time your eyes are shut, with a lub-dub on every heartbeat that gets faster and harder as they close in. A good player learns to open their eyes on the sound and the pulse alone.
+- **Looking away does nothing.** If the webcam can't see your face, your eyes count as open. Only closing your eyes moves time.
 
 ### What the screen shows while eyes are shut
 The player can't see it, but the judges and the crowd can. Show the fast-forward in a dark, desaturated "behind the eyelids" view with zombies as red silhouettes rushing in. The audience watches the danger the player can only hear, which is great for People's Choice.
@@ -85,14 +86,14 @@ Setting is still open (hospital, subway or mall). Pick whatever we can dress fas
 ```mermaid
 flowchart LR
     Cam[Webcam] --> Py["blink_server.py<br/>MediaPipe face mesh<br/>eyeBlink blendshapes"]
-    Py -- "UDP 127.0.0.1:5065, 30 Hz<br/>{t, present, closed}" --> BI["BlinkInput<br/>UDP thread + Space fallback"]
+    Py -- "UDP 127.0.0.1:5065, 30 Hz<br/>{t, present, closed}" --> BI["BlinkInput<br/>UDP thread"]
     BI --> TS["TimeSkipController<br/>blink: skip 0.5 s<br/>eyes shut: 3x speed"]
     TS -- "Skip(seconds)" --> W["Zombies, spawns<br/>reload, bandage<br/>door, generator"]
     TS -- "OnSkip / OnEyesShut" --> FX["SkipFX, StareFX<br/>EyesShutView, Audio, HUD"]
 ```
 
 - **Python sidecar** (`blink_server/blink_server.py`): MediaPipe Face Landmarker, one face, `closed` from the average of the `eyeBlinkLeft`/`eyeBlinkRight` blendshapes with hysteresis (close above 0.5, reopen below 0.35). Use **Python 3.12**: MediaPipe likely doesn't support 3.14 yet.
-- **`BlinkInput`:** UDP listener thread. Detects blink edges and how long the eyes have been closed. `Space` is a fallback (tap = blink, hold = eyes shut).
+- **`BlinkInput`:** UDP listener thread. Detects blink edges and how long the eyes have been closed. No keyboard fallback (`Space` is Jump); without a webcam, `blink_server/send_test_blinks.py` fakes the packets. A missing face counts as eyes open.
 - **`TimeSkipController`:** a blink calls `Skip(0.5)` on everything that implements `ISkippable`. Eyes held shut sets `Time.timeScale` to about 3 and switches to the eyes-shut view. Camera, UI and audio cues use unscaled time.
 - **`ISkippable.Skip(seconds)`:** no physics stepping. Zombies move along their navmesh path by speed × seconds and are placed with `NavMeshAgent.Warp`. Timers (reload, bandage, door, generator, spawns) just add the seconds.
 - **Other scripts:** `PlayerController`, `Gun`, `Zombie`, `Objective` (door and generator), `SkipFX`, `StareFX`, `EyesShutView`, `AudioDirector`, `GameFlow`.
@@ -104,8 +105,8 @@ flowchart LR
 
 | Hours | Goal | Done when |
 |---|---|---|
-| **0–3** | Blink sidecar, cube test | A cube in Unity jumps forward on a real blink and on `Space`. In parallel: FPS controller and level blockout. |
-| **3–8** | Core loop playable | Walk, shoot, zombies chase, death and restart all work. Blink skips and eyes-shut fast-forward work using `Space`. |
+| **0–3** | Blink sidecar, cube test | A cube in Unity jumps forward on a real blink and on a fake one from `send_test_blinks.py`. In parallel: FPS controller and level blockout. |
+| **3–8** | Core loop playable | Walk, shoot, zombies chase, death and restart all work. Blink skips and eyes-shut fast-forward work with the webcam and `send_test_blinks.py`. |
 | **8–13** | Skips for good | Reload, bandage, door and generator all advance during skips. Grab-while-eyes-shut works. Skip FX in. Tuned with the real webcam. |
 | **13–19** | Art, lighting, audio | The level looks and sounds like the final game, including the eyes-shut view and its audio. |
 | **19–23** | Balance and menus | Objective timings tuned so eyes-shut is required. Stare FX, title and end screens in. |
@@ -121,7 +122,7 @@ flowchart LR
 - Our laptop and webcam, good lighting, judge seated about 1 m from the camera at eye height.
 - One-line onboarding: **"Every time you blink, time skips. Close your eyes to get things done, if you dare."**
 - Unity launches the sidecar itself; no terminal on screen.
-- Keep `Space` ready as a backup.
+- Keep `blink_server/send_test_blinks.py` ready as a backup (there is no keyboard blink).
 - Show the blink count on the end screen and invite them to beat it.
 
 ## Before the jam

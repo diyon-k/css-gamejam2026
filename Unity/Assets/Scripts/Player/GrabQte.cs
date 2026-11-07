@@ -84,8 +84,8 @@ namespace Blink.Player
         public static event Action Beat;
 
         /// <summary>
-        /// True during a QTE and briefly after, so the Space presses and clicks used for it don't register as
-        /// blinks or gunshots (Space is also the keyboard blink key).
+        /// True during a QTE and briefly after, so the presses and clicks used for it don't register as
+        /// gunshots, and blinks made while mashing it don't skip time.
         /// </summary>
         public static bool BlocksInput => Active || Time.unscaledTime < _endedAt + BlinkGraceSeconds;
 

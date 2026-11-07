@@ -72,7 +72,7 @@ Freesound downloads need a free login. Rows marked **LOUD** should sit high in t
 | **Blink skip (alt 2)** | [Vinyl rewind (TasmanianPower)](https://freesound.org/people/TasmanianPower/sounds/162493/) | CC0 | `Skipped` | 2.7 s DJ rewind-and-stop |
 | **Eyes-shut underwater bed** | [Underwater Beneath Waterfall (Loopable)](https://freesound.org/people/Osiruswaltz/sounds/530167/) | CC0 | `FastForwardStarted` | 16 s loop, route to Player group |
 | **Eyes-open gasp** | [man holds breath - gasp](https://freesound.org/people/morganveilleux/sounds/389996/) | CC0 | `FastForwardEnded` | 2.9 s |
-| **Heartbeat (retrigger)** | [heartbeat.mp3 (ZHRØ)](https://freesound.org/people/ZHR%C3%98/sounds/551437/) | CC0 | `EyesShutBegan → Ended` | LOUD. Chop one lub-dub, retrigger at BPM |
+| **Heartbeat (retrigger)** | [heartbeat.mp3 (ZHRØ)](https://freesound.org/people/ZHR%C3%98/sounds/551437/) | CC0 | `PlayerAudio` (nearest zombie) | LOUD. Chop one lub-dub, retrigger at BPM |
 | **Heartbeat slow** | [Heartbeat 97 BPM](https://freesound.org/people/Cloud-10/sounds/688735/) | CC0 | `eyes shut, far` | LOUD. 9.9 s |
 | **Heartbeat fast** | [Racing Panic Heartbeat](https://freesound.org/people/brktkrgll/sounds/856171/) | CC0 | `eyes shut, near` | LOUD. 6.0 s |
 | **Breathing calm** | [Breathing, nose, calm](https://freesound.org/people/giddster/sounds/336531/) | CC0 | `idle` | LOUD. 18 s, cut a loop |
@@ -179,12 +179,14 @@ Two looping 2D AudioSources started together, Bed and Tension. Each frame, find 
 
 ## Controller haptics
 
-Built: `Scripts/Effects/GamepadHaptics.cs` on the Player prefab. It drives `Gamepad.SetMotorSpeeds` from one `Update` on unscaled time. One-shot pulses override the background layer (heartbeat, door strain), and a pulse only replaces a running pulse of equal or lower priority. **Strength** (0–2, default 1.6) scales everything; motor output is capped at 1.
+Built: `Scripts/Effects/GamepadHaptics.cs` on the Player prefab, the **only** thing that calls `Gamepad.SetMotorSpeeds`, from one `Update` on unscaled time. Steady layers (eyes-shut drone and heartbeat, door strain) and one-shot pulses mix by **per-motor max**, so a short tick never cuts a gap in the drone and a big pulse still punches through. A pulse only replaces a running pulse of equal or lower priority. **Strength** (0–2, default 1.6) scales everything; motor output is capped at 1 and rounded to 0.05 steps (only sent on change).
 
 | Event | Hook | Low motor | High motor | Shape | Priority |
 |---|---|---|---|---|---|
 | **Blink** | `BlinkDetector.Blinked` | 0.1 | 0.6 | 60 ms flat tick | 0 |
-| **Heartbeat (eyes shut)** | `EyesShutBegan → Ended` | 0.7 then 0.4 | 0 | lub 80 ms, dub 60 ms; period 0.9 s far → 0.35 s at 0 m | background |
+| **Eyes-shut drone** | `TimeSkipController.FastForwardStarted → Ended` | 0.08 → 0.16 (nearest zombie out of range → on top of you), swells in over 0.3 s | 0 | steady for the whole fast-forward | layer |
+| **Heartbeat (eyes shut)** | every `PlayerAudio.Heartbeat(intensity, bpm)` during fast-forward | lub 0.45 → 1.0, dub 0.6× | lub 0 → 0.3 | lub 80 ms, dub 70 ms starting 180 ms after; squeezed if the period gets too short | layer |
+| **Grab interrupts eyes-shut** | `FastForwardEnded(true)` | 1.0 | 1.0 | 250 ms flat, then nothing (even though the eyes are still shut) | layer |
 | **Gunshot** | `Gun.Fired` | 0.45 | 0.9 | 90 ms fade | 1 |
 | **Dry fire** | `Gun.DryFired` | 0 | 0.3 | 30 ms flat | 0 |
 | **Reload done** | `Gun.ReloadFinished` | 0 | 0.45 | 2 × 40 ms, 70 ms gap | 0 |
@@ -198,7 +200,8 @@ Built: `Scripts/Effects/GamepadHaptics.cs` on the Player prefab. It drives `Game
 
 - **DualSense or DS4:** rumble works over **USB only**; Bluetooth gets nothing (Input System limitation). Xbox pads work over USB or Bluetooth.
 - **Adaptive triggers** need a plugin, so skipped.
-- **Motors never stop on their own.** The script resets them on disable, when the active pad changes, and while the window is unfocused.
+- **Eyes shut: feel them coming.** `EyesShutRumble` (pure logic, tuned in `GamepadHaptics` > Eyes Shut) runs a low drone for as long as fast-forward runs, plus a lub-dub on each beat of the **same heartbeat you hear**: `PlayerAudio` owns the one heart (`HeartbeatMath` + `HeartbeatClock`: 65 → 170 bpm, nearest living zombie from 15 m to 2 m) and raises `Heartbeat` on every beat, so felt and heard beats land together and nothing is computed twice. No zombie in range = no heartbeat, drone only (silence = safe). Opening your eyes stops it at once. Everything is on real time, so 3× fast-forward doesn't speed the pulse up. Without `PlayerAudio` in the scene you get the drone only.
+- **Motors never stop on their own.** The script resets them on disable, application pause, focus loss (Update may not run then), quit, Editor pause and when the active pad changes. The eyes-shut layer also switches itself off if fast-forward ends without telling it.
 - **A connected but unused pad still buzzes** during mouse-and-keyboard play.
 
 ## Visual effects
