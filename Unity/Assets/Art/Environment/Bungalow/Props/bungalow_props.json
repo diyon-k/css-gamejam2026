@@ -1512,7 +1512,7 @@
    "kind": "wall",
    "tris": 900,
    "fixture": "",
-   "note": "over the chair (ref 1); DC1 took the N wall"
+   "note": "over the chair (ref 1); D6 took the N wall"
   },
   {
    "id": "Hal_LandingRug",
@@ -2016,7 +2016,7 @@
    "kind": "prop",
    "tris": 450,
    "fixture": "",
-   "note": "rev 3: clear of DC4"
+   "note": "rev 3: clear of D9"
   },
   {
    "id": "Kit_Trash",

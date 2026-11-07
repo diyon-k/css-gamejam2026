@@ -379,7 +379,7 @@
    ]
   },
   {
-   "id": "DC1",
+   "id": "D6",
    "kind": "door",
    "wall": "Wall_Ext_N",
    "span": [
@@ -392,7 +392,7 @@
    ]
   },
   {
-   "id": "DC2",
+   "id": "D7",
    "kind": "door",
    "wall": "Wall_Z16p875",
    "span": [
@@ -405,7 +405,7 @@
    ]
   },
   {
-   "id": "DC3",
+   "id": "D8",
    "kind": "door",
    "wall": "Wall_Z16p875",
    "span": [
@@ -418,7 +418,7 @@
    ]
   },
   {
-   "id": "DC4",
+   "id": "D9",
    "kind": "door",
    "wall": "Wall_Ext_N",
    "span": [
@@ -1273,7 +1273,7 @@
    "open": true
   },
   {
-   "id": "DC1",
+   "id": "D6",
    "locked": false,
    "keys": 0,
    "key": "key_front",
@@ -1281,7 +1281,7 @@
    "open": true
   },
   {
-   "id": "DC2",
+   "id": "D7",
    "locked": false,
    "keys": 0,
    "key": "key_front",
@@ -1289,7 +1289,7 @@
    "open": true
   },
   {
-   "id": "DC3",
+   "id": "D8",
    "locked": false,
    "keys": 0,
    "key": "key_front",
@@ -1297,7 +1297,7 @@
    "open": true
   },
   {
-   "id": "DC4",
+   "id": "D9",
    "locked": false,
    "keys": 0,
    "key": "key_front",

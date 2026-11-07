@@ -639,7 +639,7 @@
    "tris": 724
   },
   {
-   "name": "DC1_Frame",
+   "name": "D6_Frame",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -651,7 +651,7 @@
    "tris": 458
   },
   {
-   "name": "DC1_Leaf",
+   "name": "D6_Leaf",
    "boxes": [
     {
      "c": [
@@ -681,7 +681,7 @@
    "tris": 2104
   },
   {
-   "name": "DC2_Frame",
+   "name": "D7_Frame",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -693,7 +693,7 @@
    "tris": 458
   },
   {
-   "name": "DC2_Leaf",
+   "name": "D7_Leaf",
    "boxes": [
     {
      "c": [
@@ -723,7 +723,7 @@
    "tris": 2104
   },
   {
-   "name": "DC3_Frame",
+   "name": "D8_Frame",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -735,7 +735,7 @@
    "tris": 458
   },
   {
-   "name": "DC3_Leaf",
+   "name": "D8_Leaf",
    "boxes": [
     {
      "c": [
@@ -765,7 +765,7 @@
    "tris": 2104
   },
   {
-   "name": "DC4_Frame",
+   "name": "D9_Frame",
    "boxes": [],
    "navIgnore": false,
    "isStatic": true,
@@ -777,7 +777,7 @@
    "tris": 458
   },
   {
-   "name": "DC4_Leaf",
+   "name": "D9_Leaf",
    "boxes": [
     {
      "c": [
