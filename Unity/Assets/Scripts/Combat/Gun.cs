@@ -127,31 +127,15 @@ namespace Blink.Combat
 
             AmmoInMagazine--;
             _nextShotTime = Time.time + fireInterval;
-            Shoot(damage);
-            if (AmmoInMagazine == 0) TryStartReload();
-        }
 
-        /// <summary>
-        /// A free shot for scripted moments (the point-blank kill when you break out of a grab): ignores ammo, reload,
-        /// fire rate and input blocking, deals <paramref name="shotDamage"/>, and raises <see cref="Fired"/> like any shot
-        /// so the muzzle flash, sound, recoil and blood all play. Returns whether it hit something.
-        /// </summary>
-        public bool FireScripted(float shotDamage)
-        {
-            if (aimCamera == null) return false;
-            return Shoot(shotDamage);
-        }
-
-        bool Shoot(float shotDamage)
-        {
             var ray = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             bool hit = Physics.Raycast(ray, out var info, range, hitMask, QueryTriggerInteraction.Ignore);
             if (hit && info.collider.GetComponentInParent<IDamageable>() is { } target)
-                target.TakeDamage(shotDamage, info.point, ray.direction);
+                target.TakeDamage(damage, info.point, ray.direction);
 
             Fired?.Invoke(hit, info);
             Noise.Make(transform.position, shotLoudness);
-            return hit;
+            if (AmmoInMagazine == 0) TryStartReload();
         }
 
         public void TryStartReload()

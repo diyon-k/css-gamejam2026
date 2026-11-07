@@ -86,7 +86,7 @@ namespace Blink.Combat
         {
             if (_interactor != null) _interactor.Interacted += Reach;
             GrabQte.Beat += OnBeat;
-            GrabQte.Resolved += OnResolved;
+            GrabQte.BrokeFree += OnBrokeFree;
             _brace = GrabQte.Active ? 1f : 0f; // swapped in mid-QTE: already braced
             _climb = Ladder.Climbing ? 1f : 0f;
         }
@@ -95,7 +95,7 @@ namespace Blink.Combat
         {
             if (_interactor != null) _interactor.Interacted -= Reach;
             GrabQte.Beat -= OnBeat;
-            GrabQte.Resolved -= OnResolved;
+            GrabQte.BrokeFree -= OnBrokeFree;
             _reachAt = _shoveAt = float.NegativeInfinity;
             if (!_initialised) return;
             if (swayPivot != null) swayPivot.SetLocalPositionAndRotation(_restPosition, _restRotation);
@@ -114,7 +114,7 @@ namespace Blink.Combat
         }
 
         void OnBeat() => Shove();
-        void OnResolved(bool passed) { if (passed) Shove(2f); }
+        void OnBrokeFree() => Shove(2f); // the shove that flings it off
 
         void Update() => Step(Time.unscaledDeltaTime);
 
