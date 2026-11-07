@@ -285563,14 +285563,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Read
   title: Workshop scrap
-  body: 'The heart is gone. S. took it, the boy I trusted with my tools.
+  body: 'The heart is gone. S. took it.
 
-    Without it the hands will not turn, forward or back. Everything stays as it is.
-
-    We will all stay as we are.
+    Without it the hands turn neither way.
 
 
-    Someone will bring it home. Someone always brings things home.'
+    Down here the water only rises while no one minds it. Mind it.
+
+    The gate remembers one moment: ours. Two short of midnight.
+
+
+    Someone always brings things home.'
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -328185,13 +328188,13 @@ MonoBehaviour:
   title: Newspaper clipping
   body: 'AUCTION NOTICE
 
-    The effects of the late Mr Samuel Kerr (98), once apprenticed to a clockmaker.
+    The effects of the late Mr S. Kerr (98), once apprenticed to a clockmaker.
 
 
-    Lot 14: brass pocket watch, maker''s mark ''A. Hale''. The family say it has never once stopped ticking, though it holds no spring.
+    Lot 14: brass pocket watch, maker''s mark ''A. H.''. Ticks, though it holds no spring.
 
 
-    Sold to an anonymous buyer.'
+    Sold to an anonymous buyer. Delivery arranged.'
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -453365,13 +453368,13 @@ MonoBehaviour:
 
     Deliver to: Hale House, end of Blackwood Lane. No road past the gate.
 
-    Contents: 1 x pocket watch, brass, antique
+    Contents: 1 x pocket watch, brass. Still ticking.
 
 
     Signature on receipt: ______________
 
 
-    Driver''s note: customer wants it there before midnight. Paid triple. Didn''t ask why.'
+    Driver''s note: before midnight. The van clock stopped at the gate. Didn''t ask why.'
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -580340,7 +580343,7 @@ GameObject:
   - component: {fileID: 1422910303}
   - component: {fileID: 1422910302}
   m_Layer: 0
-  m_Name: Note_Note_in_shaky_handwriting
+  m_Name: Note_Read_this_first
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -580374,8 +580377,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Read
-  title: Note in shaky handwriting
-  body: "I am sorry about your head.\nYou would not have stayed otherwise, and you have brought back what was taken from me.\n\nKeep your eyes open for as long as you can bear it. They are only ever still while someone is watching.\n\n\u2014 A."
+  title: Read this first
+  body: "You will not remember how you came here. Don't try. You won't find the road, or the hour you arrived.\n\nTime moves strangely in this house. It waits while you watch it, and runs the moment you look away.\n\nI don't know why it let you in. Perhaps you brought it something.\n\nIf a thing will not move for you, stop watching it. Never for long.\n\nKeep your eyes open.\n\u2014 A."
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -678731,7 +678734,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Read
   title: Kitchen list
-  body: "Flour. Lard. Tea. Candles.\n\nThe bread has not gone stale since March. The milk won't turn. The kettle has been on the boil all morning and will not whistle.\nMr Hale says not to worry.\nI have stopped asking anyone the date.\n\u2014 Mrs Pell"
+  body: "Flour. Lard. Tea. Candles.\n\nThe kettle's been on all morning and won't boil. Mr Hale says a watched pot never does.\nThe mains are seized again. Left loosens, right binds, and rust gives nothing to a hurry.\n\nI've stopped asking the date.\n\u2014 Mrs Pell"
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -779264,7 +779267,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Read
   title: Torn diary page
-  body: "...nine days now without sleep. The clocks in this house have begun to disagree with one another. This morning the hall clock struck thirteen, and he only smiled and said, 'Not yet, my love. Not yet.'\n\nI am frightened of whatever he is building in the tower.\n\u2014 E."
+  body: "...nine days without sleep. The clocks quarrel. The hall clock struck thirteen.\n\nHe has hung us all in a row and turned our faces to him, so we will always know where he is.\nHe keeps his cabinet for the moon now. The moon is slow, he says, but never while you're watching it.\n\u2014 E."
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -795742,12 +795745,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Read
   title: Child's drawing
-  body: 'Papa says if we are very very still the sickness cant find us. Tom says thats babyish.
+  body: 'Dolly only plays when nobody is looking. So I look at her ALL the time and she has to sit.
 
-    I am being the stillest. Mama is too.
+    Tom blinked.
 
 
-    (Below it, in crayon: four stick people holding hands, and a tall man with a clock where his face should be.)'
+    (Below it, in crayon: a girl with enormous round eyes, a doll in a chair, and a tall man with a clock where his face should be.)'
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3

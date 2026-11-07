@@ -47,15 +47,15 @@ This follows the current house blockout: bedroom → landing / side room → bro
 
 Notes **hint** at the story; none of them explains it outright. Read with E, time keeps running while you read. The text lives in `Editor/StoryProps.cs` (menu **BLINK > Place Story Props**), which places them in the House scene.
 
-| Note | Where | Hints at |
+| Note | Where | Hints at (cryptically) |
 |---|---|---|
-| Delivery docket | Bedroom nightstand | Why you came: a courier job, a pocket watch from Kerr's estate, "before midnight" |
-| Note in shaky handwriting (A.) | Bedroom floor | Who knocked you out, that you brought something back, the blink rule |
-| Child's drawing (Lily) | Nursery floor | Staying still to beat the sickness; a man with a clock for a face |
-| Torn diary page (E.) | Hallway floor | Ambrose not sleeping, clocks going wrong, something in the tower |
-| Kitchen list (Mrs Pell) | Kitchen floor | Time has stopped: bread won't stale, kettle won't boil |
-| Workshop scrap | On the generator | The "heart" was stolen by S.; someone will bring it home |
-| Newspaper clipping | By the exit gate | Kerr's auction, the watch with Hale's mark, an anonymous buyer |
+| Delivery docket | Bedroom nightstand | Why you came: a courier job, Kerr's pocket watch, "before midnight", the van clock stopping at the gate |
+| Read this first (A.) | Bedroom floor | First note. You won't remember arriving; time moves strangely here; "keep your eyes open". P1: "if a thing will not move for you, stop watching it" |
+| Child's drawing (Lily) | Nursery floor | P2: "Dolly only plays when nobody is looking... Tom blinked." |
+| Torn diary page (E.) | Hallway floor | P4: faces turned to him. P3: "he keeps his cabinet for the moon... never slow while you're watching" |
+| Kitchen list (Mrs Pell) | Kitchen floor | P5: "a watched pot never does"; valve: "left loosens, right binds" |
+| Workshop scrap | On the generator | P6: "the water only rises while no one minds it"; P7: "two short of midnight" (11:58) |
+| Newspaper clipping | By the exit gate | Kerr's auction, the watch marked 'A. H.', an anonymous buyer |
 
 **Puzzle-hint notes:** not written yet. They will use the same `Readable` component once the puzzles are decided.
 
