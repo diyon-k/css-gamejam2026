@@ -194,6 +194,7 @@ Each room lists the ref it is based on and why. Material names are defined in §
   - C2: bare bulb in the workshop, off until the generator runs.
   - CW1/CW2: baked hopper-window light.
 - **Props:** 2 × steel_frame_shelves_01 with jars and boxes, 3 wooden crates, workbench, portable_generator (hero, P7), floating paper and boxes, trash bags.
+- **Puzzle P6, the flooded basement** ([FLOODED_BASEMENT.md](../puzzles/FLOODED_BASEMENT.md)), in B2 behind D5: drain in the middle (16.64, 9.39), bath with a running tap against the E wall facing D5, chest of drawers and tall cupboard on the N wall, tool locker and crate on the W wall. Keep the line from D5 to the drain clear. The puzzle's bare bulb lights it; C2 stays off for P7.
 
 ---
 
