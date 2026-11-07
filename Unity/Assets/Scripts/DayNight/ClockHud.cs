@@ -1,30 +1,45 @@
+using Blink.UI;
 using UnityEngine;
 
 namespace Blink.DayNight
 {
     /// <summary>
-    /// Digital clock in the top-right corner: big "HH:MM" (colon blinks on real time) and "Day N".
-    /// A blink skip flashes the digits and shows "+15 min" fading out. IMGUI placeholder like GunHud;
-    /// all animation is on unscaled time.
+    /// Clock in the top-right corner, in the <see cref="BlinkTheme"/> style: "HH:MM" in serif numerals (the colon
+    /// breathes on real time) over "day N" in small caps. A blink skip brightens the digits and shows "+1 min" fading
+    /// out. IMGUI; all animation is on unscaled time.
+    ///
+    /// Display only: the shown time is its own <see cref="GameTime"/>, seeded from the <see cref="GameClock"/> at start,
+    /// that runs at a real-time pace and jumps <see cref="minutesPerBlink"/> per blink skip. The GameClock that drives
+    /// the sky, lights and puzzles is not touched, so the two drift apart over play.
     /// </summary>
     public sealed class ClockHud : MonoBehaviour
     {
         [Tooltip("Defaults to GameClock.Instance.")]
         [SerializeField] GameClock clock;
-        [Tooltip("Optional digital font; defaults to an OS monospace font.")]
+        [Tooltip("Optional font for the digits; defaults to the theme's numerals.")]
         [SerializeField] Font font;
+        [Tooltip("Use BlinkTheme's palette. Untick to use the three colours below.")]
+        [SerializeField] bool themeColors = true;
         [SerializeField] Color dayColor = new(0.95f, 0.95f, 0.92f, 0.95f);
         [SerializeField] Color nightColor = new(0.7f, 0.82f, 1f, 0.95f);
         [SerializeField] Color jumpColor = new(1f, 0.85f, 0.4f, 1f);
         [SerializeField, Min(0.1f)] float jumpSeconds = 1.5f;
+        [Tooltip("Shown minutes per world second. 1/60 = real time; eyes-shut fast-forward speeds it up with the world.")]
+        [SerializeField, Min(0f)] float minutesPerSecond = 1f / 60f;
+        [Tooltip("Shown minutes added on every blink skip.")]
+        [SerializeField, Min(0f)] float minutesPerBlink = 1f;
 
+        GameTime _shown;
         float _jumpAt = -100f, _jumpMinutes;
-        GUIStyle _big, _small, _smallLeft;
 
         void Start()
         {
             if (clock == null) clock = GameClock.Instance;
-            if (clock != null) clock.Jumped += OnJumped;
+            if (clock != null)
+            {
+                _shown = new GameTime(clock.HourOfDay, clock.SunriseHour, clock.SunsetHour);
+                clock.Jumped += OnJumped;
+            }
             else Debug.LogWarning("[ClockHud] No GameClock found.");
         }
 
@@ -33,8 +48,13 @@ namespace Blink.DayNight
             if (clock != null) clock.Jumped -= OnJumped;
         }
 
-        void OnJumped(float minutes)
+        void Update() => _shown?.Advance(Time.deltaTime * minutesPerSecond);
+
+        // The GameClock's own jump size is ignored: the corner shows a fixed step per blink.
+        void OnJumped(float _)
         {
+            float minutes = minutesPerBlink;
+            _shown?.Advance(minutes);
             // Blinks in quick succession add up into one "+N min".
             bool stillShowing = Time.unscaledTime - _jumpAt < jumpSeconds;
             _jumpMinutes = stillShowing ? _jumpMinutes + minutes : minutes;
@@ -43,60 +63,33 @@ namespace Blink.DayNight
 
         void OnGUI()
         {
-            if (clock == null || Event.current.type != EventType.Repaint) return;
-            EnsureStyles();
-
-            const float w = 180f, margin = 24f;
-            var box = new Rect(Screen.width - w - margin, margin, w, 78f);
-            Fill(box, new Color(0f, 0f, 0f, 0.35f));
+            if (_shown == null || Event.current.type != EventType.Repaint) return;
 
             float since = Time.unscaledTime - _jumpAt;
-            float flash = Mathf.Clamp01(1f - since / 0.4f);
-            var baseColor = clock.IsNight ? nightColor : dayColor;
-            bool colon = Time.unscaledTime % 1f < 0.5f;
-            string time = $"{clock.Hour:00}{(colon ? ":" : " ")}{clock.Minute:00}";
-
-            var timeRect = new Rect(box.x, box.y + 2f, w - 12f, 52f);
-            Label(timeRect, time, _big, Color.Lerp(baseColor, jumpColor, flash));
-
-            var lineRect = new Rect(box.x + 12f, box.y + 52f, w - 24f, 22f);
-            Label(lineRect, $"DAY {clock.Day}", _small, baseColor);
-
-            if (since < jumpSeconds)
+            float flash = 1f - BlinkTheme.EaseOut(since / 0.5f);
+            Color timeColor, dayLabel, jumpBase;
+            if (themeColors)
             {
-                var c = jumpColor;
-                c.a *= 1f - since / jumpSeconds;
-                Label(lineRect, $"+{Mathf.RoundToInt(_jumpMinutes)} MIN", _smallLeft, c);
+                var bone = BlinkTheme.Bone;
+                // Night cools the bone a touch; a skip lifts it toward paper-white for a moment, never pure white.
+                var baseTime = _shown.IsNight ? Color.Lerp(bone, new Color(0.72f, 0.77f, 0.84f, 1f), 0.45f) : bone;
+                timeColor = BlinkTheme.Fade(Color.Lerp(baseTime, new Color(0.97f, 0.95f, 0.9f, 1f), flash), 0.88f);
+                dayLabel = BlinkTheme.Fade(BlinkTheme.Muted, 0.95f);
+                jumpBase = bone;
             }
-        }
-
-        static void Label(Rect r, string text, GUIStyle style, Color color)
-        {
-            var shadow = new Color(0f, 0f, 0f, color.a * 0.8f);
-            style.normal.textColor = shadow;
-            GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), text, style);
-            style.normal.textColor = color;
-            GUI.Label(r, text, style);
-        }
-
-        void EnsureStyles()
-        {
-            if (_big != null) return;
-            var f = font != null ? font : Font.CreateDynamicFontFromOSFont(new[] { "Consolas", "Lucida Console", "Courier New", "DejaVu Sans Mono", "Menlo" }, 44);
-            _big = new GUIStyle(GUI.skin.label)
+            else
             {
-                font = f, fontSize = 44, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight,
-            };
-            _small = new GUIStyle(_big) { fontSize = 15 };
-            _smallLeft = new GUIStyle(_small) { alignment = TextAnchor.MiddleLeft };
-        }
-
-        static void Fill(Rect rect, Color color)
-        {
-            var old = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = old;
+                var baseColor = _shown.IsNight ? nightColor : dayColor;
+                timeColor = Color.Lerp(baseColor, jumpColor, flash);
+                dayLabel = baseColor;
+                jumpBase = jumpColor;
+            }
+            // The colon breathes once a second instead of blinking hard.
+            float colon = 0.35f + 0.65f * (0.5f + 0.5f * Mathf.Cos(Time.unscaledTime * Mathf.PI * 2f));
+            string jump = since < jumpSeconds ? $"+{Mathf.RoundToInt(_jumpMinutes)} min" : null;
+            var jumpColorNow = BlinkTheme.Fade(jumpBase, 1f - BlinkTheme.EaseIn(since / jumpSeconds));
+            BlinkWidgets.Clock($"{_shown.Hour:00}", $"{_shown.Minute:00}", colon, $"Day {_shown.Day}",
+                timeColor, dayLabel, jump, jumpColorNow, font);
         }
     }
 }

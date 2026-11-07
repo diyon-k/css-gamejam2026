@@ -15,7 +15,20 @@ namespace Blink.Mobs
     ///
     /// Knockdown: a blunt melee prop (<see cref="Interaction.SwingableProp"/>) calls <see cref="Launch"/> on a living
     /// zombie: it goes limp and flies, and <see cref="GetUp"/> later hands the bones back to the Animator, blending
-    /// out of the pose it landed in.
+    /// out of the pose it landed in. A knocked-down body is never frozen: it gets up instead.
+    ///
+    /// Axe kills: the weapon hub's <see cref="PlayerWeapons.MeleeHit"/> (raised right after the damage, in the
+    /// same call, so after <see cref="Activate"/>) reports a killing axe blow, and the body is launched on top of
+    /// the normal death push (<see cref="LaunchFromBlow"/>): <see cref="axeLaunchSpeed"/> along the swing,
+    /// <see cref="axeLaunchLift"/> up and a spin from <see cref="axeHitImpulse"/>.
+    ///
+    /// Flight: every launch (<see cref="Launch"/>, <see cref="LaunchFromBlow"/>, <see cref="Fling"/>) goes through
+    /// one mechanism. The velocity goes on every simulated limb, the limbs use <see cref="launchCollision"/> (so they
+    /// don't pass through walls) until the body slows below <see cref="launchEndSpeed"/>, and it's never frozen
+    /// mid-flight (<see cref="IsFlying"/>). A dead body freezes once it has landed and settled.
+    ///
+    /// Grab shove: the grab QTE pushes a living zombie over backwards with <see cref="Shove"/> (no spin, the chest
+    /// harder than the feet); it flies like any launch and gets up after the stun.
     ///
     /// Layers: bone colliders sit on a layer that collides with nothing while alive (the gun still
     /// raycasts them) and move to <see cref="corpseLayer"/> while limp, which collides with the level and
@@ -29,13 +42,21 @@ namespace Blink.Mobs
 
         [Header("Hits")]
         [Tooltip("Impulse (N·s) the killing shot gives the body part it hit. The whole body weighs ~60 kg.")]
-        [SerializeField, Min(0f)] float hitImpulse = 10f;
+        [SerializeField, Min(0f)] float hitImpulse = 2.5f;
         [Tooltip("Speed (m/s) the killing shot adds to the whole body, flat along the shot, so it falls away from " +
                  "the shooter. The hit impulse alone mostly just flicks the limb it hits.")]
-        [SerializeField, Min(0f)] float knockbackSpeed = 1.5f;
+        [SerializeField, Min(0f)] float knockbackSpeed = 0.375f;
         [Tooltip("Damage multiplier for shots to the head bone. The head hitbox is also flagged IsHead, so a " +
                  "headshot kills outright whatever this is.")]
         [SerializeField, Min(0f)] float headDamageMultiplier = 2f;
+
+        [Header("Axe kill launch (added on top of the death push)")]
+        [Tooltip("Speed (m/s) a killing axe blow adds to the whole body, flat along the swing. Sends it several metres.")]
+        [SerializeField, Min(0f)] float axeLaunchSpeed = 6f;
+        [Tooltip("Upward speed (m/s) a killing axe blow adds to the whole body, so it flies instead of sliding.")]
+        [SerializeField, Min(0f)] float axeLaunchLift = 2.5f;
+        [Tooltip("Impulse (N·s) a killing axe blow gives the part it hit, at the hit point, for spin. Limbs weigh 4-9 kg.")]
+        [SerializeField, Min(0f)] float axeHitImpulse = 15f;
 
         [Header("Settling")]
         [Tooltip("World seconds after death at which the body is frozen, even if it's still sliding.")]
@@ -54,6 +75,15 @@ namespace Blink.Mobs
         [Tooltip("Snap joints back when they drift too far apart (stops stretched limbs).")]
         [SerializeField] bool jointProjection = true;
 
+        [Header("Flight (every launch: axe kills, axe hits on corpses, knockdowns)")]
+        [Tooltip("Collision detection while flying, so a flying body can't pass through a wall. Back to Discrete " +
+                 "once it slows down, and always before it's frozen or gets up. Speculative also catches limbs whipping " +
+                 "round (ContinuousDynamic only sweeps straight-line motion, and let spinning forearms sink into the floor).")]
+        [SerializeField] CollisionDetectionMode launchCollision = CollisionDetectionMode.ContinuousSpeculative;
+        [Tooltip("A flight ends (continuous collision off, freezing allowed if dead) once every limb is slower than " +
+                 "this, m/s, or after settleSeconds at most.")]
+        [SerializeField, Min(0f)] float launchEndSpeed = 2f;
+
         [Header("Knockdown (melee props)")]
         [Tooltip("Spin impulse (N·s) at the struck point on a knockdown, so the body tumbles instead of sliding.")]
         [SerializeField, Min(0f)] float knockdownSpin = 40f;
@@ -68,6 +98,13 @@ namespace Blink.Mobs
         public bool IsFrozen { get; private set; }
         /// <summary>Limp from a knockdown, not death: <see cref="GetUp"/> hands it back to the Animator.</summary>
         public bool IsKnockedDown { get; private set; }
+
+        /// <summary>
+        /// True while the body flies from a launch: its limbs use continuous collision and it isn't frozen until it
+        /// has slowed down.
+        /// </summary>
+        public bool IsFlying => _flight != null && _flight.IsFlying;
+
         public IReadOnlyList<Rigidbody> Bodies => _bodies;
 
         /// <summary>Where the body really is (the hips bone), which leaves the root behind while limp.</summary>
@@ -79,10 +116,7 @@ namespace Blink.Mobs
             get
             {
                 if (!IsActive || IsFrozen) return 0f;
-                float fastest = 0f;
-                foreach (var body in _bodies)
-                    if (body != null) fastest = Mathf.Max(fastest, body.linearVelocity.magnitude);
-                return fastest;
+                return SimulatedSpeed();
             }
         }
 
@@ -105,9 +139,18 @@ namespace Blink.Mobs
         Quaternion _lyingHipsRotation;
         float _blendElapsed = -1f; // < 0: not blending
 
-        // Clears the counter when entering play mode with domain reload disabled.
+        RagdollFlight _flight;
+        int _activatedFrame = -1; // the frame it died, so only the blow it died to launches it
+        // The weapon hub whose MeleeHit is listened to (one subscription shared by every zombie).
+        static PlayerWeapons s_weapons;
+
+        // Clears the statics when entering play mode with domain reload disabled.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => ActiveCount = 0;
+        static void ResetStatics()
+        {
+            ActiveCount = 0;
+            s_weapons = null;
+        }
 
         void Awake()
         {
@@ -160,8 +203,29 @@ namespace Blink.Mobs
 
         void Update()
         {
-            if (!IsActive || IsFrozen || IsKnockedDown) return; // a knocked-down body gets up instead of freezing
-            if (_settle.Advance(Time.deltaTime, FastestSpeed)) Freeze();
+            WatchWeapons();
+            Tick(Time.deltaTime);
+        }
+
+        // World time in Update only (never a skip), so a blink can't end a flight or freeze a body mid-air.
+        void Tick(float deltaTime)
+        {
+            // A frozen body still flying was woken by CorpseShotReaction, which re-freezes it; only its flight is ours.
+            if (!IsActive || (IsFrozen && !IsFlying)) return;
+            // A knocked-down body gets up instead of freezing; a flying one is never frozen.
+            bool freeze = RagdollMath.StepLimp(_flight, IsFrozen ? null : _settle, IsKnockedDown, deltaTime,
+                                               SimulatedSpeed(), out bool landed);
+            if (landed) SetCollision(CollisionDetectionMode.Discrete);
+            if (freeze) Freeze();
+        }
+
+        // Fastest simulated (non-kinematic) limb, m/s.
+        float SimulatedSpeed()
+        {
+            float fastest = 0f;
+            foreach (var body in _bodies)
+                if (body != null && !body.isKinematic) fastest = Mathf.Max(fastest, body.linearVelocity.magnitude);
+            return fastest;
         }
 
         // After the Animator has posed the bones: ease them from the pose it lay in to the animated one.
@@ -202,17 +266,20 @@ namespace Blink.Mobs
         /// <summary>
         /// Goes limp: stops the Animator, hands the bones to physics with <paramref name="inheritedVelocity"/>
         /// (the zombie's speed when it died) and pushes the part the killing shot hit. Does nothing twice.
-        /// Dying while knocked down just means it never gets up.
+        /// Dying while knocked down just means it never gets up: a body still flying keeps flying and freezes once
+        /// it has landed and settled.
         /// </summary>
         public void Activate(Vector3 inheritedVelocity)
         {
             if (IsKnockedDown)
             {
                 IsKnockedDown = false;
+                _activatedFrame = Time.frameCount;
                 _settle = new RagdollSettleClock(settleSeconds, restSpeed, restSeconds);
                 return;
             }
             if (IsActive || _bodies.Length == 0) return;
+            _activatedFrame = Time.frameCount;
             GoLimp(inheritedVelocity);
             ApplyHitImpulse();
         }
@@ -220,11 +287,40 @@ namespace Blink.Mobs
         /// <summary>
         /// Knocks the body flying: goes limp if it wasn't (a living zombie stays down until <see cref="GetUp"/>;
         /// a frozen corpse wakes up), adds <paramref name="velocity"/> to every limb and spins the limb
-        /// nearest <paramref name="point"/> so it tumbles.
+        /// nearest <paramref name="point"/> so it tumbles. It flies like any launch (see <see cref="IsFlying"/>).
         /// </summary>
         public void Launch(Vector3 velocity, Vector3 point)
         {
             if (_bodies.Length == 0) return;
+            LimpForKnockdown();
+
+            Fly(velocity);
+
+            if (knockdownSpin <= 0f || velocity.sqrMagnitude < 1e-6f) return;
+            _bodyPositions.Clear();
+            foreach (var body in _bodies) _bodyPositions.Add(body.worldCenterOfMass);
+            int nearest = RagdollMath.NearestIndex(_bodyPositions, point);
+            if (nearest >= 0) _bodies[nearest].AddForceAtPosition(velocity.normalized * knockdownSpin, point, ForceMode.Impulse);
+        }
+
+        /// <summary>
+        /// Pushed over (the grab QTE's two-handed shove): goes limp like <see cref="Launch"/>, but with no spin, and
+        /// each limb gets <paramref name="velocity"/> scaled by how high it is, <paramref name="feetShare"/> of it at
+        /// the lowest limb up to all of it at the highest. The chest goes back faster than the feet, so it topples
+        /// over backwards instead of tumbling through the air. It flies like any launch (see <see cref="IsFlying"/>).
+        /// </summary>
+        public void Shove(Vector3 velocity, float feetShare)
+        {
+            if (_bodies.Length == 0) return;
+            LimpForKnockdown();
+            foreach (var body in _bodies)
+                if (body != null) body.angularVelocity = Vector3.zero;
+            Fly(velocity, feetShare);
+        }
+
+        // Limp for a knockdown: a living body goes limp and will get up later; a frozen corpse wakes up.
+        void LimpForKnockdown()
+        {
             if (!IsActive)
             {
                 GoLimp(Vector3.zero);
@@ -238,20 +334,85 @@ namespace Blink.Mobs
                 foreach (var body in _bodies)
                     if (body != null) body.isKinematic = false;
             }
+        }
 
+        /// <summary>
+        /// Sends a dead body flying from a killing blow: <see cref="axeLaunchSpeed"/> along
+        /// <paramref name="direction"/> (flattened), <see cref="axeLaunchLift"/> up, and <see cref="axeHitImpulse"/>
+        /// at <paramref name="point"/> on <paramref name="body"/> (the part hit; null = no spin). Called for you on a
+        /// killing axe hit; call it after <see cref="Activate"/> for other heavy blows. Does nothing while alive.
+        /// </summary>
+        public void LaunchFromBlow(Rigidbody body, Vector3 point, Vector3 direction)
+        {
+            if (!IsActive || direction.sqrMagnitude < 1e-8f) return;
+            Fling(RagdollMath.LaunchVelocity(direction, Vector3.up, axeLaunchSpeed, axeLaunchLift));
+            if (axeHitImpulse > 0f && body != null && !body.isKinematic && IsOwnBody(body))
+                body.AddForceAtPosition(direction.normalized * axeHitImpulse, point, ForceMode.Impulse);
+        }
+
+        /// <summary>
+        /// Adds <paramref name="velocity"/> (m/s) to every simulated limb of a body that is already limp (dead or
+        /// knocked down) and flies it (see <see cref="IsFlying"/>). Unlike <see cref="Launch"/> it never knocks a
+        /// living zombie down, wakes a frozen body or adds spin. Kinematic (frozen) limbs are left alone: wake them
+        /// first (<see cref="CorpseShotReaction"/> does, and re-freezes them itself).
+        /// </summary>
+        public void Fling(Vector3 velocity)
+        {
+            if (!IsActive || velocity.sqrMagnitude < 1e-6f) return;
+            Fly(velocity);
+        }
+
+        /// <summary>
+        /// Ends a flight now: back to discrete collision. Done for you once the body slows down, and before it's
+        /// frozen or gets up. Call it before making the limbs kinematic yourself.
+        /// </summary>
+        public void EndFlight()
+        {
+            if (!IsFlying) return;
+            _flight.End();
+            SetCollision(CollisionDetectionMode.Discrete);
+        }
+
+        // The one flying-body mechanism behind every launch: the velocity goes straight onto every simulated limb
+        // (not as a pending force, so this frame's Update already sees it flying) with continuous collision on.
+        // feetShare below 1 scales each limb's share by its height (RagdollMath.HeightShare), for Shove.
+        void Fly(Vector3 velocity, float feetShare = 1f)
+        {
+            float low = float.PositiveInfinity, high = float.NegativeInfinity;
+            if (feetShare < 1f)
+                foreach (var body in _bodies)
+                {
+                    if (body == null || body.isKinematic) continue;
+                    float y = body.worldCenterOfMass.y;
+                    low = Mathf.Min(low, y);
+                    high = Mathf.Max(high, y);
+                }
+            bool any = false;
             foreach (var body in _bodies)
             {
-                if (body == null) continue;
-                body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative; // fast limbs don't tunnel through walls
-                body.AddForce(velocity, ForceMode.VelocityChange);
+                if (body == null || body.isKinematic) continue;
+                float share = feetShare < 1f ? RagdollMath.HeightShare(body.worldCenterOfMass.y, low, high, feetShare) : 1f;
+                body.collisionDetectionMode = launchCollision;
+                body.linearVelocity += velocity * share;
                 body.WakeUp();
+                any = true;
             }
+            if (!any) return;
+            _flight = new RagdollFlight(settleSeconds, launchEndSpeed);
+            _flight.Begin();
+        }
 
-            if (knockdownSpin <= 0f || velocity.sqrMagnitude < 1e-6f) return;
-            _bodyPositions.Clear();
-            foreach (var body in _bodies) _bodyPositions.Add(body.worldCenterOfMass);
-            int nearest = RagdollMath.NearestIndex(_bodyPositions, point);
-            if (nearest >= 0) _bodies[nearest].AddForceAtPosition(velocity.normalized * knockdownSpin, point, ForceMode.Impulse);
+        void SetCollision(CollisionDetectionMode mode)
+        {
+            foreach (var body in _bodies)
+                if (body != null) body.collisionDetectionMode = mode;
+        }
+
+        bool IsOwnBody(Rigidbody body)
+        {
+            foreach (var b in _bodies)
+                if (b == body) return true;
+            return false;
         }
 
         /// <summary>
@@ -261,6 +422,7 @@ namespace Blink.Mobs
         public void GetUp()
         {
             if (!IsKnockedDown) return;
+            EndFlight(); // discrete collision again before the bones go kinematic and the Animator takes over
             IsKnockedDown = false;
             IsActive = false;
             if (!IsFrozen) ActiveCount = Mathf.Max(0, ActiveCount - 1);
@@ -341,11 +503,31 @@ namespace Blink.Mobs
             if (IsFrozen) return;
             IsFrozen = true;
             ActiveCount = Mathf.Max(0, ActiveCount - 1);
+            EndFlight(); // continuous collision off before going kinematic
             foreach (var body in _bodies)
                 if (body != null) body.isKinematic = true;
         }
 
         void OnStruck(Hitbox hitbox, Vector3 point, Vector3 direction) =>
             RecordHit(hitbox.GetComponent<Rigidbody>(), point, direction);
+
+        // One shared subscription to the player's weapon hub, picked up (again) whenever the hub changes.
+        static void WatchWeapons()
+        {
+            var weapons = PlayerWeapons.Instance;
+            if (ReferenceEquals(weapons, s_weapons)) return;
+            if (s_weapons != null) s_weapons.MeleeHit -= OnMeleeHit;
+            s_weapons = weapons;
+            if (weapons != null) weapons.MeleeHit += OnMeleeHit;
+        }
+
+        // Raised after the damage, in the same call: a killing blow has already activated the ragdoll.
+        static void OnMeleeHit(MeleeHitInfo hit)
+        {
+            if (!hit.Killed || hit.Weapon != WeaponKind.Axe || hit.Collider == null) return;
+            var ragdoll = hit.Collider.GetComponentInParent<ZombieRagdoll>();
+            if (ragdoll == null || ragdoll._activatedFrame != Time.frameCount) return; // only the blow it died to
+            ragdoll.LaunchFromBlow(hit.Collider.attachedRigidbody, hit.Point, hit.Direction);
+        }
     }
 }

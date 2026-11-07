@@ -20,7 +20,8 @@ namespace Blink.Mobs
     /// keeps moving without a hitch, and can land a hit if it was already in range. Hitting the player while their eyes are shut interrupts fast-forward.
     /// Reaching you because you blinked grabs you instead (<see cref="GrabQte"/>): while the world is frozen this zombie
     /// slams in to <see cref="grabDistance"/> in front of you and lunges to bite on GrabQte's beat, on real time.
-    /// Each ring you miss is a bite for <see cref="attackDamage"/>; break free and you shoot it dead point-blank.
+    /// Each ring you miss is a bite for <see cref="attackDamage"/>; break free and it's flung back a few metres
+    /// (<see cref="grabEscapeThrow"/>) and lies stunned (<see cref="KnockDown"/>) before getting up to come for you again.
     /// On death it goes limp as a <see cref="ZombieRagdoll"/> if it has one (otherwise it plays the
     /// Animator's "Dead" clip, or falls over procedurally) and the body is removed after
     /// <see cref="corpseLifetime"/> world seconds, which skips also count towards.
@@ -86,9 +87,15 @@ namespace Blink.Mobs
         [SerializeField] float biteLunge = 0.22f;
         [Tooltip("Metres a good press shoves it back for a moment.")]
         [SerializeField] float shoveDistance = 0.3f;
-        [Tooltip("Speed (m/s) the body is thrown back, away from you, when you shoot it breaking free. Without it the " +
-                 "lunging pose topples forward onto the camera.")]
-        [SerializeField, Min(0f)] float grabKillThrow = 3f;
+        [Tooltip("Speed (m/s) its head and shoulders are shoved back, away from you, when you break free. Lower limbs get " +
+                 "less (down to grabEscapeFeetShare at the feet), so it topples over backwards.")]
+        [SerializeField, Min(0f)] float grabEscapeThrow = 3.5f;
+        [Tooltip("Upward speed (m/s) added to that shove (scaled the same way), so its feet come off the floor.")]
+        [SerializeField, Min(0f)] float grabEscapeLift = 1f;
+        [Tooltip("Share of the shove the lowest limbs get (0 = feet stay planted, 1 = the whole body flies as one).")]
+        [SerializeField, Range(0f, 1f)] float grabEscapeFeetShare = 0.3f;
+        [Tooltip("World seconds it lies stunned after being flung off, before getting back up.")]
+        [SerializeField, Min(0f)] float grabEscapeStun = 3f;
         [Tooltip("Metres above the head bone the camera looks at, for rigs without eye bones (with them it looks between the eyes).")]
         [SerializeField] float faceOffset = 0.08f;
 
@@ -116,8 +123,7 @@ namespace Blink.Mobs
         static readonly int AttackStateShort = Animator.StringToHash("Attack");
 
         // Grab hold: GrabQte has frozen the world; this zombie is moved by hand on real time.
-        bool _grabbing, _finalShove;
-        float _finalPush = 1f; // 0: the last hit holds it in place (headbutt range) instead of shoving it back
+        bool _grabbing;
         float _grabClock, _biteAt, _shoveAt;
         Vector3 _grabFrom, _grabAnchor;
         Quaternion _grabFromRotation, _grabRotation;
@@ -496,18 +502,16 @@ namespace Blink.Mobs
             else if (_hasAttackParam) animator.SetTrigger(AttackParam);
         }
 
-        void IGrabber.GrabShoved(bool final, bool pushedBack)
-        {
-            _shoveAt = _grabClock;
-            _finalShove = final;
-            _finalPush = pushedBack ? 1f : 0f;
-        }
+        void IGrabber.GrabShoved() => _shoveAt = _grabClock;
 
-        void IGrabber.GrabKill(Vector3 shotDirection)
+        // Pushed over backwards as a ragdoll (the chest harder than the feet, no spin); it gets up after the stun.
+        void IGrabber.GrabThrown(Vector3 away)
         {
-            if (_health == null || _health.IsDead) return; // the shot already did it
-            Vector3 point = _head != null ? _head.position : transform.position + Vector3.up * eyeHeight;
-            _health.TakeDamage(float.MaxValue, point, shotDirection);
+            EndGrabHold();
+            if (CurrentState == State.Dead || !GoDown(grabEscapeStun)) return;
+            Vector3 back = Vector3.ProjectOnPlane(away, Vector3.up);
+            back = back.sqrMagnitude > 1e-4f ? back.normalized : _grabRotation * Vector3.back;
+            ragdoll.Shove(back * grabEscapeThrow + Vector3.up * grabEscapeLift, grabEscapeFeetShare);
         }
 
         void IGrabber.GrabResolved(bool escaped)
@@ -523,7 +527,13 @@ namespace Blink.Mobs
         /// </summary>
         public void KnockDown(Vector3 velocity, Vector3 point, float stunSeconds)
         {
-            if (ragdoll == null) return;
+            if (GoDown(stunSeconds)) ragdoll.Launch(velocity, point);
+        }
+
+        /// <summary>Into <see cref="State.Down"/> (if alive) for at least <paramref name="stunSeconds"/>. False without a ragdoll.</summary>
+        bool GoDown(float stunSeconds)
+        {
+            if (ragdoll == null) return false;
             if (CurrentState is not (State.Dead or State.Down))
             {
                 _downFrom = transform.position;
@@ -533,7 +543,7 @@ namespace Blink.Mobs
                 SetState(State.Down);
             }
             if (CurrentState == State.Down) _downTimer = Mathf.Max(_downTimer, stunSeconds);
-            ragdoll.Launch(velocity, point);
+            return true;
         }
 
         void TickDown(float dt)
@@ -566,8 +576,6 @@ namespace Blink.Mobs
         void StartGrabHold()
         {
             _grabbing = true;
-            _finalShove = false;
-            _finalPush = 1f;
             _grabClock = 0f;
             _biteAt = _shoveAt = float.NegativeInfinity;
 
@@ -599,7 +607,7 @@ namespace Blink.Mobs
             _grabClock += dt;
             float slam = Smooth01(_grabClock / grabSlamSeconds);
             float lunge = BiteCurve(_grabClock - _biteAt);
-            float shove = _finalShove && _grabClock >= _shoveAt ? _finalPush * Smooth01((_grabClock - _shoveAt) / 0.06f) : ShoveCurve(_grabClock - _shoveAt);
+            float shove = ShoveCurve(_grabClock - _shoveAt);
 
             Vector3 toPlayer = _grabRotation * Vector3.forward;
             Vector3 position = Vector3.LerpUnclamped(_grabFrom, _grabAnchor, slam)
@@ -635,13 +643,10 @@ namespace Blink.Mobs
 
         void OnDied()
         {
-            // Shot point-blank as you broke free: throw it back off you rather than let it fall into your face.
-            bool executed = _grabbing && _finalShove;
-            Vector3 throwBack = executed ? (_grabRotation * Vector3.back) * grabKillThrow + Vector3.up * (grabKillThrow * 0.25f) : Vector3.zero;
             EndGrabHold(); // let the ragdoll take over from where it stands
             SetState(State.Dead);
             // Read before the agent is switched off, which zeroes it: the body keeps its running speed.
-            Vector3 velocity = executed ? throwBack : _agent.enabled ? _agent.velocity : Vector3.zero;
+            Vector3 velocity = _agent.enabled ? _agent.velocity : Vector3.zero;
             if (_agent.isOnNavMesh) _agent.isStopped = true;
             _agent.enabled = false;
             foreach (var col in GetComponents<Collider>()) col.enabled = false;

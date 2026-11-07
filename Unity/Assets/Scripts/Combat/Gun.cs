@@ -35,7 +35,9 @@ namespace Blink.Combat
 
         [Header("Ammo")]
         [SerializeField, Min(1)] int magazineSize = 8;
-        [SerializeField, Min(0)] int reserveAmmo = 32;
+        [SerializeField, Min(0)] int reserveAmmo = 8;
+        [Tooltip("Most spare rounds carried. Ammo boxes can't be picked up once this is full.")]
+        [SerializeField, Min(0)] int maxReserve = 8;
         [Tooltip("World seconds to reload with rounds still in the magazine. Matches the Reload clip (2.33 s).")]
         [SerializeField, Min(0f)] float reloadSeconds = 2.333f;
         [Tooltip("World seconds to reload from empty. Matches FireLast (0.37 s, the last shot starts the reload) " +
@@ -77,6 +79,7 @@ namespace Blink.Combat
         void Awake()
         {
             AmmoInMagazine = magazineSize;
+            reserveAmmo = Mathf.Min(reserveAmmo, maxReserve);
             if (aimCamera == null) aimCamera = GetComponentInParent<Camera>();
             _owner = GetComponentInParent<IDamageable>();
             _reloadTimer.Completed += FinishReload;
@@ -127,31 +130,15 @@ namespace Blink.Combat
 
             AmmoInMagazine--;
             _nextShotTime = Time.time + fireInterval;
-            Shoot(damage);
-            if (AmmoInMagazine == 0) TryStartReload();
-        }
 
-        /// <summary>
-        /// A free shot for scripted moments (the point-blank kill when you break out of a grab): ignores ammo, reload,
-        /// fire rate and input blocking, deals <paramref name="shotDamage"/>, and raises <see cref="Fired"/> like any shot
-        /// so the muzzle flash, sound, recoil and blood all play. Returns whether it hit something.
-        /// </summary>
-        public bool FireScripted(float shotDamage)
-        {
-            if (aimCamera == null) return false;
-            return Shoot(shotDamage);
-        }
-
-        bool Shoot(float shotDamage)
-        {
             var ray = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             bool hit = Physics.Raycast(ray, out var info, range, hitMask, QueryTriggerInteraction.Ignore);
             if (hit && info.collider.GetComponentInParent<IDamageable>() is { } target)
-                target.TakeDamage(shotDamage, info.point, ray.direction);
+                target.TakeDamage(damage, info.point, ray.direction);
 
             Fired?.Invoke(hit, info);
             Noise.Make(transform.position, shotLoudness);
-            return hit;
+            if (AmmoInMagazine == 0) TryStartReload();
         }
 
         public void TryStartReload()
@@ -168,7 +155,8 @@ namespace Blink.Combat
         /// </summary>
         public void CancelReload() => _reloadTimer.Cancel();
 
-        public void AddAmmo(int amount) => reserveAmmo += Mathf.Max(0, amount);
+        public void AddAmmo(int amount) => reserveAmmo = Mathf.Min(maxReserve, reserveAmmo + Mathf.Max(0, amount));
+        public bool ReserveFull => reserveAmmo >= maxReserve;
 
         void FinishReload()
         {

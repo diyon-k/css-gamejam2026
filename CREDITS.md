@@ -12,6 +12,7 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Axe](https://sketchfab.com/3d-models/7f039a3e6834494a80a3c0a7b2bd5a4c) | bumstrum | Sketchfab | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | First-person axe (melee) |
 | [Free Blood VFX - URP](https://assetstore.unity.com/packages/vfx/free-blood-vfx-urp-375130) | Vefects | Unity Asset Store | [Standard Unity Asset Store EULA](https://unity.com/legal/as-terms) | Blood splats on zombie hits (trimmed to the files we use) |
 | Zombiegirl W Kurniawan | Adobe Mixamo | [mixamo.com](https://www.mixamo.com) | Mixamo terms: royalty-free, no attribution required | Zombie character |
+| Whiteclown N Hallin | Adobe Mixamo | [mixamo.com](https://www.mixamo.com) | Mixamo terms: royalty-free, no attribution required | White clown, main monster (ZombieClown prefab) |
 | [Fleshy Fight Sounds](https://opengameart.org/content/fleshy-fight-sounds) | Will Leamon ("Additional Sound FX by Will Leamon") | OpenGameArt | [OGA-BY 3.0](https://opengameart.org/content/oga-by-30-faq) | Bullet-into-flesh hits, axe hits |
 | [15 monster grunt/pain/death sounds](https://opengameart.org/content/15-monster-gruntpaindeath-sounds) | Michel Baradari (apollo-music.de) | OpenGameArt | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | Zombie attack grunts, pain and death cries |
 | [2 metal weapon clicks](https://opengameart.org/content/2-metal-weapon-clicks) | Michel Baradari (apollo-music.de) | OpenGameArt | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) | Pistol dry-fire click, mag-out click |
@@ -25,7 +26,10 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Handgun Reload Sound Effect](https://opengameart.org/content/handgun-reload-sound-effect) | zer0_sol | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Pistol mag out, mag in, slide |
 | [Gun reload sounds](https://opengameart.org/content/gun-reload-sounds) | SpringySpringo | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Pistol mag in and slide (variants) |
 | [Heartbeat sounds](https://opengameart.org/content/heartbeat-sounds) | bart | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Heartbeat (one lub-dub) |
-| [Swishes Sound Pack](https://opengameart.org/content/swishes-sound-pack) | artisticdude | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Axe swings |
+| [Swishes Sound Pack](https://opengameart.org/content/swishes-sound-pack) | artisticdude | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Axe swings; pitched down for the blunt melee swings (crowbar, pipe wrench, frying pan) |
+| [Impact](https://opengameart.org/content/impact) | qubodup | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Metal layer in the blunt melee hits |
+| [Punch](https://opengameart.org/content/punch) | qubodup | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Body thump of the blunt melee hits |
+| [Thwack Sounds](https://opengameart.org/content/thwack-sounds) | Jordan Irwin (AntumDeluge) | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Blunt melee hits on walls and props |
 | [Footsteps](https://opengameart.org/content/footsteps-0) | GboxMikeFozzy | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie footsteps |
 | [Zombie moans](https://opengameart.org/content/zombie-moans-01-by-emopreben) | EmoPreben | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie idle groans |
 | [Zombie noises and moans](https://opengameart.org/content/zombie-noises-and-moans) | ianzazz | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie groans and an alert growl |
@@ -88,6 +92,9 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [bench_vice_01](https://polyhaven.com/a/bench_vice_01) | Yann Kervran, Antanas Kep | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow workbench vice |
 | [fabric_pattern_05](https://polyhaven.com/a/fabric_pattern_05) | Rob Tuytel | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow upholstery textures |
 | [dirty_carpet](https://polyhaven.com/a/dirty_carpet) | Rohit Seervi | Poly Haven | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Bungalow rug textures |
+| [Pipe Wrench](https://polyhaven.com/a/pipe_wrench), [Crowbar 01](https://polyhaven.com/a/crowbar_01), [Brass Pan 01](https://polyhaven.com/a/brass_pan_01) | Poly Haven | polyhaven.com | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Melee props you can pick up and swing |
+| [Cormorant SC](https://github.com/CatharsisFonts/Cormorant) (Medium, SemiBold) | Christian Thalmann (Catharsis Fonts), the Cormorant Project Authors | [Google Fonts repository](https://github.com/google/fonts/tree/main/ofl/cormorantsc) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/CormorantSC-OFL.txt`) | UI titles, headings, small caps and prompts |
+| [EB Garamond](https://github.com/octaviopardo/EBGaramond12) (Regular, Medium) | Georg Duffner, Octavio Pardo, the EB Garamond Project Authors | [EBGaramond12 repository](https://github.com/octaviopardo/EBGaramond12) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/EBGaramond-OFL.txt`) | Note text, HUD numbers and key letters |
 
 ## Licence notes
 

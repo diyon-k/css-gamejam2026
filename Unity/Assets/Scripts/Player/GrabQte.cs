@@ -1,12 +1,14 @@
 using System;
 using Blink.Combat;
+using Blink.Interaction;
+using Blink.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
 namespace Blink.Player
 {
-    /// <summary>Whatever grabbed you. <see cref="GrabQte"/> pulls the camera onto its face and tells it when to bite, when it's shoved and when it dies.</summary>
+    /// <summary>Whatever grabbed you. <see cref="GrabQte"/> pulls the camera onto its face and tells it when to bite, when it's shoved and when it's flung off.</summary>
     public interface IGrabber
     {
         /// <summary>World point the camera is pulled to look at: the zombie's face.</summary>
@@ -15,31 +17,34 @@ namespace Blink.Player
         /// <summary>Lunge in and bite. On a steady beat from the moment it grabs you; <paramref name="hurts"/> when you missed a ring, and it should damage you.</summary>
         void GrabBite(bool hurts);
 
+        /// <summary>A good press (not the last) pushed it back for a moment.</summary>
+        void GrabShoved();
+
         /// <summary>
-        /// A good press pushed it back. <paramref name="final"/>: that was the last one and you broke free.
-        /// <paramref name="pushedBack"/> false: stay in your face for the killing blow (a headbutt) instead of being shoved off.
+        /// You broke free and your hands just hit its chest: get pushed over backwards, away along <paramref name="away"/>
+        /// (flat, from you to it), and lie stunned for a while before getting back up. It isn't hurt.
         /// </summary>
-        void GrabShoved(bool final, bool pushedBack = true);
+        void GrabThrown(Vector3 away);
 
-        /// <summary>You broke free and landed the killing blow (shot, axe or headbutt). Die now if it didn't already do it; <paramref name="blowDirection"/> is the way it travelled.</summary>
-        void GrabKill(Vector3 blowDirection);
-
-        /// <summary>It's over and time is running normally again. Hand the body back to its AI (if it's still alive).</summary>
+        /// <summary>It's over and time is running normally again. Hand the body back to its AI (if it isn't already).</summary>
         void GrabResolved(bool escaped);
     }
 
     /// <summary>
     /// Quick-time event when a zombie grabs you because you blinked. The world freezes (timeScale 0) apart from the
     /// zombie that has you, which keeps lunging at your face on a beat while the camera is yanked round to stare at it.
+    /// Whatever you were carrying is dropped and your weapon goes away (<see cref="PlayerWeapons"/> brings the
+    /// hands out, and the weapon back once you're free): you fight it off bare-handed.
     /// After a short scare, a white ring appears somewhere on screen and closes onto a red target with a key in its
     /// middle: press that key as they meet (W/A/S/D, or the gamepad's Y/X/A/B face button in the same spot). A hit
     /// shoves the zombie back; the wrong key, bad timing or a ring left to pass means it bites, which costs health with
-    /// a red flash, and the next ring follows with a new key. <see cref="Beats"/> hits and you break free with whatever
-    /// is in your hand: the pistol shoots it point-blank, the axe chops it, bare hands headbutt it (<see cref="Headbutt"/>).
-    /// The blow lands as time eases into slow motion, it drops in a burst of blood, and time eases back to normal. Die
-    /// from the bites and time eases back over your body instead. Timing lives in <see cref="GrabRing"/>.
+    /// a red flash, and the next ring follows with a new key. <see cref="Beats"/> hits and you break free: a two-handed
+    /// shove (<see cref="GrabShovePose"/>) pushes it over backwards, where it lies stunned (unhurt) and then gets up and
+    /// comes for you again, while time eases through slow motion back to normal. Die from the bites and time eases back over your body instead.
+    /// Timing lives in <see cref="GrabRing"/>.
     ///
-    /// Drawn with IMGUI in the HUD's style (thin white, one blood red, small bold caps). Runs on unscaled time.
+    /// Drawn with IMGUI in the <see cref="BlinkTheme"/> style (a thin bone ring closing on a key cap inside a thin red
+    /// circle, red dots for hits). Runs on unscaled time.
     /// Creates itself on first use; no scene setup needed.
     /// </summary>
     public sealed class GrabQte : MonoBehaviour
@@ -47,32 +52,28 @@ namespace Blink.Player
         // Struggle timing, real seconds.
         const int Beats = 3;
         const float MeetSeconds = 1.2f;            // ring closes onto the target this long after appearing (1.5 s in all)
-        const float WindowSeconds = 0.15f;         // ± hit window on the first ring...
-        const float WindowShrinkPerBeat = 0.015f;  // ...narrowing a little with each hit
+        const float WindowSeconds = 0.25f;         // ± hit window on the first ring...
+        const float WindowShrinkPerBeat = 0.01f;   // ...narrowing a little with each hit
         const float GapSeconds = 0.3f;             // after each ring, before the next one shows
         const float IntroSeconds = 0.6f;           // the scare lands before the first ring shows
         const float BiteSeconds = 0.9f;
         const float BlinkGraceSeconds = 0.5f;
         const float LookSharpness = 14f;           // how hard the camera is yanked onto the face
 
-        // Escape: shove, killing blow in slow motion, ease back to full speed. Seconds after the last hit; a blow that
-        // lands later (a slow axe) pushes the rest back with it.
-        const float KillShotAt = 0.22f;
-        const float SlowMoScale = 0.3f;
-        const float SlowMoUntil = 0.95f;
-        const float KillEndsAt = 1.5f;
-        const float KillDamage = 1000f;
+        // Escape, seconds after the last hit: the hands pull in and drive out (GrabShovePose), and as they land on its
+        // chest it's pushed over, then time eases into slow motion as it falls, and back up to full speed.
+        const float LaunchAt = GrabShovePose.ContactSeconds;
+        const float SlowMoScale = 0.35f;
+        const float SlowMoUntil = 0.65f;
+        const float EscapeEndsAt = 1.25f;
         // Death: hold on the last bite, then ease back.
         const float DeathHoldSeconds = 0.6f;
         const float DeathEndsAt = 1.2f;
 
-        // Look, in pixels like GunHud.
-        const float TargetRadius = 28f, TargetThickness = 6f, RingThickness = 2.5f;
-        static readonly Color Blood = new(0.85f, 0.15f, 0.12f, 0.95f);
-        static readonly Color Shadow = new(0f, 0f, 0f, 0.5f);
+        // Look: target radius in 1080p pixels (scaled by BlinkTheme); colours come from the theme.
+        const float TargetRadius = 38f;
 
-        enum Phase { Struggle, Kill, Death }
-        enum KillMove { Shot, Chop, Headbutt }
+        enum Phase { Struggle, Escape, Death }
 
         static GrabQte _instance;
         static float _endedAt = float.NegativeInfinity;
@@ -82,6 +83,12 @@ namespace Blink.Player
 
         /// <summary>A correct press that didn't finish the QTE (a shove that hasn't broken free yet).</summary>
         public static event Action Beat;
+
+        /// <summary>The last press landed: the hands start the two-handed shove (<see cref="GrabShovePose"/>).</summary>
+        public static event Action BrokeFree;
+
+        /// <summary>The shove lands, <see cref="GrabShovePose.ContactSeconds"/> after <see cref="BrokeFree"/>: it's pushed over.</summary>
+        public static event Action ShovedOff;
 
         /// <summary>
         /// True during a QTE and briefly after, so the presses and clicks used for it don't register as
@@ -107,6 +114,8 @@ namespace Blink.Player
             Began = null;
             Resolved = null;
             Beat = null;
+            BrokeFree = null;
+            ShovedOff = null;
         }
 
         /// <summary>Starts a QTE for <paramref name="grabber"/>. Returns false if one is already running.</summary>
@@ -121,28 +130,23 @@ namespace Blink.Player
         IGrabber _grabber;
         GrabRing _ring;
         Phase _phase;
-        bool _running, _gamepad, _blowLanded, _swingStarted, _apexSeen;
+        bool _running, _gamepad, _launched;
         int _bites;
         float _biteTimer, _endClock, _pulse, _flash, _hud = 1f, _shade = 1f;
-        KillMove _move;
-        float _killAt; // when the killing blow lands, seconds into the Kill phase
         float _baseFixedDeltaTime;
         Vector2 _spot; // normalised screen position of the current target, y down
         PlayerController _player;
         Health _playerHealth;
         CameraFeel _cameraFeel;
-        PlayerWeapons _weapons;
-        Gun _gun;
 
         Texture2D _vignette;
-        GUIStyle _big, _key;
 
         void Begin(IGrabber grabber)
         {
             _grabber = grabber;
             _running = true;
             _phase = Phase.Struggle;
-            _blowLanded = _swingStarted = _apexSeen = false;
+            _launched = false;
             _ring = new GrabRing(Beats, MeetSeconds, WindowSeconds, WindowShrinkPerBeat, GapSeconds, IntroSeconds, Random01);
             _spot = GrabRing.PickSpot(Random01, null, Aspect);
             _bites = 0;
@@ -153,39 +157,20 @@ namespace Blink.Player
 
             _baseFixedDeltaTime = Time.fixedDeltaTime;
             Time.timeScale = 0f;
+            Carryable.DropHeld(); // both hands on it; the prop hangs where it was until time runs again
             _player = FindAnyObjectByType<PlayerController>();
             if (_player != null)
             {
                 _player.InputEnabled = false;
                 _playerHealth = _player.GetComponent<Health>();
                 _cameraFeel = _player.GetComponentInChildren<CameraFeel>();
-                _weapons = _player.GetComponent<PlayerWeapons>();
-                if (_weapons == null) _weapons = PlayerWeapons.Instance;
-                _gun = _weapons != null ? _weapons.Pistol : _player.GetComponentInChildren<Gun>();
             }
             Began?.Invoke();
         }
 
-        /// <summary>How you finish it, from what's in your hand when you break free.</summary>
-        KillMove PickKillMove()
-        {
-            if (_weapons == null) return _gun != null ? KillMove.Shot : KillMove.Headbutt; // no weapon hub (test scenes)
-            switch (_weapons.ActiveKind)
-            {
-                case WeaponKind.Pistol when _gun != null: return KillMove.Shot;
-                case WeaponKind.Axe when _weapons.Axe != null && _weapons.Axe.ViewModel != null: return KillMove.Chop;
-                default: return KillMove.Headbutt;
-            }
-        }
-
         // ponytail: last-updated device wins; a drifting stick can claim it, compare real button presses if that bites.
-        static bool LastUsedGamepad()
-        {
-            var pad = Gamepad.current;
-            if (pad == null) return false;
-            double kbm = Math.Max(Keyboard.current?.lastUpdateTime ?? 0, Mouse.current?.lastUpdateTime ?? 0);
-            return pad.lastUpdateTime > kbm;
-        }
+        // A pad's lastUpdateTime moves with stick noise too, so ask the UI's device tracker, which only counts real input.
+        static bool LastUsedGamepad() => Gamepad.current != null && BlinkInput.UsingGamepad;
 
         static bool IsGone(IGrabber g) => g == null || (g is UnityEngine.Object o && o == null);
 
@@ -203,7 +188,7 @@ namespace Blink.Player
             switch (_phase)
             {
                 case Phase.Struggle: UpdateStruggle(dt); break;
-                case Phase.Kill: UpdateKill(dt); break;
+                case Phase.Escape: UpdateEscape(dt); break;
                 case Phase.Death: UpdateDeath(dt); break;
             }
         }
@@ -225,24 +210,15 @@ namespace Blink.Player
             switch (_ring.Press(key))
             {
                 case GrabRing.Result.Hit:
-                    _grabber.GrabShoved(false, pushedBack: true);
+                    _grabber.GrabShoved();
                     Jolt(1.5f, 0.03f);
                     Beat?.Invoke();
                     _spot = GrabRing.PickSpot(Random01, _spot, Aspect);
                     _biteTimer = Mathf.Max(_biteTimer, 0.5f); // let the shove land before it lunges again
                     break;
                 case GrabRing.Result.Escaped:
-                    _move = PickKillMove();
-                    // The headbutt needs it close; the shot and the swing want room.
-                    _grabber.GrabShoved(true, pushedBack: _move != KillMove.Headbutt);
-                    if (_move != KillMove.Headbutt) Jolt(2f, 0.05f); // the headbutt draws the head back itself
-                    _killAt = _move switch
-                    {
-                        KillMove.Chop => Mathf.Max(KillShotAt, _weapons.Axe.ViewModel.SecondsToApex),
-                        KillMove.Headbutt => Headbutt.ContactSeconds,
-                        _ => KillShotAt,
-                    };
-                    _phase = Phase.Kill;
+                    BrokeFree?.Invoke(); // it stays in your face until the hands land
+                    _phase = Phase.Escape;
                     _endClock = 0f;
                     break;
                 case GrabRing.Result.Miss:
@@ -266,120 +242,39 @@ namespace Blink.Player
             _endClock = 0f;
         }
 
-        void UpdateKill(float dt)
+        void UpdateEscape(float dt)
         {
             _endClock += dt;
             bool gone = IsGone(_grabber);
-            if (!_blowLanded && _player != null && !gone) _player.TurnTowards(_grabber.GrabFacePoint, LookSharpness, dt);
+            if (!_launched && _player != null && !gone) _player.TurnTowards(_grabber.GrabFacePoint, LookSharpness, dt);
 
-            if (_move == KillMove.Chop) DriveSwing(dt);
-            else if (_move == KillMove.Headbutt && _cameraFeel != null)
+            if (!_launched && _endClock >= LaunchAt)
             {
-                Headbutt.Sample(_endClock, out var offset, out var tilt);
-                _cameraFeel.SetScriptedOffset(offset, tilt);
+                _launched = true;
+                Jolt(2f, 0f);
+                ShovedOff?.Invoke();
+                if (!gone) _grabber.GrabThrown(Away());
             }
 
-            // Time eases in so the blow's effects and the falling body play in slow motion, then up to full speed.
-            float late = _killAt - KillShotAt, slowUntil = SlowMoUntil + late, endsAt = KillEndsAt + late;
-            SetTimeScale(_endClock < _killAt ? 0f
-                : _endClock < slowUntil ? SlowMoScale * Smooth01((_endClock - _killAt) / 0.08f)
-                : Mathf.Lerp(SlowMoScale, 1f, Smooth01((_endClock - slowUntil) / (endsAt - slowUntil))));
+            // Frozen until it's flung, then slow motion while it flies, then up to full speed.
+            SetTimeScale(_endClock < LaunchAt ? 0f
+                : _endClock < SlowMoUntil ? SlowMoScale * Smooth01((_endClock - LaunchAt) / 0.08f)
+                : Mathf.Lerp(SlowMoScale, 1f, Smooth01((_endClock - SlowMoUntil) / (EscapeEndsAt - SlowMoUntil))));
 
-            if (!_blowLanded && BlowDue())
-            {
-                _blowLanded = true;
-                Vector3 eye = Eye;
-                Vector3 direction = gone ? (_player != null ? _player.transform.forward : Vector3.forward)
-                    : (_grabber.GrabFacePoint - eye).normalized;
-                switch (_move)
-                {
-                    case KillMove.Shot: _gun.FireScripted(KillDamage); break; // muzzle flash, recoil, blood; usually the kill
-                    case KillMove.Headbutt: if (!gone) HeadbuttHit(eye, direction); break;
-                    // Chop: the axe's own strike already hit at the apex (damage, blood, sound, camera).
-                }
-                if (!gone) _grabber.GrabKill(direction); // makes sure of it
-            }
-
-            float exit = Smooth01((_endClock - _killAt) / (endsAt - _killAt));
-            _hud = 1f - Smooth01((_endClock - _killAt) / 0.2f);
-            _shade = 1f - exit;
-            if (_endClock >= endsAt) Finish();
+            _hud = 1f - Smooth01((_endClock - LaunchAt) / 0.2f);
+            _shade = 1f - Smooth01((_endClock - LaunchAt) / (EscapeEndsAt - LaunchAt));
+            if (_endClock >= EscapeEndsAt) Finish();
         }
 
-        Vector3 Eye => _cameraFeel != null ? _cameraFeel.transform.position
-            : _player != null ? _player.transform.position + Vector3.up * 1.6f : Vector3.zero;
-
-        bool BlowDue() => _move switch
+        /// <summary>Flat direction from you to the zombie: the way the shove sends it.</summary>
+        Vector3 Away()
         {
-            KillMove.Chop => _apexSeen || _endClock >= _killAt + 0.25f, // fallback if the swing couldn't play
-            KillMove.Headbutt => _endClock >= _killAt,                  // forehead meets face
-            _ => _endClock >= _killAt + 0.02f,                          // a frame into slow motion, so the effects can move
-        };
-
-        /// <summary>
-        /// Plays the axe swing so its strike apex lands at <see cref="_killAt"/>. The world is frozen until then, so the
-        /// swing is pushed along in real time up to the apex; after it the follow-through plays in the slow motion.
-        /// </summary>
-        void DriveSwing(float dt)
-        {
-            var axe = _weapons.Axe;
-            var view = axe.ViewModel;
-            if (!_swingStarted)
-            {
-                if (_endClock < _killAt - view.SecondsToApex) return;
-                view.CancelSwing(); // a swing frozen mid-way when it grabbed you
-                _swingStarted = true;
-                // Aim the blade at its head: the sweep alone would take the arms reaching for you.
-                var head = IsGone(_grabber) ? null : FaceCollider(out _);
-                bool swung = head != null ? axe.TrySwingAt(head) : axe.TrySwing();
-                if (!swung) return; // BlowDue's fallback kills it anyway
-            }
-            if (_apexSeen) return;
-            view.Skip(Mathf.Max(0f, dt - Time.deltaTime)); // whatever world time didn't already move it
-            if (view.ApexReached) _apexSeen = true;
+            Vector3 forward = _player != null ? _player.transform.forward : Vector3.forward;
+            if (_player == null) return forward;
+            Vector3 d = _grabber.GrabFacePoint - _player.transform.position;
+            d.y = 0f;
+            return d.sqrMagnitude > 1e-4f ? d.normalized : forward;
         }
-
-        /// <summary>
-        /// The headbutt connects: finds the zombie's head (any part of it, failing that) right at its face, kills it and
-        /// reports a melee hit so the blood, hit marker, camera, rumble and sound all react like an axe hit.
-        /// </summary>
-        void HeadbuttHit(Vector3 eye, Vector3 direction)
-        {
-            Vector3 face = _grabber.GrabFacePoint;
-            var best = FaceCollider(out var target);
-            if (best == null) return; // nothing to bleed; GrabKill still drops it
-
-            Vector3 point = best.ClosestPoint(eye);
-            if ((point - eye).sqrMagnitude < 1e-6f) point = face;
-            Vector3 normal = (eye - point).sqrMagnitude > 1e-6f ? (eye - point).normalized : -direction;
-            target.TakeDamage(KillDamage, point, direction);
-            if (_weapons != null)
-                _weapons.ReportMeleeHit(new MeleeHitInfo(WeaponKind.Hands, point, normal, direction, best, target, target.IsDead));
-        }
-
-        /// <summary>The grabber's head collider (or, failing that, whatever part of it is nearest its face).</summary>
-        Collider FaceCollider(out IDamageable target)
-        {
-            Vector3 face = _grabber.GrabFacePoint;
-            int count = Physics.OverlapSphereNonAlloc(face, 0.25f, _overlap, Physics.AllLayers, QueryTriggerInteraction.Ignore);
-            Collider best = null;
-            target = null;
-            float bestScore = float.MaxValue;
-            for (int i = 0; i < count; i++)
-            {
-                var c = _overlap[i];
-                var d = c.GetComponentInParent<IDamageable>();
-                if (d == null || ReferenceEquals(d, _playerHealth)) continue;
-                float score = (c.ClosestPoint(face) - face).sqrMagnitude - (Hitbox.IsHeadCollider(c) ? 1f : 0f); // head first
-                if (score >= bestScore) continue;
-                bestScore = score;
-                best = c;
-                target = d;
-            }
-            return best;
-        }
-
-        readonly Collider[] _overlap = new Collider[16];
 
         void UpdateDeath(float dt)
         {
@@ -425,6 +320,12 @@ namespace Blink.Player
             GrabKey.Up => pad.buttonNorth, GrabKey.Left => pad.buttonWest, GrabKey.Down => pad.buttonSouth, _ => pad.buttonEast,
         };
 
+        /// <summary>The face button for a grab key, by position (matches <see cref="ButtonFor"/>).</summary>
+        public static PadDirection PadPosition(GrabKey k) => k switch
+        {
+            GrabKey.Up => PadDirection.Up, GrabKey.Left => PadDirection.Left, GrabKey.Down => PadDirection.Down, _ => PadDirection.Right,
+        };
+
         static string Label(GrabKey k, bool gamepad) => k switch
         {
             GrabKey.Up => gamepad ? "Y" : "W",
@@ -460,7 +361,6 @@ namespace Blink.Player
             _endedAt = Time.unscaledTime;
             Time.timeScale = 1f;
             Time.fixedDeltaTime = _baseFixedDeltaTime;
-            if (_cameraFeel != null) _cameraFeel.ClearScriptedOffset();
             if (_player != null && !PlayerDead) _player.InputEnabled = true;
             var grabber = _grabber;
             _grabber = null;
@@ -474,7 +374,6 @@ namespace Blink.Player
             {
                 Time.timeScale = 1f;
                 Time.fixedDeltaTime = _baseFixedDeltaTime;
-                if (_cameraFeel != null) _cameraFeel.ClearScriptedOffset();
             }
             if (_instance == this) _instance = null;
             if (_vignette != null) Destroy(_vignette);
@@ -502,71 +401,25 @@ namespace Blink.Player
                 GUI.DrawTexture(rect, _vignette, ScaleMode.StretchToFill, true);
                 GUI.color = old;
             }
-            if (_flash > 0f) Fill(new Rect(0f, 0f, w, h), new Color(0.6f, 0f, 0f, _flash));
+            if (_flash > 0f) BlinkTheme.Fill(new Rect(0f, 0f, w, h), BlinkTheme.Fade(BlinkTheme.Accent, _flash));
 
             if (_hud <= 0f) return;
             if (_phase == Phase.Struggle && _ring.RingVisible) DrawRing(new Vector2(_spot.x * w, _spot.y * h));
-            DrawPips(w, h);
-            if (_phase == Phase.Death)
-            {
-                _big.normal.textColor = Blood * new Color(1f, 1f, 1f, _hud);
-                GUI.Label(new Rect(0f, h * 0.22f, w, 50f), "BITTEN", _big);
-            }
+            BlinkWidgets.QtePips(_ring.Hits, Beats, _hud);
+            if (_phase == Phase.Death) BlinkWidgets.Banner("Bitten", _hud);
         }
 
         void DrawRing(Vector2 c)
         {
             float a = Mathf.Clamp01(_ring.RingSeconds / 0.1f) * _hud;
-            var fade = new Color(1f, 1f, 1f, a);
-            Circle(c, TargetRadius, TargetThickness + 3f, Shadow * fade);
-            Circle(c, TargetRadius, TargetThickness, Blood * fade);
-
-            float r = TargetRadius * _ring.RingScale;
-            Circle(c, r, RingThickness + 2f, Shadow * fade);
-            Circle(c, r, RingThickness, fade);
-
-            // The key to press, in the middle of the target, with a drop shadow so it reads over the zombie's face.
-            var box = new Rect(c.x - TargetRadius, c.y - TargetRadius, TargetRadius * 2f, TargetRadius * 2f);
-            var content = new GUIContent(Label(_ring.Key, _gamepad));
-            _key.normal.textColor = Shadow * fade;
-            GUI.Label(new Rect(box.x + 1.5f, box.y + 1.5f, box.width, box.height), content, _key);
-            _key.normal.textColor = Color.white * fade;
-            GUI.Label(box, content, _key);
-        }
-
-        void DrawPips(float w, float h)
-        {
-            const float size = 8f, gap = 6f;
-            var fade = new Color(1f, 1f, 1f, _hud);
-            float x = w * 0.5f - (Beats * size + (Beats - 1) * gap) * 0.5f, y = h - 56f;
-            for (int i = 0; i < Beats; i++)
-            {
-                var r = new Rect(x + i * (size + gap), y, size, size);
-                bool on = i < _ring.Hits;
-                Fill(new Rect(r.x - 1f, r.y - 1f, r.width + 2f, r.height + 2f), (on ? Blood : new Color(1f, 1f, 1f, 0.5f)) * fade);
-                Fill(r, (on ? Blood : new Color(0f, 0f, 0f, 0.6f)) * fade);
-            }
-        }
-
-        /// <summary>An anti-aliased circle outline centred on <paramref name="radius"/>.</summary>
-        static void Circle(Vector2 centre, float radius, float thickness, Color color)
-        {
-            float outer = radius + thickness * 0.5f;
-            var rect = new Rect(centre.x - outer, centre.y - outer, outer * 2f, outer * 2f);
-            GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, color, thickness, outer);
+            // The label follows the device in use, live: the key on keyboard, the face button by position on a pad.
+            _gamepad = BlinkInput.UsingGamepad;
+            var glyph = _gamepad ? InputGlyph.Face(PadPosition(_ring.Key)) : InputGlyph.Key(Label(_ring.Key, false));
+            BlinkWidgets.QteTarget(c, BlinkTheme.Px(TargetRadius), _ring.RingScale, glyph, a);
         }
 
         void EnsureAssets()
         {
-            if (_big == null)
-            {
-                _big = new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 30, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter,
-                    normal = { textColor = Color.white },
-                };
-                _key = new GUIStyle(_big) { fontSize = 24, padding = new RectOffset(), margin = new RectOffset() };
-            }
             if (_vignette != null) return;
 
             // Clear in the middle, dark at the edges (alpha only; tinted when drawn).
@@ -585,14 +438,6 @@ namespace Blink.Player
             }
             _vignette.SetPixels32(pixels);
             _vignette.Apply();
-        }
-
-        static void Fill(Rect rect, Color color)
-        {
-            var old = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
-            GUI.color = old;
         }
     }
 }

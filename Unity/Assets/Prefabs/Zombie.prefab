@@ -150,8 +150,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Mobs.ZombieRagdoll
   animator: {fileID: 0}
-  hitImpulse: 10
-  knockbackSpeed: 1.5
+  hitImpulse: 2.5
+  knockbackSpeed: 0.375
   headDamageMultiplier: 2
   settleSeconds: 3
   restSpeed: 0.08
@@ -233,7 +233,7 @@ MonoBehaviour:
   staggerSeconds: 0.6
   legStaggerBonus: 0.5
   animationSlowdown: 0.5
-  knockbackSpeed: 2.4
+  knockbackSpeed: 0.6
   knockbackFade: 0.12
 --- !u!1001 &3141514465635760509
 PrefabInstance:

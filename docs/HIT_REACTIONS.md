@@ -1,6 +1,6 @@
 # Hit reactions
 
-Getting hit visibly affects both living zombies and dead bodies. Both are new components that only listen to existing events, so no weapon, ragdoll or brain script was changed.
+Getting hit visibly affects both living zombies and dead bodies. Both reactions are components that only listen to existing events, so no weapon or brain script was changed. Axe kills also launch the body (in `ZombieRagdoll`, see the end).
 
 ## Living zombies: `ZombieHitReaction` (Mobs, on the Zombie root)
 
@@ -27,11 +27,22 @@ Getting hit visibly affects both living zombies and dead bodies. Both are new co
 
 - **Gunshots:** the weapons ignore the `Corpse` layer, so for every `PlayerWeapons.RayFired` this re-casts the shot against `Corpse` only, up to where the shot stopped (or its full range on a miss). Without a hub it listens to every `Gun.Fired` instead.
 - **The push:** the first corpse limb found gets `AddForceAtPosition(..., Impulse)` along the shot. Most of a downward shot's downward part is taken out, with a little lift added, so a body on the floor moves instead of being pressed into it. The bullet still carries on to its target.
-- **Axe:** on `AxeViewModel.StrikeApex` (through `PlayerWeapons.Axe.ViewModel`) a sphere sweep against `Corpse`, out to the axe's reach, shoves the nearest corpse limb. It is processed in `LateUpdate` and stops short of whatever the blade connected with (`MeleeHit`).
+- **Axe:** on `AxeViewModel.StrikeApex` (through `PlayerWeapons.Axe.ViewModel`) a sphere sweep against `Corpse`, out to the axe's reach, shoves the nearest corpse limb (`axeImpulse`) and launches the whole body along the swing (`axeLaunchSpeed`, `axeLaunchLift`, through `ZombieRagdoll.Fling`, the same flight as an axe kill), so it flies about 3.5 m (a pistol shot only nudges it). It isn't frozen again until that flight has ended. It is processed in `LateUpdate` and stops short of whatever the blade connected with (`MeleeHit`).
 - **No double push on the kill:** the killing shot or blow is skipped, because `ZombieRagdoll` already pushed that body. The first report of a body that died this frame counts as the kill.
 - **Frozen bodies:** a frozen body is woken (every bone body dynamic again) and frozen again on its own `RagdollSettleClock` (at rest for 0.4 s, or 2.5 s at most). If a body that is still falling gets frozen by its own ragdoll mid-push, it is woken again with its velocities until this clock says it has settled.
 - **Blink skips:** it steps physics for the woken bodies, but only when no ragdoll is still falling. Otherwise `RagdollSkipper` already steps the scene, and stepping it again would move everything twice.
 - **Setup:** it creates itself after the first scene loads (`RuntimeInitializeOnLoadMethod`, `DontDestroyOnLoad`), so no shared prefab had to change. To tune it, place one in a scene (or on GameSystems) and the bootstrap does nothing.
-- **Knobs:** `pistolImpulse` (35 N·s), `axeImpulse` (80), `otherImpulse` (35), `floorDeflect`, `lift`, `axeRadius`, `settleSeconds`, `restSpeed`, `restSeconds`, `maxSimulatedSeconds`. It raises `Pushed(body, point, impulse)` for effects.
+- **Knobs:** `pistolImpulse` (35 N·s), `axeImpulse` (80), `otherImpulse` (35), `axeLaunchSpeed` (4.5 m/s), `axeLaunchLift` (2 m/s), `floorDeflect`, `lift`, `axeRadius`, `settleSeconds`, `restSpeed`, `restSeconds`, `maxSimulatedSeconds`. It raises `Pushed(body, point, impulse)` for effects.
 
-Pure maths (`HitReactionMath`, `FlinchSpring`, `StaggerState`) is covered by `Tests/EditMode/HitReactionTests.cs`.
+## Flying bodies: axe kills and knockdowns (`ZombieRagdoll`)
+
+Axe kills, axe hits on corpses and melee-prop knockdowns (`SwingableProp` through `MobController.KnockDown`) all fly the same way: one flight mechanism in `ZombieRagdoll`, described under **Flight** below.
+
+- **Detection:** `ZombieRagdoll` holds one static subscription to `PlayerWeapons.MeleeHit`, shared by every zombie, like `ZombieHitReaction`. The hub raises it right after the damage, in the same call, so a killing blow has already activated the ragdoll (with the usual `knockbackSpeed` and `hitImpulse` death push). A hit with `Killed`, weapon `Axe`, on a ragdoll that died this frame calls `LaunchFromBlow`. No weapon or `Hitbox` code knows about it.
+- **Launch:** every body gets `axeLaunchSpeed` (6 m/s) along the swing, flattened, plus `axeLaunchLift` (2.5 m/s) up, and the part hit gets `axeHitImpulse` (15 N·s) at the hit point for spin. In an open room the body flies about 6.5 m, against about 1 m for a pistol kill. `LaunchFromBlow(body, point, direction)` and `Fling(velocity)` (velocity only, for a body that is already limp) are public for other heavy blows. `Launch(velocity, point)` is the knockdown: it also knocks a living zombie down or wakes a frozen corpse, and spins the limb nearest `point` (`knockdownSpin`).
+- **Flight** (every launch: `Launch`, `LaunchFromBlow`, `Fling`; `IsFlying`, `EndFlight()`):
+  - While flying the bodies use `launchCollision` (`ContinuousSpeculative`), so they can't pass through walls (a 3 cm wall stops them; with `Discrete` the body goes through). Speculative also handles limbs whipping round, which `ContinuousDynamic` doesn't (spinning forearms sank up to 20 cm into the floor). It goes back to `Discrete` once every body is slower than `launchEndSpeed` (2 m/s), after `settleSeconds` at most, and always before a body is frozen or a knocked-down zombie gets up (so the get-up blend and the Animator take over discrete, kinematic bones).
+  - A flying body is never frozen mid-flight, and a knocked-down one is never frozen at all (it gets up instead). A dead body freezes once its flight has ended and it has settled; a zombie killed while knocked down keeps flying and freezes after it lands. `CorpseShotReaction` also waits for the flight to end before re-freezing a corpse it woke. The flight (`RagdollFlight`) and settle clocks only run in `Update` (world time), never on a blink skip, so `RagdollSkipper` stepping physics mid-flight just moves the flight on.
+  - Joint projection and `maxDepenetrationVelocity` (2 m/s) are unchanged. The latter only caps how fast overlaps are pushed apart, not the launch speed. Tighter projection or more solver velocity iterations during the launch were tried: they cut the brief joint stretch on impact but dragged limbs 15-20 cm into the floor, so they were left out.
+
+Pure maths (`HitReactionMath`, `FlinchSpring`, `StaggerState`) is covered by `Tests/EditMode/HitReactionTests.cs`; the launch velocity, the flight (`RagdollFlight`) and when a limp body may freeze (`RagdollMath.StepLimp`: knocked down never, a dead launch only after it lands) by `RagdollTests.cs`.
