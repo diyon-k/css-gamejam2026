@@ -31,7 +31,7 @@ namespace Blink.EditorTools
         const string EyeLightName = "GlowEyeLight";
         static readonly Color EyeColor = new Color(1f, 0.02f, 0.01f) * 16f; // HDR so Bloom catches it hard; much higher burns out to white
         const float EyeDiameter = 0.034f; // metres
-        const float EyeLightIntensity = 3f, EyeLightRange = 2.5f; // red spill on the face and nearby walls
+        const float EyeLightIntensity = 0.375f, EyeLightRange = 2.5f; // red spill on the face and nearby walls
 
         [MenuItem("BLINK/Zombies/Build White Clown Zombie")]
         public static void Build()
