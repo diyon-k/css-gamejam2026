@@ -130,6 +130,7 @@ namespace Blink.Combat
             var c = BlinkTheme.ScreenCentre;
             if (themeColors) BlinkWidgets.Reticle(c, 1f);
             else BlinkWidgets.Reticle(c, 1f, crosshairColor);
+            if (weapons != null) BlinkWidgets.CooldownRing(c, weapons.Cooldown01, 1f);
 
             float t = (Time.unscaledTime - _markerAt) / MarkerSeconds;
             if (t >= 1f) return;
