@@ -16,8 +16,10 @@ namespace Blink.Interaction
     [RequireComponent(typeof(Rigidbody))]
     public sealed class SwingableProp : MonoBehaviour, IInteractable
     {
-        // Where the item's grip sits in the axe view model's Grip space: between the hands on the haft (+Y up the haft).
-        static readonly Vector3 HandPoint = new(0f, -0.05f, 0f);
+        // Where the item's grip sits in the axe view model's Grip space (+Y up the haft): at the lower (left) hand, as
+        // on the axe, so both hands close on the handle. Higher and the handle ends above the left fist and pokes
+        // through it. Keep in step with LeftHandTarget's y in ViewModel_Axe.
+        static readonly Vector3 HandPoint = new(0f, -0.14f, 0f);
 
         [SerializeField] string displayName = "plank";
 
