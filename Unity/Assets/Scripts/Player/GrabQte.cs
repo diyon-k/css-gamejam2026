@@ -52,8 +52,8 @@ namespace Blink.Player
         // Struggle timing, real seconds.
         const int Beats = 3;
         const float MeetSeconds = 1.2f;            // ring closes onto the target this long after appearing (1.5 s in all)
-        const float WindowSeconds = 0.15f;         // ± hit window on the first ring...
-        const float WindowShrinkPerBeat = 0.015f;  // ...narrowing a little with each hit
+        const float WindowSeconds = 0.25f;         // ± hit window on the first ring...
+        const float WindowShrinkPerBeat = 0.01f;   // ...narrowing a little with each hit
         const float GapSeconds = 0.3f;             // after each ring, before the next one shows
         const float IntroSeconds = 0.6f;           // the scare lands before the first ring shows
         const float BiteSeconds = 0.9f;
