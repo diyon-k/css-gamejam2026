@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 42009090297751718}
   - component: {fileID: 8742776031231881677}
   - component: {fileID: 2109156320880567613}
+  - component: {fileID: 3842554834860264839}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -142,3 +143,16 @@ MonoBehaviour:
   smokeWidth: {x: 0.025, y: 0.1}
   smokeRise: 0.25
   poolSize: 4
+--- !u!114 &3842554834860264839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 840f57cce545d414f8cf45d2d72b6073, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Mobs.RagdollSkipper
+  maxSimulatedSeconds: 0.5
