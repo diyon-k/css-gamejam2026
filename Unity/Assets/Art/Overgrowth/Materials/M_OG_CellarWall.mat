@@ -1,0 +1,111 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_OG_CellarWall
+  m_Shader: {fileID: 4800000, guid: eb165c2b93ac8f14aa3a34ba2c29829c, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 1
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BottomArm:
+        m_Texture: {fileID: 2800000, guid: a2d1a1fd8a768b0489aef309bc506775, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BottomMap:
+        m_Texture: {fileID: 2800000, guid: 0fdc6b2f822ef924ca2a9d83e5d8ff5f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BottomNormal:
+        m_Texture: {fileID: 2800000, guid: f9918cc847c749141a275a8d8731d6ff, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FacadeArm:
+        m_Texture: {fileID: 2800000, guid: 354d547b9952ea64caeb431c1a244b8d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FacadeMap:
+        m_Texture: {fileID: 2800000, guid: 77ec1d39b6c617e45bdd9d0336199972, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FacadeNormal:
+        m_Texture: {fileID: 2800000, guid: cdbf83500ccb52142bc5ce0e1b3bceee, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MossArm:
+        m_Texture: {fileID: 2800000, guid: 84840e84513bb4d47ae571f604f02d8b, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MossMap:
+        m_Texture: {fileID: 2800000, guid: 6930e0e73c8973b41a34deb4fcd575e3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MossNormal:
+        m_Texture: {fileID: 2800000, guid: 596cbb463aee07f479aafe4efbda3a0d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NoiseMap:
+        m_Texture: {fileID: 2800000, guid: 60bcac057b4064145a6c6db349495ead, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SideArm:
+        m_Texture: {fileID: 2800000, guid: 354d547b9952ea64caeb431c1a244b8d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SideMap:
+        m_Texture: {fileID: 2800000, guid: 77ec1d39b6c617e45bdd9d0336199972, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _SideNormal:
+        m_Texture: {fileID: 2800000, guid: cdbf83500ccb52142bc5ce0e1b3bceee, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TopArm:
+        m_Texture: {fileID: 2800000, guid: a2d1a1fd8a768b0489aef309bc506775, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TopMap:
+        m_Texture: {fileID: 2800000, guid: 0fdc6b2f822ef924ca2a9d83e5d8ff5f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TopNormal:
+        m_Texture: {fileID: 2800000, guid: f9918cc847c749141a275a8d8731d6ff, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AOStrength: 1
+    - _BottomScale: 3
+    - _Damp: 1
+    - _FacadeScale: 2.5
+    - _Grime: 0.6
+    - _MossAmount: 0.1
+    - _MossScale: 1.5
+    - _MossUp: 0.2
+    - _NormalStrength: 1
+    - _SideScale: 2.5
+    - _SmoothScale: 1
+    - _TopScale: 3
+    m_Colors:
+    - _BottomTint: {r: 1, g: 1, b: 1, a: 1}
+    - _FacadeTint: {r: 0.8, g: 0.8, b: 0.78, a: 1}
+    - _MossTint: {r: 0.8, g: 0.85, b: 0.7, a: 1}
+    - _SideTint: {r: 0.7, g: 0.7, b: 0.66, a: 1}
+    - _TopTint: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

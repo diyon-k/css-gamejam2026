@@ -1,13 +1,14 @@
 """Run: python test_blink_server.py"""
 from types import SimpleNamespace as P
 
+import math
 import os
 import subprocess
 import sys
 
 import cv2
 
-from blink_server import EyeHysteresis, camera_backend, closest_face, process_alive
+from blink_server import EyeHysteresis, camera_backend, closest_face, head_turn_deg, process_alive
 
 eyes = EyeHysteresis(close_at=0.5, open_at=0.35)
 assert eyes.update(0.2) is False
@@ -26,6 +27,14 @@ assert closest_face([big, small, wide_flat]) == 0
 assert camera_backend("win32") == cv2.CAP_DSHOW
 assert camera_backend("darwin") == cv2.CAP_AVFOUNDATION
 assert camera_backend("linux") == cv2.CAP_ANY
+
+def yaw(deg):  # rotation about the vertical axis (head turned left/right)
+    c, s = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    return [[c, 0, s, 0], [0, 1, 0, 0], [-s, 0, c, 0], [0, 0, 0, 1]]
+
+assert abs(head_turn_deg(yaw(0))) < 1e-6
+assert abs(head_turn_deg(yaw(45)) - 45) < 1e-6
+assert abs(head_turn_deg(yaw(-60)) - 60) < 1e-6
 
 assert process_alive(os.getpid()) is True
 finished = subprocess.Popen([sys.executable, "-c", "pass"])

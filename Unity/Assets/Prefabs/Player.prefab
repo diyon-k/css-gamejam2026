@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 6127039504923669072}
   - component: {fileID: 2525679010966593557}
   - component: {fileID: 9137140159218555530}
+  - component: {fileID: 1529825769354051434}
+  - component: {fileID: 6374863551038930586}
   m_Layer: 9
   m_Name: Player
   m_TagString: Player
@@ -986,3 +988,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c79071c699fe2fd4b8965bd037571826, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.AxeViewModel
+--- !u!114 &1529825769354051434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370471841403644919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a3802b86056fe74796290144510ac49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Inventory
+  lightItemId: candle
+--- !u!114 &6374863551038930586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370471841403644919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c811312fb3d7fb4cbd9d3376cbf427b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Interactor
+  reach: 2.2

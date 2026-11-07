@@ -23,6 +23,9 @@ GameObject:
   - component: {fileID: 1429646944804865027}
   - component: {fileID: 2923958057281167660}
   - component: {fileID: 6620184735510936172}
+  - component: {fileID: 8105300627443483699}
+  - component: {fileID: 6657893017002333534}
+  - component: {fileID: 2940954342817297361}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -291,3 +294,134 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c4e1b9a2d5f4e8a9b3c6d1e0f2a4b57, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Player.WakeUpSequence
+  lids:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1.4
+      value: 0.6
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 2.1
+      value: 0.97
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 3.4
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 3.9
+      value: 0.7
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 5.2
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  seconds: 6.5
+  sitUpAt: 3
+  lyingPitch: -70
+  lyingRoll: 12
+  lyingDrop: 0.9
+  prompt: BLINK to begin
+--- !u!114 &8105300627443483699
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c847ff4b7043f6459f2df64f61ea0e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.DayNight.GameClock
+  startHour: 21
+  minutesPerSecond: 1
+  skipBonusMinutes: 15
+  sunriseHour: 6
+  sunsetHour: 20
+--- !u!114 &6657893017002333534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 187fe3a588937d5499dcbfc091bf7681, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.DayNight.ClockHud
+  clock: {fileID: 0}
+  font: {fileID: 0}
+  dayColor: {r: 0.95, g: 0.95, b: 0.92, a: 0.95}
+  nightColor: {r: 0.7, g: 0.82, b: 1, a: 0.95}
+  jumpColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+  jumpSeconds: 1.5
+--- !u!114 &2940954342817297361
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe6de6b95e5f9ff4d9f57697d744e0b7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.DayNight.DayNightCycle
+  clock: {fileID: 0}
+  celestialLight: {fileID: 0}
+  skyMaterial: {fileID: 2100000, guid: eabcbbfb5a28a3947a4d4a15cb41e444, type: 2}
+  maxElevation: 55
+  sunColor: {r: 0.95, g: 0.92, b: 0.85, a: 1}
+  sunIntensity: 1.1
+  dayAmbient: {r: 0.36, g: 0.37, b: 0.39, a: 1}
+  dayFog: {r: 0.44, g: 0.46, b: 0.48, a: 1}
+  dayFogDensity: 0.02
+  dayZenith: {r: 0.34, g: 0.39, b: 0.46, a: 1}
+  dayHorizon: {r: 0.55, g: 0.57, b: 0.59, a: 1}
+  duskSun: {r: 1, g: 0.5, b: 0.25, a: 1}
+  duskAmbient: {r: 0.3, g: 0.2, b: 0.16, a: 1}
+  duskFog: {r: 0.35, g: 0.22, b: 0.16, a: 1}
+  duskHorizon: {r: 0.75, g: 0.36, b: 0.16, a: 1}
+  nightZenith: {r: 0.008, g: 0.012, b: 0.03, a: 1}
+  nightHorizon: {r: 0.045, g: 0.06, b: 0.095, a: 1}
+  moonDiscColor: {r: 0.85, g: 0.9, b: 1, a: 1}
