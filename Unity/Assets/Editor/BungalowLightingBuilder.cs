@@ -24,7 +24,7 @@ namespace Blink.EditorTools
     /// - a global post-processing Volume and one local Volume per room group (SPEC 5.2);
     /// - the atmosphere (<see cref="BungalowAtmosphereBuilder"/>): basement water and mesh decals.
     /// It also sets the scene's ambient / fog / reflection environment, assigns the LightingSettings asset
-    /// (GPU Progressive, Shadowmask), removes the grey-box's temporary light and disables DayNightCycle in this scene
+    /// (GPU Progressive, Shadowmask), removes the grey-box's temporary light and disables NightSky in this scene
     /// only (a prefab-instance override; GameSystems.prefab is untouched). Re-running replaces everything it made.
     /// Tuning lives in tools/blender/bungalow_decals.py -> Lighting/bungalow_atmosphere.json.
     /// </summary>
@@ -614,26 +614,26 @@ namespace Blink.EditorTools
             return ls;
         }
 
-        /// <summary>DayNightCycle off in this scene only (prefab-instance override), keeping the night look.</summary>
+        /// <summary>NightSky (formerly DayNightCycle) off in this scene only (prefab-instance override), keeping the night look.</summary>
         static string DisableDayNight(Scene scene)
         {
             int n = 0;
             foreach (var go in scene.GetRootGameObjects())
-                foreach (var c in go.GetComponentsInChildren<Blink.DayNight.DayNightCycle>(true))
+                foreach (var c in go.GetComponentsInChildren<Blink.DayNight.NightSky>(true))
                 {
                     if (c.enabled)
                     {
-                        Undo.RecordObject(c, "Disable DayNightCycle");
+                        Undo.RecordObject(c, "Disable NightSky");
                         c.enabled = false;
                     }
                     if (PrefabUtility.IsPartOfPrefabInstance(c)) PrefabUtility.RecordPrefabInstancePropertyModifications(c);
                     n++;
                 }
-            return $"DayNightCycle disabled in this scene: {n}";
+            return $"NightSky disabled in this scene: {n}";
         }
 
         /// <summary>
-        /// With DayNightCycle off there is no sky: the scene's cameras (the Player instance) clear to the fog colour
+        /// With NightSky off there is no sky: the scene's cameras (the Player instance) clear to the fog colour
         /// instead of Skybox, so windows show a dark night rather than the camera's default blue. Scene override only.
         /// </summary>
         static string NightCameras(Scene scene)
