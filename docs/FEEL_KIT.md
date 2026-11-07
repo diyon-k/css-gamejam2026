@@ -192,6 +192,7 @@ Built: `Scripts/Effects/GamepadHaptics.cs` on the Player prefab, the **only** th
 | **Reload done** | `Gun.ReloadFinished` | 0 | 0.45 | 2 × 40 ms, 70 ms gap | 0 |
 | **Took damage** | `Health.Damaged` | 0.5–1.0 | 0.3–0.8 | 150–400 ms fade, scaled by damage | 2 |
 | **Grabbed (QTE starts)** | `GrabQte.Active` turns on | 1.0 | 1.0 | 450 ms fade | 3 |
+| **Bitten (each lunge while grabbed)** | `GrabQte.Bit(false)`; a missed ring rumbles as `Health.Damaged` | 0.7 | 0.9 | 200 ms fade | 2 |
 | **Forcing door** | `JammedDoor.IsForcing` | 0.1 → 0.5 | 0 → 0.25 | rises with progress | background |
 | **Door bursts** | `JammedDoor.Opened` | 0.8 | 0.5 | 250 ms fade | 1 |
 | **Generator charging** | `(not built yet)` | 0.1 → 0.5 | 0 → 0.25 | same as door | background |

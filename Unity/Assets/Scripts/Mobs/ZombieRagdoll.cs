@@ -13,8 +13,12 @@ namespace Blink.Mobs
     /// the body back and flicks the part it hit. Once the body has come to rest (or after
     /// <see cref="settleSeconds"/> of world time) it's frozen in place to save physics work.
     ///
+    /// Knockdown: a blunt melee prop (<see cref="Interaction.SwingableProp"/>) calls <see cref="Launch"/> on a living
+    /// zombie: it goes limp and flies, and <see cref="GetUp"/> later hands the bones back to the Animator, blending
+    /// out of the pose it landed in.
+    ///
     /// Layers: bone colliders sit on a layer that collides with nothing while alive (the gun still
-    /// raycasts them) and move to <see cref="corpseLayer"/> on death, which collides with the level and
+    /// raycasts them) and move to <see cref="corpseLayer"/> while limp, which collides with the level and
     /// other corpses only, so the player walks through bodies and bullets pass over them.
     /// </summary>
     [DisallowMultipleComponent]
@@ -50,15 +54,41 @@ namespace Blink.Mobs
         [Tooltip("Snap joints back when they drift too far apart (stops stretched limbs).")]
         [SerializeField] bool jointProjection = true;
 
+        [Header("Knockdown (melee props)")]
+        [Tooltip("Spin impulse (N·s) at the struck point on a knockdown, so the body tumbles instead of sliding.")]
+        [SerializeField, Min(0f)] float knockdownSpin = 40f;
+        [Tooltip("Seconds to blend from the pose it lay in back to the animated one when it gets up.")]
+        [SerializeField, Min(0.05f)] float getUpBlendSeconds = 0.9f;
+
         /// <summary>Ragdolls that are limp and still being simulated (not yet frozen).</summary>
         public static int ActiveCount { get; private set; }
 
+        /// <summary>Limp (dead or knocked down).</summary>
         public bool IsActive { get; private set; }
         public bool IsFrozen { get; private set; }
+        /// <summary>Limp from a knockdown, not death: <see cref="GetUp"/> hands it back to the Animator.</summary>
+        public bool IsKnockedDown { get; private set; }
         public IReadOnlyList<Rigidbody> Bodies => _bodies;
+
+        /// <summary>Where the body really is (the hips bone), which leaves the root behind while limp.</summary>
+        public Vector3 HipsPosition => _hips != null ? _hips.position : transform.position;
+
+        /// <summary>Speed of the fastest limb in m/s (0 while animated or frozen).</summary>
+        public float FastestSpeed
+        {
+            get
+            {
+                if (!IsActive || IsFrozen) return 0f;
+                float fastest = 0f;
+                foreach (var body in _bodies)
+                    if (body != null) fastest = Mathf.Max(fastest, body.linearVelocity.magnitude);
+                return fastest;
+            }
+        }
 
         Rigidbody[] _bodies = new Rigidbody[0];
         readonly List<Collider> _colliders = new();
+        readonly List<int> _aliveLayers = new();
         readonly List<Vector3> _bodyPositions = new();
         RagdollSettleClock _settle;
 
@@ -66,6 +96,14 @@ namespace Blink.Mobs
         Rigidbody _hitBody;
         Vector3 _hitPoint, _hitDirection;
         int _hitFrame = -1;
+
+        // Get-up: the pose it lay in, blended out of over getUpBlendSeconds.
+        Transform _hips;
+        Transform[] _skeleton = new Transform[0];
+        Quaternion[] _lyingRotations = new Quaternion[0];
+        Vector3 _lyingHipsPosition;
+        Quaternion _lyingHipsRotation;
+        float _blendElapsed = -1f; // < 0: not blending
 
         // Clears the counter when entering play mode with domain reload disabled.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -88,6 +126,7 @@ namespace Blink.Mobs
                 {
                     if (col.isTrigger) continue;
                     _colliders.Add(col);
+                    _aliveLayers.Add(col.gameObject.layer);
                 }
 
                 var hitbox = body.GetComponent<Hitbox>();
@@ -98,6 +137,14 @@ namespace Blink.Mobs
                 }
                 if (body.transform == head) hitbox.IsHead = true; // headshots kill outright
                 hitbox.Struck += OnStruck;
+            }
+
+            _hips = animator != null && animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.Hips) : null;
+            if (_hips == null && _bodies.Length > 0) _hips = _bodies[0].transform;
+            if (_hips != null)
+            {
+                _skeleton = _hips.GetComponentsInChildren<Transform>(true);
+                _lyingRotations = new Quaternion[_skeleton.Length];
             }
 
             // Limbs of one body never collide with each other (joints alone only skip neighbours).
@@ -113,11 +160,30 @@ namespace Blink.Mobs
 
         void Update()
         {
-            if (!IsActive || IsFrozen) return;
-            float fastest = 0f;
-            foreach (var body in _bodies)
-                if (body != null) fastest = Mathf.Max(fastest, body.linearVelocity.magnitude);
-            if (_settle.Advance(Time.deltaTime, fastest)) Freeze();
+            if (!IsActive || IsFrozen || IsKnockedDown) return; // a knocked-down body gets up instead of freezing
+            if (_settle.Advance(Time.deltaTime, FastestSpeed)) Freeze();
+        }
+
+        // After the Animator has posed the bones: ease them from the pose it lay in to the animated one.
+        void LateUpdate()
+        {
+            if (_blendElapsed < 0f || IsActive) return;
+            _blendElapsed += Time.deltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, _blendElapsed / getUpBlendSeconds);
+            if (t >= 1f)
+            {
+                _blendElapsed = -1f;
+                return;
+            }
+            for (int i = 0; i < _skeleton.Length; i++)
+            {
+                var bone = _skeleton[i];
+                if (bone == _hips)
+                    bone.SetPositionAndRotation(Vector3.Lerp(_lyingHipsPosition, bone.position, t),
+                                                Quaternion.Slerp(_lyingHipsRotation, bone.rotation, t));
+                else
+                    bone.localRotation = Quaternion.Slerp(_lyingRotations[i], bone.localRotation, t);
+            }
         }
 
         /// <summary>
@@ -136,10 +202,93 @@ namespace Blink.Mobs
         /// <summary>
         /// Goes limp: stops the Animator, hands the bones to physics with <paramref name="inheritedVelocity"/>
         /// (the zombie's speed when it died) and pushes the part the killing shot hit. Does nothing twice.
+        /// Dying while knocked down just means it never gets up.
         /// </summary>
         public void Activate(Vector3 inheritedVelocity)
         {
+            if (IsKnockedDown)
+            {
+                IsKnockedDown = false;
+                _settle = new RagdollSettleClock(settleSeconds, restSpeed, restSeconds);
+                return;
+            }
             if (IsActive || _bodies.Length == 0) return;
+            GoLimp(inheritedVelocity);
+            ApplyHitImpulse();
+        }
+
+        /// <summary>
+        /// Knocks the body flying: goes limp if it wasn't (a living zombie stays down until <see cref="GetUp"/>;
+        /// a frozen corpse wakes up), adds <paramref name="velocity"/> to every limb and spins the limb
+        /// nearest <paramref name="point"/> so it tumbles.
+        /// </summary>
+        public void Launch(Vector3 velocity, Vector3 point)
+        {
+            if (_bodies.Length == 0) return;
+            if (!IsActive)
+            {
+                GoLimp(Vector3.zero);
+                IsKnockedDown = true;
+            }
+            else if (IsFrozen)
+            {
+                IsFrozen = false;
+                ActiveCount++;
+                _settle = new RagdollSettleClock(settleSeconds, restSpeed, restSeconds);
+                foreach (var body in _bodies)
+                    if (body != null) body.isKinematic = false;
+            }
+
+            foreach (var body in _bodies)
+            {
+                if (body == null) continue;
+                body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative; // fast limbs don't tunnel through walls
+                body.AddForce(velocity, ForceMode.VelocityChange);
+                body.WakeUp();
+            }
+
+            if (knockdownSpin <= 0f || velocity.sqrMagnitude < 1e-6f) return;
+            _bodyPositions.Clear();
+            foreach (var body in _bodies) _bodyPositions.Add(body.worldCenterOfMass);
+            int nearest = RagdollMath.NearestIndex(_bodyPositions, point);
+            if (nearest >= 0) _bodies[nearest].AddForceAtPosition(velocity.normalized * knockdownSpin, point, ForceMode.Impulse);
+        }
+
+        /// <summary>
+        /// Ends a knockdown: the bones go back to kinematic and animated, blending out of the pose it lay in.
+        /// The lying pose is captured here, so call it before moving the root under the hips.
+        /// </summary>
+        public void GetUp()
+        {
+            if (!IsKnockedDown) return;
+            IsKnockedDown = false;
+            IsActive = false;
+            if (!IsFrozen) ActiveCount = Mathf.Max(0, ActiveCount - 1);
+            IsFrozen = false;
+
+            if (_hips != null)
+            {
+                _lyingHipsPosition = _hips.position;
+                _lyingHipsRotation = _hips.rotation;
+                for (int i = 0; i < _skeleton.Length; i++) _lyingRotations[i] = _skeleton[i].localRotation;
+                _blendElapsed = 0f;
+            }
+
+            foreach (var body in _bodies)
+            {
+                if (body == null) continue;
+                body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+                body.collisionDetectionMode = CollisionDetectionMode.Discrete;
+                body.isKinematic = true;
+            }
+            for (int i = 0; i < _colliders.Count; i++) _colliders[i].gameObject.layer = _aliveLayers[i];
+            if (animator != null) animator.enabled = true;
+        }
+
+        void GoLimp(Vector3 inheritedVelocity)
+        {
+            _blendElapsed = -1f;
             IsActive = true;
             ActiveCount++;
             _settle = new RagdollSettleClock(settleSeconds, restSpeed, restSeconds);
@@ -162,8 +311,6 @@ namespace Blink.Mobs
                 if (joint != null) joint.enableProjection = jointProjection;
                 body.WakeUp();
             }
-
-            ApplyHitImpulse();
         }
 
         void ApplyHitImpulse()

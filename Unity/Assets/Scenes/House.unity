@@ -5002,6 +5002,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &11365233
 Mesh:
   m_ObjectHideFlags: 0
@@ -5613,6 +5619,7 @@ MonoBehaviour:
   body: The Hales, in the front hall. Someone has scratched out every face, slowly, many times over.
   image: {fileID: 2800000, guid: 25c1109445d5f4947a48201be14a244c, type: 3}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!43 &12314903
 Mesh:
   m_ObjectHideFlags: 0
@@ -10955,6 +10962,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &22435452
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -12371,6 +12380,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: knife
   displayName: Knife
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &25470170
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -22659,6 +22670,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &48499757
 GameObject:
   m_ObjectHideFlags: 0
@@ -29638,6 +29655,7 @@ MonoBehaviour:
     The boy on the end in the leather apron has been circled in ink, pressed hard enough to tear the paper.'
   image: {fileID: 2800000, guid: 22db9157fb475314a9be97671807edfa, type: 3}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!43 &65970653
 Mesh:
   m_ObjectHideFlags: 0
@@ -31850,6 +31868,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &70892873
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -32723,6 +32743,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 74272819}
+  - component: {fileID: 74272820}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -32753,6 +32774,25 @@ Transform:
   - {fileID: 1138541516}
   m_Father: {fileID: 293464900}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &74272820
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74272818}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &74681956
 GameObject:
   m_ObjectHideFlags: 0
@@ -40435,6 +40475,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &95205187
 GameObject:
   m_ObjectHideFlags: 0
@@ -41510,6 +41556,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 97565979}
+  - component: {fileID: 97565980}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -41540,6 +41587,25 @@ Transform:
   - {fileID: 1496321195}
   m_Father: {fileID: 1724686069}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &97565980
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 97565978}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &98327456
 GameObject:
   m_ObjectHideFlags: 0
@@ -56632,6 +56698,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &143170075
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -66364,6 +66432,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &170605472
 GameObject:
   m_ObjectHideFlags: 0
@@ -71927,6 +72001,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &182513688
 GameObject:
   m_ObjectHideFlags: 0
@@ -85145,6 +85225,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 218809066}
+  - component: {fileID: 218809067}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -85174,6 +85255,25 @@ Transform:
   - {fileID: 625095633}
   m_Father: {fileID: 1628542434}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &218809067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 218809065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &218884969
 GameObject:
   m_ObjectHideFlags: 0
@@ -85482,6 +85582,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &219548110
 Mesh:
   m_ObjectHideFlags: 0
@@ -85922,6 +86028,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &221272575
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -92345,6 +92453,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &237805538
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -94493,6 +94603,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 242427133}
+  - component: {fileID: 242427134}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -94522,6 +94633,25 @@ Transform:
   - {fileID: 1048528145}
   m_Father: {fileID: 1870889715}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &242427134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 242427132}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &242520963
 GameObject:
   m_ObjectHideFlags: 0
@@ -94885,6 +95015,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &242704608
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -96999,6 +97131,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &247476989
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -103663,6 +103797,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &263819316
 GameObject:
   m_ObjectHideFlags: 0
@@ -106421,6 +106561,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 270223009}
+  - component: {fileID: 270223010}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -106451,6 +106592,25 @@ Transform:
   - {fileID: 47874296}
   m_Father: {fileID: 1370271795}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &270223010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270223008}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &270263207
 GameObject:
   m_ObjectHideFlags: 0
@@ -109195,6 +109355,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &280003869
 GameObject:
   m_ObjectHideFlags: 0
@@ -115163,6 +115329,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &298068089
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -116570,6 +116738,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &302179310
 GameObject:
   m_ObjectHideFlags: 0
@@ -120451,6 +120625,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &308786849
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -123021,6 +123197,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 315906161}
+  - component: {fileID: 315906162}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -123050,6 +123227,25 @@ Transform:
   - {fileID: 2131117829}
   m_Father: {fileID: 767124092}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &315906162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 315906160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!43 &315958357
 Mesh:
   m_ObjectHideFlags: 0
@@ -124513,6 +124709,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &320977231
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -125782,6 +125980,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 324702199}
+  - component: {fileID: 324702200}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -125811,6 +126010,25 @@ Transform:
   - {fileID: 1338235141}
   m_Father: {fileID: 256288319}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &324702200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 324702198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &325161067
 GameObject:
   m_ObjectHideFlags: 0
@@ -127327,6 +127545,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &329499855
 GameObject:
   m_ObjectHideFlags: 0
@@ -134183,6 +134407,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: knife
   displayName: Knife
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &348641196
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -148426,6 +148652,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 382902162}
+  - component: {fileID: 382902163}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -148456,6 +148683,25 @@ Transform:
   - {fileID: 1204100313}
   m_Father: {fileID: 230549793}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &382902163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 382902161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &383108033
 GameObject:
   m_ObjectHideFlags: 0
@@ -149942,6 +150188,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &387283522
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -152796,6 +153044,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &396171650
 GameObject:
   m_ObjectHideFlags: 0
@@ -163774,6 +164028,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &418215273
 Mesh:
   m_ObjectHideFlags: 0
@@ -164002,6 +164262,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &418911592
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -168710,6 +168972,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &431196938
 GameObject:
   m_ObjectHideFlags: 0
@@ -175099,6 +175367,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &451232609
 GameObject:
   m_ObjectHideFlags: 0
@@ -182980,6 +183254,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &470746557
 GameObject:
   m_ObjectHideFlags: 0
@@ -185086,6 +185366,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &475516554
 GameObject:
   m_ObjectHideFlags: 0
@@ -189371,6 +189657,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &483397267
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -204501,6 +204789,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &526201198
 Mesh:
   m_ObjectHideFlags: 0
@@ -208205,6 +208499,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &532279813
 GameObject:
   m_ObjectHideFlags: 0
@@ -213362,6 +213662,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &547570357
 GameObject:
   m_ObjectHideFlags: 0
@@ -224202,6 +224508,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &575811276
 GameObject:
   m_ObjectHideFlags: 0
@@ -236749,6 +237061,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &610462411
 Mesh:
   m_ObjectHideFlags: 0
@@ -237740,6 +238058,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &613045657
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -238297,6 +238617,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 614504063}
+  - component: {fileID: 614504064}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -238326,6 +238647,25 @@ Transform:
   - {fileID: 1164264058}
   m_Father: {fileID: 323305658}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &614504064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 614504062}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!43 &614913424
 Mesh:
   m_ObjectHideFlags: 0
@@ -242491,6 +242831,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &623506659
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -243247,6 +243589,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &625569551
 Mesh:
   m_ObjectHideFlags: 0
@@ -245567,6 +245915,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &630178845
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -282840,6 +283190,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &722439269
 GameObject:
   m_ObjectHideFlags: 0
@@ -285217,6 +285573,7 @@ MonoBehaviour:
     Someone will bring it home. Someone always brings things home.'
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &727796608
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -290100,6 +290457,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 738350251}
+  - component: {fileID: 738350252}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -290129,6 +290487,25 @@ Transform:
   - {fileID: 2053312686}
   m_Father: {fileID: 1130385995}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &738350252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 738350250}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &739082422
 GameObject:
   m_ObjectHideFlags: 0
@@ -299172,6 +299549,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &764068104
 Mesh:
   m_ObjectHideFlags: 0
@@ -309702,6 +310085,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &791741274
 GameObject:
   m_ObjectHideFlags: 0
@@ -313374,6 +313763,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &800489619
 Mesh:
   m_ObjectHideFlags: 0
@@ -321011,6 +321406,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &822864651
 GameObject:
   m_ObjectHideFlags: 0
@@ -322003,6 +322404,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &826277003
 GameObject:
   m_ObjectHideFlags: 0
@@ -327787,6 +328194,7 @@ MonoBehaviour:
     Sold to an anonymous buyer.'
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &839294390
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -328643,6 +329051,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &843290519
 Mesh:
   m_ObjectHideFlags: 0
@@ -345610,6 +346024,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &885288517
 Mesh:
   m_ObjectHideFlags: 0
@@ -346322,6 +346742,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &886416816
 GameObject:
   m_ObjectHideFlags: 0
@@ -347374,6 +347800,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &890918605
 GameObject:
   m_ObjectHideFlags: 0
@@ -348958,6 +349390,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &894878755
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -378752,6 +379186,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 913944423}
+  - component: {fileID: 913944424}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -378782,6 +379217,25 @@ Transform:
   - {fileID: 969343554}
   m_Father: {fileID: 794817987}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &913944424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 913944422}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!43 &914138289
 Mesh:
   m_ObjectHideFlags: 0
@@ -383788,6 +384242,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 928270179}
+  - component: {fileID: 928270180}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -383817,6 +384272,25 @@ Transform:
   - {fileID: 1822914928}
   m_Father: {fileID: 1652749084}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &928270180
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 928270178}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &928712943
 GameObject:
   m_ObjectHideFlags: 0
@@ -389717,6 +390191,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &939039120
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -398845,6 +399321,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1001 &961925609
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -401114,6 +401596,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &969701150
 GameObject:
   m_ObjectHideFlags: 0
@@ -412156,6 +412644,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 998248487}
+  - component: {fileID: 998248488}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -412185,6 +412674,25 @@ Transform:
   - {fileID: 10885953}
   m_Father: {fileID: 1606955584}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &998248488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 998248486}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &998340868
 GameObject:
   m_ObjectHideFlags: 0
@@ -413063,6 +413571,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1001155383
 GameObject:
   m_ObjectHideFlags: 0
@@ -415676,6 +416190,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1008259571}
+  - component: {fileID: 1008259572}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -415705,6 +416220,25 @@ Transform:
   - {fileID: 1948898366}
   m_Father: {fileID: 2125004164}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1008259572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1008259570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1008401087
 GameObject:
   m_ObjectHideFlags: 0
@@ -423679,6 +424213,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1024022795}
+  - component: {fileID: 1024022796}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -423708,6 +424243,25 @@ Transform:
   - {fileID: 2090279829}
   m_Father: {fileID: 610164790}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1024022796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1024022794}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1024490494
 GameObject:
   m_ObjectHideFlags: 0
@@ -425858,6 +426412,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1030251074
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -433427,6 +433983,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1049021834
 GameObject:
   m_ObjectHideFlags: 0
@@ -452812,6 +453374,7 @@ MonoBehaviour:
     Driver''s note: customer wants it there before midnight. Paid triple. Didn''t ask why.'
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &1100071571
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -454360,6 +454923,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1102836907
 GameObject:
   m_ObjectHideFlags: 0
@@ -458256,6 +458825,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1112457685
 GameObject:
   m_ObjectHideFlags: 0
@@ -470892,6 +471467,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1137123566
 Mesh:
   m_ObjectHideFlags: 0
@@ -471391,6 +471972,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1138584511
 GameObject:
   m_ObjectHideFlags: 0
@@ -473570,6 +474157,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1145351067
 Mesh:
   m_ObjectHideFlags: 0
@@ -481237,6 +481830,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1159977177
 Mesh:
   m_ObjectHideFlags: 0
@@ -484595,6 +485194,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1164535534
 GameObject:
   m_ObjectHideFlags: 0
@@ -484604,6 +485209,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1164535535}
+  - component: {fileID: 1164535536}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -484633,6 +485239,25 @@ Transform:
   - {fileID: 1392058868}
   m_Father: {fileID: 258264593}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1164535536
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1164535534}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1164566724
 GameObject:
   m_ObjectHideFlags: 0
@@ -485534,6 +486159,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1168770906
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -486627,6 +487254,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1172488839}
+  - component: {fileID: 1172488840}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -486656,6 +487284,25 @@ Transform:
   - {fileID: 1976099631}
   m_Father: {fileID: 385669413}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1172488840
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1172488838}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1172621862
 GameObject:
   m_ObjectHideFlags: 0
@@ -495259,6 +495906,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1198931267
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -497439,6 +498088,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1204543841
 GameObject:
   m_ObjectHideFlags: 0
@@ -504448,6 +505103,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1222601855
 GameObject:
   m_ObjectHideFlags: 0
@@ -505454,6 +506115,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1226844422
 GameObject:
   m_ObjectHideFlags: 0
@@ -508021,6 +508688,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1232425543}
+  - component: {fileID: 1232425544}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -508051,6 +508719,25 @@ Transform:
   - {fileID: 1635370333}
   m_Father: {fileID: 516257728}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1232425544
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1232425542}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1232588740
 GameObject:
   m_ObjectHideFlags: 0
@@ -508616,6 +509303,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1235764153
 Mesh:
   m_ObjectHideFlags: 0
@@ -510343,6 +511036,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1240301503}
+  - component: {fileID: 1240301504}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -510373,6 +511067,25 @@ Transform:
   - {fileID: 1843150934}
   m_Father: {fileID: 1812116250}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1240301504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1240301502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1240391538
 GameObject:
   m_ObjectHideFlags: 0
@@ -511975,6 +512688,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1243762305
 GameObject:
   m_ObjectHideFlags: 0
@@ -514590,6 +515309,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1250186245
 GameObject:
   m_ObjectHideFlags: 0
@@ -516948,6 +517673,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1257822255
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -542949,6 +543676,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1322638638
 GameObject:
   m_ObjectHideFlags: 0
@@ -547847,6 +548580,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1338546350
 Mesh:
   m_ObjectHideFlags: 0
@@ -548432,6 +549171,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: key_brass
   displayName: Brass key
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1339298429
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -559621,6 +560362,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1001 &1369300770
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -560734,6 +561481,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1371148872
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -564863,6 +565612,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1380489800
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -568005,6 +568756,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1392117981
 GameObject:
   m_ObjectHideFlags: 0
@@ -579621,6 +580378,7 @@ MonoBehaviour:
   body: "I am sorry about your head.\nYou would not have stayed otherwise, and you have brought back what was taken from me.\n\nKeep your eyes open for as long as you can bear it. They are only ever still while someone is watching.\n\n\u2014 A."
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &1422910303
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -583499,6 +584257,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1432694620}
+  - component: {fileID: 1432694621}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -583528,6 +584287,25 @@ Transform:
   - {fileID: 1225796775}
   m_Father: {fileID: 1060138360}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1432694621
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1432694619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!43 &1432866060
 Mesh:
   m_ObjectHideFlags: 0
@@ -584497,6 +585275,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1435324211}
+  - component: {fileID: 1435324212}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -584526,6 +585305,25 @@ Transform:
   - {fileID: 263629430}
   m_Father: {fileID: 766450608}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1435324212
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435324210}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1435488659
 GameObject:
   m_ObjectHideFlags: 0
@@ -587705,6 +588503,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1443346418
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -593386,6 +594186,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1459235967
 GameObject:
   m_ObjectHideFlags: 0
@@ -608109,6 +608915,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1495138587}
+  - component: {fileID: 1495138588}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -608139,6 +608946,25 @@ Transform:
   - {fileID: 395557362}
   m_Father: {fileID: 1654756933}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1495138588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1495138586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1495190473
 GameObject:
   m_ObjectHideFlags: 0
@@ -608805,6 +609631,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1496766982
 GameObject:
   m_ObjectHideFlags: 0
@@ -613122,6 +613954,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1506632157
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -613342,6 +614176,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1507920640
 GameObject:
   m_ObjectHideFlags: 0
@@ -623681,6 +624521,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1533457353
 Mesh:
   m_ObjectHideFlags: 0
@@ -624738,6 +625584,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1536281043
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -630019,6 +630867,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1546733743
 GameObject:
   m_ObjectHideFlags: 0
@@ -630214,6 +631068,11 @@ MonoBehaviour:
     duration: 4
   reach: 2.5
   openAngle: 100
+  strainMinDegrees: 0.6
+  strainMaxDegrees: 3
+  strainHz: 12
+  burstSeconds: 0.45
+  burstOvershoot: 1.6
   forcingLoudness: 10
   forcingNoiseInterval: 1
   burstOpenLoudness: 20
@@ -630881,6 +631740,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1548634797
 Mesh:
   m_ObjectHideFlags: 0
@@ -636881,6 +637746,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: fork
   displayName: Fork
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1564929260
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -660826,6 +661693,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1620693537
 GameObject:
   m_ObjectHideFlags: 0
@@ -663986,6 +664859,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1629520096
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -666930,6 +667805,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1634955873
 GameObject:
   m_ObjectHideFlags: 0
@@ -667564,6 +668445,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1635463763
 GameObject:
   m_ObjectHideFlags: 0
@@ -667907,6 +668794,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1636499254
 GameObject:
   m_ObjectHideFlags: 0
@@ -677538,6 +678431,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1661046191}
+  - component: {fileID: 1661046192}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -677567,6 +678461,25 @@ Transform:
   - {fileID: 170448386}
   m_Father: {fileID: 1871953328}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1661046192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1661046190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1661357681
 GameObject:
   m_ObjectHideFlags: 0
@@ -677821,6 +678734,7 @@ MonoBehaviour:
   body: "Flour. Lard. Tea. Candles.\n\nThe bread has not gone stale since March. The milk won't turn. The kettle has been on the boil all morning and will not whistle.\nMr Hale says not to worry.\nI have stopped asking anyone the date.\n\u2014 Mrs Pell"
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &1661917352
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -677950,6 +678864,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1662673310
 Mesh:
   m_ObjectHideFlags: 0
@@ -683151,6 +684071,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1674916820
 GameObject:
   m_ObjectHideFlags: 0
@@ -684012,6 +684938,7 @@ MonoBehaviour:
     The faces have run, as if the picture got wet. It isn''t damp.'
   image: {fileID: 2800000, guid: 59b9796094d145749a75d0d4eaf21509, type: 3}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!1 &1678198332
 GameObject:
   m_ObjectHideFlags: 0
@@ -684356,6 +685283,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1678835905}
+  - component: {fileID: 1678835906}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -684385,6 +685313,25 @@ Transform:
   - {fileID: 610421232}
   m_Father: {fileID: 849585480}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1678835906
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678835904}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1679096662
 GameObject:
   m_ObjectHideFlags: 0
@@ -685870,6 +686817,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1685392667
 Mesh:
   m_ObjectHideFlags: 0
@@ -686100,6 +687053,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1685821294
 Mesh:
   m_ObjectHideFlags: 0
@@ -690116,6 +691075,7 @@ MonoBehaviour:
   body: 'On the back, in neat ink: ''A. & E., June 1934. Forever is a promise I intend to keep.'''
   image: {fileID: 2800000, guid: b34643e782001d74c9555a446ac01bec, type: 3}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!1 &1696732244
 GameObject:
   m_ObjectHideFlags: 0
@@ -703907,6 +704867,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1001 &1730547951
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -705036,6 +706002,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1732578394
 GameObject:
   m_ObjectHideFlags: 0
@@ -711431,6 +712403,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1753770701}
+  - component: {fileID: 1753770702}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -711460,6 +712433,25 @@ Transform:
   - {fileID: 1000806339}
   m_Father: {fileID: 972054075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1753770702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1753770700}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &1753804010
 GameObject:
   m_ObjectHideFlags: 0
@@ -727792,6 +728784,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1795734630
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -734969,6 +735963,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1818969339
 Mesh:
   m_ObjectHideFlags: 0
@@ -736982,6 +737982,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1822884880
 GameObject:
   m_ObjectHideFlags: 0
@@ -737145,6 +738151,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1823320529
 GameObject:
   m_ObjectHideFlags: 0
@@ -741243,6 +742255,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1832858015
 GameObject:
   m_ObjectHideFlags: 0
@@ -745938,6 +746956,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1844078156
 Mesh:
   m_ObjectHideFlags: 0
@@ -752614,6 +753638,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &1865238038
 Mesh:
   m_ObjectHideFlags: 0
@@ -759037,6 +760067,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1883606687}
+  - component: {fileID: 1883606688}
   m_Layer: 0
   m_Name: Cupboard
   m_TagString: Untagged
@@ -759067,6 +760098,25 @@ Transform:
   - {fileID: 1897137376}
   m_Father: {fileID: 766450608}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1883606688
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1883606686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: cupboard
+  eye: {x: 0, y: 0.54, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.85}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!43 &1883815071
 Mesh:
   m_ObjectHideFlags: 0
@@ -764536,6 +765586,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1897137378
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -769117,6 +770169,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1908351158
 GameObject:
   m_ObjectHideFlags: 0
@@ -778209,6 +779267,7 @@ MonoBehaviour:
   body: "...nine days now without sleep. The clocks in this house have begun to disagree with one another. This morning the hall clock struck thirteen, and he only smiled and said, 'Not yet, my love. Not yet.'\n\nI am frightened of whatever he is building in the tower.\n\u2014 E."
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &1933153516
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -781054,6 +782113,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1942278477
 GameObject:
   m_ObjectHideFlags: 0
@@ -784368,6 +785433,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1948940282
 GameObject:
   m_ObjectHideFlags: 0
@@ -794526,6 +795597,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1976798603
 GameObject:
   m_ObjectHideFlags: 0
@@ -794673,6 +795750,7 @@ MonoBehaviour:
     (Below it, in crayon: four stick people holding hands, and a tall man with a clock where his face should be.)'
   image: {fileID: 0}
   maxDistance: 3
+  raiseSeconds: 0.3
 --- !u!23 &1976853563
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -797102,6 +798180,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1983207262
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -801111,6 +802191,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1994762056
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -802323,6 +803405,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: key_iron
   displayName: Iron key
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1997408990
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -802808,6 +803892,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &1998903093
 GameObject:
   m_ObjectHideFlags: 0
@@ -803975,6 +805065,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: fork
   displayName: Fork
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2001348529
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -816185,6 +817277,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &2031367063
 GameObject:
   m_ObjectHideFlags: 0
@@ -817324,6 +818422,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2034583040
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -818592,6 +819692,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &2039023307
 Mesh:
   m_ObjectHideFlags: 0
@@ -821545,6 +822651,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &2048521917
 Mesh:
   m_ObjectHideFlags: 0
@@ -823878,6 +824990,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2053031011
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -824073,6 +825187,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &2053600986
 GameObject:
   m_ObjectHideFlags: 0
@@ -828271,6 +829391,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  flySeconds: 0.25
+  handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2062219684
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -831915,6 +833037,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2071181222}
+  - component: {fileID: 2071181223}
   m_Layer: 0
   m_Name: Wardrobe
   m_TagString: Untagged
@@ -831945,6 +833068,25 @@ Transform:
   - {fileID: 1832729282}
   m_Father: {fileID: 173384660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2071181223
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2071181221}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: wardrobe
+  eye: {x: 0, y: 1.2, z: 0.05}
+  exit: {x: 0, y: 0, z: 0.90000004}
+  hopSeconds: 0.45
+  hopHeight: 0.35
+  ajarDegrees: 9
+  maxYaw: 60
 --- !u!1 &2071240073
 GameObject:
   m_ObjectHideFlags: 0
@@ -835189,6 +836331,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &2079435011
 GameObject:
   m_ObjectHideFlags: 0
@@ -835241,6 +836389,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &2079873828
 GameObject:
   m_ObjectHideFlags: 0
@@ -840405,6 +841559,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1 &2090323741
 GameObject:
   m_ObjectHideFlags: 0
@@ -853332,6 +854492,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!1001 &2127938404
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -854421,6 +855587,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &2131175481
 Mesh:
   m_ObjectHideFlags: 0
@@ -858283,6 +859455,12 @@ MonoBehaviour:
   slide: {x: 0, y: 0, z: 0.35}
   seconds: 0.35
   requiredItemId: 
+  handDelay: 0.12
+  overshoot: 1
+  rattleSeconds: 0.35
+  rattleHz: 14
+  rattleDegrees: 1.5
+  rattleMetres: 0.008
 --- !u!43 &2140239787
 Mesh:
   m_ObjectHideFlags: 0

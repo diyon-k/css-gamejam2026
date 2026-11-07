@@ -21,6 +21,9 @@ namespace Blink.Interaction
         /// <summary>The camera transform the look ray comes from.</summary>
         public Transform Eye => _eye;
 
+        /// <summary>The player just used something (picked it up, opened it...). For the hands' reach.</summary>
+        public event System.Action Interacted;
+
         static readonly IComparer<RaycastHit> ByDistance = Comparer<RaycastHit>.Create((a, b) => a.distance.CompareTo(b.distance));
         readonly RaycastHit[] _hits = new RaycastHit[16];
         Transform _eye;
@@ -45,7 +48,10 @@ namespace Blink.Interaction
             // WasPressedThisFrame fires at the button's press point, so the action's Hold interaction
             // (used by JammedDoor) doesn't delay it: a tap interacts instantly.
             if (Target != null && _interact != null && _interact.WasPressedThisFrame() && Target.CanInteract(this))
+            {
                 Target.Interact(this);
+                Interacted?.Invoke();
+            }
         }
 
         IInteractable FindTarget()

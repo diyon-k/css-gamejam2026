@@ -40,6 +40,10 @@ namespace Blink.Player
         public Vector3 Velocity => _velocity;
         public bool InputEnabled { get; set; } = true;
         public bool IsCrawling { get; private set; }
+        /// <summary>Camera pitch in degrees (positive looks down).</summary>
+        public float Pitch => _pitch;
+        /// <summary>Gamepad look multiplier; aim assist lowers it over a target (Fortnite-style slowdown).</summary>
+        public float GamepadLookScale { get; set; } = 1f;
 
         CharacterController _controller;
         Health _health;
@@ -110,10 +114,36 @@ namespace Blink.Player
             Vector2 delta = _look.ReadValue<Vector2>();
             // Mouse reports pixels per frame; sticks report a direction that needs time scaling.
             bool isGamepad = _look.activeControl?.device is Gamepad;
-            delta *= isGamepad ? gamepadSensitivity * Time.unscaledDeltaTime : mouseSensitivity;
+            delta *= isGamepad ? gamepadSensitivity * GamepadLookScale * Time.unscaledDeltaTime : mouseSensitivity;
+            AddLook(delta.x, -delta.y);
+        }
 
-            transform.Rotate(0f, delta.x, 0f, Space.Self);
-            _pitch = Mathf.Clamp(_pitch - delta.y, -maxPitch, maxPitch);
+        /// <summary>Turns the view by <paramref name="yaw"/> and <paramref name="pitch"/> degrees (pitch positive = down).</summary>
+        public void AddLook(float yaw, float pitch)
+        {
+            if (cameraPivot == null) return;
+            transform.Rotate(0f, yaw, 0f, Space.Self);
+            _pitch = Mathf.Clamp(_pitch + pitch, -maxPitch, maxPitch);
+            cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+        }
+
+        /// <summary>
+        /// Turns the view toward a world point, easing in at <paramref name="sharpness"/> (higher snaps faster).
+        /// For when something else has the camera while input is off, e.g. a zombie grabbing you.
+        /// </summary>
+        public void TurnTowards(Vector3 worldPoint, float sharpness, float deltaTime)
+        {
+            if (cameraPivot == null) return;
+            Vector3 to = worldPoint - cameraPivot.position;
+            Vector3 flat = new Vector3(to.x, 0f, to.z);
+            if (flat.sqrMagnitude < 1e-6f) return;
+
+            float t = 1f - Mathf.Exp(-sharpness * deltaTime);
+            float yaw = Vector3.SignedAngle(Vector3.ProjectOnPlane(transform.forward, Vector3.up), flat, Vector3.up);
+            transform.Rotate(0f, yaw * t, 0f, Space.Self);
+
+            float pitch = -Mathf.Atan2(to.y, flat.magnitude) * Mathf.Rad2Deg; // looking up is negative pitch
+            _pitch = Mathf.Clamp(Mathf.Lerp(_pitch, pitch, t), -maxPitch, maxPitch);
             cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         }
 
