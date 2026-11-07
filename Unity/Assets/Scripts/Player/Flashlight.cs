@@ -1,4 +1,5 @@
 using System;
+using Blink.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -20,6 +21,10 @@ namespace Blink.Player
         [Tooltip("Intensity of the dim fill that lights only the viewmodel. Torch 14 on a wall at 2.5 m ≈ 2.2; hands at 0.4 m need 2.2 × 0.4² ≈ 0.36.")]
         [SerializeField, Min(0f)] float viewmodelFillIntensity = 0.4f;
         [SerializeField, Min(0.1f)] float viewmodelFillRange = 2f;
+        [Tooltip("Keep an \"[F] Flashlight\" row at the bottom of the prompt stack (d-pad up on a gamepad).")]
+        [SerializeField] bool showKeyHint = true;
+        [Tooltip("Where the key hint sits in the prompt stack: lower = further down.")]
+        [SerializeField] int keyHintOrder = -10;
 
         /// <summary>Raised with the new state whenever the torch is switched.</summary>
         public event Action<bool> Toggled;
@@ -79,6 +84,7 @@ namespace Blink.Player
         {
             if (_toggle.WasPressedThisFrame()) Set(!IsOn);
             Apply();
+            if (showKeyHint) BlinkPrompts.Show(this, _toggle, "F", "Flashlight", -1f, keyHintOrder);
         }
 
         public void Set(bool on)
