@@ -38,19 +38,19 @@ public static class StoryProps
 
         // ---- Notes: dropped onto whatever is at (x, z), floor or furniture top.
         Note(root, "Delivery docket", 0.3f, 1.88f, Second, 20f, // StartBedroom nightstand
-            "RAVEN & SONS COURIERS\nConsignment 0447\n\nCollect: estate of S. Kerr, Lot 14\nDeliver to: Hale House, end of Blackwood Lane. No road past the gate.\nContents: 1 x pocket watch, brass, antique\n\nSignature on receipt: ______________\n\nDriver's note: customer wants it there before midnight. Paid triple. Didn't ask why.");
-        Note(root, "Note in shaky handwriting", 6.0f, 6.0f, Second, -35f, // floor, just in front of the bed
-            "I am sorry about your head.\nYou would not have stayed otherwise, and you have brought back what was taken from me.\n\nKeep your eyes open for as long as you can bear it. They are only ever still while someone is watching.\n\n— A.");
+            "RAVEN & SONS COURIERS\nConsignment 0447\n\nCollect: estate of S. Kerr, Lot 14\nDeliver to: Hale House, end of Blackwood Lane. No road past the gate.\nContents: 1 x pocket watch, brass. Still ticking.\n\nSignature on receipt: ______________\n\nDriver's note: before midnight. The van clock stopped at the gate. Didn't ask why.");
+        Note(root, "Read this first", 6.0f, 6.0f, Second, -35f, // floor, just in front of the bed
+            "You will not remember how you came here. Don't try. You won't find the road, or the hour you arrived.\n\nTime moves strangely in this house. It waits while you watch it, and runs the moment you look away.\n\nI don't know why it let you in. Perhaps you brought it something.\n\nIf a thing will not move for you, stop watching it. Never for long.\n\nKeep your eyes open.\n— A.");
         Note(root, "Child's drawing", 12f, 18f, Second, 70f, // Old Nursery
-            "Papa says if we are very very still the sickness cant find us. Tom says thats babyish.\nI am being the stillest. Mama is too.\n\n(Below it, in crayon: four stick people holding hands, and a tall man with a clock where his face should be.)");
+            "Dolly only plays when nobody is looking. So I look at her ALL the time and she has to sit.\nTom blinked.\n\n(Below it, in crayon: a girl with enormous round eyes, a doll in a chair, and a tall man with a clock where his face should be.)");
         Note(root, "Torn diary page", 12f, 11.0f, Second, 10f, // Corridor_Second
-            "...nine days now without sleep. The clocks in this house have begun to disagree with one another. This morning the hall clock struck thirteen, and he only smiled and said, 'Not yet, my love. Not yet.'\n\nI am frightened of whatever he is building in the tower.\n— E.");
+            "...nine days without sleep. The clocks quarrel. The hall clock struck thirteen.\n\nHe has hung us all in a row and turned our faces to him, so we will always know where he is.\nHe keeps his cabinet for the moon now. The moon is slow, he says, but never while you're watching it.\n— E.");
         Note(root, "Kitchen list", 4f, 16f, Ground, -50f, // Kitchen
-            "Flour. Lard. Tea. Candles.\n\nThe bread has not gone stale since March. The milk won't turn. The kettle has been on the boil all morning and will not whistle.\nMr Hale says not to worry.\nI have stopped asking anyone the date.\n— Mrs Pell");
+            "Flour. Lard. Tea. Candles.\n\nThe kettle's been on all morning and won't boil. Mr Hale says a watched pot never does.\nThe mains are seized again. Left loosens, right binds, and rust gives nothing to a hurry.\n\nI've stopped asking the date.\n— Mrs Pell");
         Note(root, "Workshop scrap", 20f, 17f, Basement, 5f, // Workshop
-            "The heart is gone. S. took it, the boy I trusted with my tools.\nWithout it the hands will not turn, forward or back. Everything stays as it is.\nWe will all stay as we are.\n\nSomeone will bring it home. Someone always brings things home.");
+            "The heart is gone. S. took it.\nWithout it the hands turn neither way.\n\nDown here the water only rises while no one minds it. Mind it.\nThe gate remembers one moment: ours. Two short of midnight.\n\nSomeone always brings things home.");
         Note(root, "Newspaper clipping", 38.5f, 4f, Basement, 30f, // GeneratorRoom, by the exit gate
-            "AUCTION NOTICE\nThe effects of the late Mr Samuel Kerr (98), once apprenticed to a clockmaker.\n\nLot 14: brass pocket watch, maker's mark 'A. Hale'. The family say it has never once stopped ticking, though it holds no spring.\n\nSold to an anonymous buyer.");
+            "AUCTION NOTICE\nThe effects of the late Mr S. Kerr (98), once apprenticed to a clockmaker.\n\nLot 14: brass pocket watch, maker's mark 'A. H.'. Ticks, though it holds no spring.\n\nSold to an anonymous buyer. Delivery arranged.");
 
         // The props need an Interactor on the player to be readable.
         var player = Object.FindAnyObjectByType<PlayerController>();
