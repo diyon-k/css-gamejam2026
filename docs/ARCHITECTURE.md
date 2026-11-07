@@ -21,8 +21,10 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 | F1 | Toggle the blink debug overlay |
 | Esc | Free the cursor (click to lock again) |
 
-3. **Real webcam:** run `powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1` once. After that, pressing Play starts the webcam sidecar automatically (Editor on Windows; the model downloads itself on first run).
-   - **Tuning:** to see the camera and blink score, untick `launchSidecar` on the `UdpEyeStateSource` in GameSystems (so there aren't two senders), then run `blink_server/.venv/Scripts/python blink_server/blink_server.py --preview` while in Play mode. Too twitchy or not triggering? Tune `--close` / `--open`.
+3. **Real webcam:** run the setup once from the repo folder. After that, pressing Play starts the webcam sidecar automatically (in the Editor on Windows and macOS; the face model downloads itself on first run).
+   - Windows: `powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1`
+   - macOS / Linux: `sh blink_server/setup.sh` (needs Python 3.13 or 3.12). macOS asks for camera access the first time: allow it for your terminal when testing with `--preview`, and for Unity when Play starts the sidecar. If it picks the wrong camera (e.g. an iPhone via Continuity Camera), pass `--camera 1`.
+   - **Tuning:** to see the camera and blink score, untick `launchSidecar` on the `UdpEyeStateSource` in GameSystems (so there aren't two senders), then run the venv's python (`blink_server/.venv/Scripts/python` on Windows, `blink_server/.venv/bin/python` on macOS) with `blink_server/blink_server.py --preview` while in Play mode. Too twitchy or not triggering? Tune `--close` / `--open`.
 4. **No webcam:** run `python blink_server/send_test_blinks.py demo` while in Play mode.
 
 ## Data flow
