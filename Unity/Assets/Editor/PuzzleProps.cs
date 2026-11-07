@@ -1,4 +1,5 @@
-// Puzzle rooms. Menu: BLINK > Place Puzzle: Lily's Doll (docs/puzzles/LILYS_DOLL_ROOM.md).
+// Puzzle rooms. Menu: BLINK > Place Puzzle: Lily's Doll (docs/puzzles/LILYS_DOLL_ROOM.md) and
+// BLINK > Place Puzzle: Flooded Basement (docs/puzzles/FLOODED_BASEMENT.md, in PuzzleProps.FloodedBasement.cs).
 // Re-running deletes and rebuilds the puzzle's own group. The room is found by name, then raycasts find its real floor,
 // walls and doorway, so the puzzle follows the house if it's rebuilt, and moving it to another room is changing Room.
 using Blink.Audio;
@@ -11,7 +12,7 @@ using UnityEngine.Rendering;
 
 namespace Blink.EditorTools
 {
-    public static class PuzzleProps
+    public static partial class PuzzleProps
     {
         // ------------------------------------------------------------------ Lily's doll
 
@@ -101,7 +102,7 @@ namespace Blink.EditorTools
 
             PlaceClueCard(root.transform, doorCentre, outward, doorWidth);
             PlaceBlocks(root.transform, interior, doorCentre, outward, far.point);
-            WarnAboutZombies(interior);
+            WarnAboutZombies(interior, "Lily's doll's room", "A zombie making you turn is an unfair death");
 
             EditorSceneManager.MarkSceneDirty(root.scene);
             Selection.activeGameObject = root;
@@ -361,7 +362,7 @@ namespace Blink.EditorTools
             }
         }
 
-        static void WarnAboutZombies(Bounds interior)
+        static void WarnAboutZombies(Bounds interior, string room, string why)
         {
             var near = interior;
             near.Expand(new Vector3(3f, 0f, 3f));
@@ -369,7 +370,7 @@ namespace Blink.EditorTools
             {
                 bool zombie = t.GetComponent<Blink.Mobs.MobController>() != null || t.name.StartsWith("Spawn_Z");
                 if (zombie && near.Contains(t.position))
-                    Debug.LogWarning($"[PuzzleProps] '{t.name}' is in or next to Lily's doll's room. A zombie making you turn is an unfair death; move it.", t);
+                    Debug.LogWarning($"[PuzzleProps] '{t.name}' is in or next to {room}. {why}; move it.", t);
             }
         }
 
@@ -396,17 +397,26 @@ namespace Blink.EditorTools
 
         static Vector3 Flat(Vector3 v) => new Vector3(v.x, 0f, v.z);
 
-        /// <summary>Loads or creates a URP Lit material asset, so the scene keeps its reference.</summary>
-        static Material Mat(string name, Color color, float smoothness, float metallic = 0f)
+        /// <summary>Loads or creates a URP Lit material asset in Lily's doll's folder, so the scene keeps its reference.</summary>
+        static Material Mat(string name, Color color, float smoothness, float metallic = 0f) => MatIn(Mats, name, color, smoothness, metallic);
+
+        /// <summary>Loads or creates a URP Lit material asset in <paramref name="folder"/> (settings only written on creation).</summary>
+        static Material MatIn(string folder, string name, Color color, float smoothness, float metallic = 0f, Color? emission = null)
         {
-            string path = Mats + name + ".mat";
+            string path = folder + name + ".mat";
             var m = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (m != null) return m;
-            System.IO.Directory.CreateDirectory(Mats);
+            System.IO.Directory.CreateDirectory(folder);
             m = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = name };
             m.SetColor("_BaseColor", color);
             m.SetFloat("_Smoothness", smoothness);
             m.SetFloat("_Metallic", metallic);
+            if (emission is { } e)
+            {
+                m.EnableKeyword("_EMISSION");
+                m.SetColor("_EmissionColor", e);
+                m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            }
             AssetDatabase.CreateAsset(m, path);
             return m;
         }

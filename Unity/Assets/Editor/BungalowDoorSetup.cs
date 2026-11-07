@@ -223,12 +223,12 @@ namespace Blink.EditorTools
 
         /// <summary>
         /// Placeholder keys for the puzzle rooms not built yet: (name, x, floor y, z, item id, display name). Dropped onto
-        /// whatever surface is there. Lily's doll room gives key_dorm (BLINK/Place Puzzle: Lily's Doll), so it has none;
-        /// delete a row when its room is built and hands out the real key.
+        /// whatever surface is there. Lily's doll room gives key_dorm (BLINK/Place Puzzle: Lily's Doll) and the flooded
+        /// basement key_workshop (BLINK/Place Puzzle: Flooded Basement), so they have none; delete a row when its room is
+        /// built and hands out the real key.
         /// </summary>
         static readonly (string name, float x, float y, float z, string itemId, string displayName)[] KeySpots =
         {
-            ("Key_Workshop_Placeholder", 15.0f, -2.85f, 10.5f, "key_workshop", "Workshop key"), // flooded basement
             ("Key_Front3_Placeholder", 17.0f, 0f, 11.5f, "key_front_3", "Front door key"),      // third puzzle room (kitchen spot)
         };
 

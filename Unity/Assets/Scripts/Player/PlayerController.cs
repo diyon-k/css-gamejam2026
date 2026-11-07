@@ -42,6 +42,8 @@ namespace Blink.Player
 
         public Vector3 Velocity => _velocity;
         public bool InputEnabled { get; set; } = true;
+        /// <summary>Scales the move speed (e.g. 0.7 wading through deep water). 1 = normal.</summary>
+        public float SpeedMultiplier { get; set; } = 1f;
         public bool IsCrawling => _controller.height < (crouchHeight + crawlHeight) * 0.5f;
         public bool IsCrouching => !IsCrawling && _controller.height < _standHeight - 0.01f;
         /// <summary>Camera pitch in degrees (positive looks down).</summary>
@@ -161,7 +163,7 @@ namespace Blink.Player
 
             Stance(dt);
 
-            float speed = IsCrawling ? crawlSpeed : IsCrouching ? crouchSpeed : walkSpeed;
+            float speed = (IsCrawling ? crawlSpeed : IsCrouching ? crouchSpeed : walkSpeed) * Mathf.Max(0f, SpeedMultiplier);
             Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
             Vector3 horizontal = Vector3.MoveTowards(new Vector3(_velocity.x, 0f, _velocity.z), wish, acceleration * dt);
 
