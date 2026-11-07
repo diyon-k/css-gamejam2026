@@ -14,6 +14,11 @@ namespace Blink.World
         [SerializeField] float reach = 2.5f;
         [SerializeField] float openAngle = 100f;
 
+        /// <summary>Fired once when the door gives way.</summary>
+        public event System.Action Opened;
+        public bool IsForcing => forceTimer.IsRunning;
+        public float Progress01 => forceTimer.Progress01;
+
         InputAction _interact;
         Transform _player;
         bool _open, _inReach;
@@ -53,6 +58,7 @@ namespace Blink.World
             // Pivot on the door's left edge (local x = -0.5 on a unit cube scaled to the door).
             var hinge = transform.TransformPoint(new Vector3(-0.5f, 0f, 0f));
             transform.RotateAround(hinge, Vector3.up, openAngle);
+            Opened?.Invoke();
         }
 
         // ponytail: IMGUI prompt, swap for real UI when the HUD exists.

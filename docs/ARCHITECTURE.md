@@ -25,6 +25,9 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
    - Windows: `powershell -ExecutionPolicy Bypass -File blink_server/setup.ps1`
    - macOS / Linux: `sh blink_server/setup.sh` (needs Python 3.13 or 3.12). macOS asks for camera access the first time: allow it for your terminal when testing with `--preview`, and for Unity when Play starts the sidecar. If it picks the wrong camera (e.g. an iPhone via Continuity Camera), pass `--camera 1`.
    - **Tuning:** to see the camera and blink score, untick `launchSidecar` on the `UdpEyeStateSource` in GameSystems (so there aren't two senders), then run the venv's python (`blink_server/.venv/Scripts/python` on Windows, `blink_server/.venv/bin/python` on macOS) with `blink_server/blink_server.py --preview` while in Play mode. Too twitchy or not triggering? Tune `--close` / `--open`.
+     - Windows, from the repo root: `cd blink_server` then `.venv\Scripts\python.exe blink_server.py --preview` (`q` / Esc closes it).
+     - The preview shows `CLOSED`/`open`, the blink score and `turn` (degrees the head points away from the camera).
+   - **Looking away counts as eyes open:** if your head is turned more than `--max-turn` degrees (default 30) from the camera, the sidecar sends `closed: false` whatever the blink score says. The blink score is unreliable side-on, and you're not looking at the screen anyway. The preview adds `(AWAY)` when this kicks in.
 4. **No webcam:** run `python blink_server/send_test_blinks.py demo` while in Play mode.
 
 ## Data flow
@@ -124,7 +127,7 @@ Each workstream owns its folder and builds against the contracts above. Integrat
 
 | # | Workstream | Owns | First tasks | Hooks into |
 |---|---|---|---|---|
-| 1 | **Blink sidecar** (Python) | `blink_server/` | `blink_server.py`: MediaPipe Face Landmarker → `eyeBlinkLeft/Right` blendshapes → hysteresis (close > 0.5, open < 0.35) → UDP packets. Python 3.12, `requirements.txt`, `--camera`, `--preview`. Then a PyInstaller build Unity can launch. | UDP protocol above. Test with the F1 overlay. |
+| 1 | **Blink sidecar** (Python) | `blink_server/` | `blink_server.py`: MediaPipe Face Landmarker → `eyeBlinkLeft/Right` blendshapes → hysteresis (close > 0.5, open < 0.35), forced open when the head is turned > 30° (`--max-turn`) → UDP packets. Python 3.12, `requirements.txt`, `--camera`, `--preview`. Then a PyInstaller build Unity can launch. | UDP protocol above. Test with the F1 overlay. |
 | 2 | **Player & gun feel** | `Scripts/Player/`, `Scripts/Combat/` | Muzzle flash, recoil, gunshot sound, hit sparks, ammo/health HUD, damage vignette, death → restart. | `Gun` events, `Health` events |
 | 3 | **Zombies** | `Scripts/Mobs/`, `Art/Zombies/` | Real zombie model (see asset research), Mixamo walk/attack/death clips, Animator Controller with `Speed`/`Attack`/`Dead`, spawner, grab jump-scare. | `MobController` events + Animator params, `ISkippable` for spawners |
 | 4 | **Time FX & audio** | `Scripts/Effects/` (new) | SkipFX (hard cut, chromatic flash, ghost trails, sound hit), EyesShutView (dark red-silhouette view for spectators), StareFX (blur + red veins after ~8 s), heartbeat. | `TimeSkipController.Skipped / FastForwardStarted / FastForwardEnded`, `BlinkDetector.SecondsSinceLastBlink` |
