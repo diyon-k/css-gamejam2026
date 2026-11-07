@@ -18,6 +18,9 @@ namespace Blink.Mobs
     /// Attacks in range, dies when its Health runs out.
     /// On a blink skip it jumps along its current navmesh path by speed x seconds x skipDistanceMultiplier,
     /// keeps moving without a hitch, and can land a hit if it was already in range. Hitting the player while their eyes are shut interrupts fast-forward.
+    /// Reaching you because you blinked grabs you instead (<see cref="GrabQte"/>): while the world is frozen this zombie
+    /// slams in to <see cref="grabDistance"/> in front of you and lunges to bite on GrabQte's beat, on real time.
+    /// Each ring you miss is a bite for <see cref="attackDamage"/>; break free and you shoot it dead point-blank.
     /// On death it goes limp as a <see cref="ZombieRagdoll"/> if it has one (otherwise it plays the
     /// Animator's "Dead" clip, or falls over procedurally) and the body is removed after
     /// <see cref="corpseLifetime"/> world seconds, which skips also count towards.
@@ -26,7 +29,7 @@ namespace Blink.Mobs
     /// "Dead", they're driven automatically.
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
-    public sealed class MobController : MonoBehaviour, ISkippable
+    public sealed class MobController : MonoBehaviour, ISkippable, IGrabber
     {
         public enum State { Idle, Patrol, Investigate, Chase, Attack, Dead }
 
@@ -73,8 +76,20 @@ namespace Blink.Mobs
         [SerializeField] float attackInterval = 1.4f;
         [Tooltip("World seconds between reaching the player and the first hit.")]
         [SerializeField] float attackWindup = 0.5f;
-        [Tooltip("Metres the zombie is shoved back when you win the grab QTE.")]
-        [SerializeField] float grabKnockback = 2.5f;
+        [Header("Grab (real seconds; the rest of the world is frozen)")]
+        [Tooltip("Metres from the player it's pulled to when it grabs you: right in your face.")]
+        [SerializeField] float grabDistance = 0.7f;
+        [Tooltip("Seconds to slam in from where it was to grabDistance.")]
+        [SerializeField, Min(0.01f)] float grabSlamSeconds = 0.12f;
+        [Tooltip("Metres it lunges at your face on each bite.")]
+        [SerializeField] float biteLunge = 0.22f;
+        [Tooltip("Metres a good press shoves it back for a moment.")]
+        [SerializeField] float shoveDistance = 0.3f;
+        [Tooltip("Speed (m/s) the body is thrown back, away from you, when you shoot it breaking free. Without it the " +
+                 "lunging pose topples forward onto the camera.")]
+        [SerializeField, Min(0f)] float grabKillThrow = 3f;
+        [Tooltip("Metres above the head bone the camera looks at, for rigs without eye bones (with them it looks between the eyes).")]
+        [SerializeField] float faceOffset = 0.08f;
 
         [Header("Death")]
         [Tooltip("World seconds the body stays before it's removed (blinking speeds this up). 0 = keep forever.")]
@@ -96,6 +111,17 @@ namespace Blink.Mobs
         static readonly int SpeedParam = Animator.StringToHash("Speed");
         static readonly int AttackParam = Animator.StringToHash("Attack");
         static readonly int DeadParam = Animator.StringToHash("Dead");
+        static readonly int AttackStateFull = Animator.StringToHash("Base Layer.Attack");
+        static readonly int AttackStateShort = Animator.StringToHash("Attack");
+
+        // Grab hold: GrabQte has frozen the world; this zombie is moved by hand on real time.
+        bool _grabbing, _finalShove;
+        float _finalPush = 1f; // 0: the last hit holds it in place (headbutt range) instead of shoving it back
+        float _grabClock, _biteAt, _shoveAt;
+        Vector3 _grabFrom, _grabAnchor;
+        Quaternion _grabFromRotation, _grabRotation;
+        AnimatorUpdateMode _savedUpdateMode;
+        Transform _head, _leftEye, _rightEye;
 
         NavMeshAgent _agent;
         Health _health;
@@ -135,6 +161,12 @@ namespace Blink.Mobs
             if (animator == null) animator = GetComponentInChildren<Animator>();
             if (ragdoll == null) ragdoll = GetComponent<ZombieRagdoll>();
             CacheAnimatorParameters();
+            if (animator != null && animator.isHuman)
+            {
+                _head = animator.GetBoneTransform(HumanBodyBones.Head);
+                _leftEye = animator.GetBoneTransform(HumanBodyBones.LeftEye);
+                _rightEye = animator.GetBoneTransform(HumanBodyBones.RightEye);
+            }
 
             if (patrolRoute != null)
             {
@@ -181,6 +213,11 @@ namespace Blink.Mobs
 
         void Update()
         {
+            if (_grabbing)
+            {
+                TickGrab(Mathf.Min(Time.unscaledDeltaTime, 0.1f));
+                return;
+            }
             if (CurrentState == State.Dead)
             {
                 AdvanceDeath(Time.deltaTime);
@@ -404,33 +441,134 @@ namespace Blink.Mobs
             if (_hasAttackParam) animator.SetTrigger(AttackParam);
             Vector3 toTarget = target.position - transform.position;
 
-            if (grabbed && GrabQte.TryBegin(OnGrabResolved)) return;
+            if (grabbed && GrabQte.TryBegin(this))
+            {
+                StartGrabHold();
+                return;
+            }
             _targetHealth?.TakeDamage(attackDamage, target.position + Vector3.up, toTarget.normalized);
             Attacked?.Invoke();
         }
 
-        void OnGrabResolved(bool escaped)
+        // ---- Grab: in your face, biting, until GrabQte resolves ----
+
+        Vector3 IGrabber.GrabFacePoint =>
+            _leftEye != null && _rightEye != null ? (_leftEye.position + _rightEye.position) * 0.5f
+            : _head != null ? _head.position + Vector3.up * faceOffset
+            : transform.position + Vector3.up * eyeHeight;
+
+        void IGrabber.GrabBite(bool hurts)
         {
-            if (this == null || target == null) return;
-            Vector3 away = transform.position - target.position;
-            away.y = 0f;
-            if (escaped)
-            {
-                // Shove it back so the same zombie doesn't re-grab on your next blink.
-                if (_agent.isOnNavMesh) _agent.Move(away.normalized * grabKnockback);
-            }
-            else
-            {
-                _targetHealth?.TakeDamage(float.MaxValue, target.position + Vector3.up, -away.normalized);
-            }
+            _biteAt = _grabClock;
+            if (hurts && target != null)
+                _targetHealth?.TakeDamage(attackDamage, target.position + Vector3.up, (target.position - transform.position).normalized);
+            if (animator == null || !animator.isActiveAndEnabled) return;
+            // Restart the attack clip on every bite, whatever transitions the controller has.
+            if (animator.HasState(0, AttackStateFull)) animator.CrossFadeInFixedTime(AttackStateFull, 0.08f, 0, 0f);
+            else if (animator.HasState(0, AttackStateShort)) animator.CrossFadeInFixedTime(AttackStateShort, 0.08f, 0, 0f);
+            else if (_hasAttackParam) animator.SetTrigger(AttackParam);
+        }
+
+        void IGrabber.GrabShoved(bool final, bool pushedBack)
+        {
+            _shoveAt = _grabClock;
+            _finalShove = final;
+            _finalPush = pushedBack ? 1f : 0f;
+        }
+
+        void IGrabber.GrabKill(Vector3 shotDirection)
+        {
+            if (_health == null || _health.IsDead) return; // the shot already did it
+            Vector3 point = _head != null ? _head.position : transform.position + Vector3.up * eyeHeight;
+            _health.TakeDamage(float.MaxValue, point, shotDirection);
+        }
+
+        void IGrabber.GrabResolved(bool escaped)
+        {
+            EndGrabHold();
             Attacked?.Invoke();
         }
 
+        /// <summary>Takes the body off the agent and slams it in front of the player's face, facing them.</summary>
+        void StartGrabHold()
+        {
+            _grabbing = true;
+            _finalShove = false;
+            _finalPush = 1f;
+            _grabClock = 0f;
+            _biteAt = _shoveAt = float.NegativeInfinity;
+
+            _agent.isStopped = true;
+            _agent.updatePosition = false;
+            _agent.updateRotation = false;
+
+            Vector3 away = transform.position - target.position;
+            away.y = 0f;
+            if (away.sqrMagnitude < 0.0001f) away = target.forward;
+            away.Normalize();
+            _grabFrom = transform.position;
+            _grabFromRotation = transform.rotation;
+            _grabAnchor = target.position + away * grabDistance;
+            _grabAnchor.y = transform.position.y;
+            _grabRotation = Quaternion.LookRotation(-away);
+
+            if (animator != null)
+            {
+                // The world is frozen at timeScale 0; this one keeps moving.
+                _savedUpdateMode = animator.updateMode;
+                animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+                if (_hasSpeedParam) animator.SetFloat(SpeedParam, 0f);
+            }
+        }
+
+        void TickGrab(float dt)
+        {
+            _grabClock += dt;
+            float slam = Smooth01(_grabClock / grabSlamSeconds);
+            float lunge = BiteCurve(_grabClock - _biteAt);
+            float shove = _finalShove && _grabClock >= _shoveAt ? _finalPush * Smooth01((_grabClock - _shoveAt) / 0.06f) : ShoveCurve(_grabClock - _shoveAt);
+
+            Vector3 toPlayer = _grabRotation * Vector3.forward;
+            Vector3 position = Vector3.LerpUnclamped(_grabFrom, _grabAnchor, slam)
+                               + toPlayer * (biteLunge * lunge - shoveDistance * shove);
+            transform.SetPositionAndRotation(position, Quaternion.Slerp(_grabFromRotation, _grabRotation, slam));
+        }
+
+        /// <summary>Hands the body back to the agent where the grab left it. Safe to call twice.</summary>
+        void EndGrabHold()
+        {
+            if (!_grabbing) return;
+            _grabbing = false;
+            if (animator != null) animator.updateMode = _savedUpdateMode;
+            // Leave the body where the grab left it (no snap back to the anchor) and bring the agent to it.
+            if (_agent.enabled) _agent.Warp(transform.position);
+            _agent.updatePosition = true;
+            _agent.updateRotation = true;
+        }
+
+        static float Smooth01(float t)
+        {
+            t = Mathf.Clamp01(t);
+            return t * t * (3f - 2f * t);
+        }
+
+        /// <summary>0 → 1 → 0: a quick lunge in (0.12 s), a slower pull back (0.33 s).</summary>
+        static float BiteCurve(float t) =>
+            t < 0f ? 0f : t < 0.12f ? Smooth01(t / 0.12f) : 1f - Smooth01((t - 0.12f) / 0.33f);
+
+        /// <summary>0 → 1 → 0: knocked back fast (0.06 s), leans back in (0.3 s).</summary>
+        static float ShoveCurve(float t) =>
+            t < 0f ? 0f : t < 0.06f ? Smooth01(t / 0.06f) : 1f - Smooth01((t - 0.06f) / 0.3f);
+
         void OnDied()
         {
+            // Shot point-blank as you broke free: throw it back off you rather than let it fall into your face.
+            bool executed = _grabbing && _finalShove;
+            Vector3 throwBack = executed ? (_grabRotation * Vector3.back) * grabKillThrow + Vector3.up * (grabKillThrow * 0.25f) : Vector3.zero;
+            EndGrabHold(); // let the ragdoll take over from where it stands
             SetState(State.Dead);
             // Read before the agent is switched off, which zeroes it: the body keeps its running speed.
-            Vector3 velocity = _agent.enabled ? _agent.velocity : Vector3.zero;
+            Vector3 velocity = executed ? throwBack : _agent.enabled ? _agent.velocity : Vector3.zero;
             if (_agent.isOnNavMesh) _agent.isStopped = true;
             _agent.enabled = false;
             foreach (var col in GetComponents<Collider>()) col.enabled = false;

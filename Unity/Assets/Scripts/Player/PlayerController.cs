@@ -117,6 +117,26 @@ namespace Blink.Player
             cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         }
 
+        /// <summary>
+        /// Turns the view toward a world point, easing in at <paramref name="sharpness"/> (higher snaps faster).
+        /// For when something else has the camera while input is off, e.g. a zombie grabbing you.
+        /// </summary>
+        public void TurnTowards(Vector3 worldPoint, float sharpness, float deltaTime)
+        {
+            if (cameraPivot == null) return;
+            Vector3 to = worldPoint - cameraPivot.position;
+            Vector3 flat = new Vector3(to.x, 0f, to.z);
+            if (flat.sqrMagnitude < 1e-6f) return;
+
+            float t = 1f - Mathf.Exp(-sharpness * deltaTime);
+            float yaw = Vector3.SignedAngle(Vector3.ProjectOnPlane(transform.forward, Vector3.up), flat, Vector3.up);
+            transform.Rotate(0f, yaw * t, 0f, Space.Self);
+
+            float pitch = -Mathf.Atan2(to.y, flat.magnitude) * Mathf.Rad2Deg; // looking up is negative pitch
+            _pitch = Mathf.Clamp(Mathf.Lerp(_pitch, pitch, t), -maxPitch, maxPitch);
+            cameraPivot.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+        }
+
         void Move()
         {
             Vector2 input = _move != null ? _move.ReadValue<Vector2>() : Vector2.zero;
