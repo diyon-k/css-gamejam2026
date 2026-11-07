@@ -50,6 +50,8 @@ namespace Blink.Combat
         [SerializeField] Vector2 lowerPitchRoll = new(30f, -10f);
         [Tooltip("Shortest gap between two mouse-wheel steps, so a fast flick doesn't skip slots.")]
         [SerializeField, Min(0f)] float scrollCooldown = 0.08f;
+        [Tooltip("When grabbed, the hands come out to push the zombie off; after breaking free the weapon comes back this long later (lets the shove play).")]
+        [SerializeField, Min(0f)] float regrabWeaponDelay = 0.4f;
 
         /// <summary>A gun fired (the pistol). Once per trigger pull, after its <see cref="RayFired"/> ray.</summary>
         public event Action<WeaponKind> ShotFired;
@@ -98,6 +100,8 @@ namespace Blink.Combat
         Vector3 _holsterPosition;
         Quaternion _holsterRotation = Quaternion.identity;
         float _nextScrollTime;
+        WeaponKind? _beforeGrab;
+        float _restoreAt = float.PositiveInfinity;
         bool _subscribed;
 
         InputAction _fire, _reload, _next, _previous, _scroll;
@@ -159,6 +163,13 @@ namespace Blink.Combat
             bool alive = _owner == null || !_owner.IsDead;
             bool inputFree = alive && !GrabQte.BlocksInput; // clicks and keys belong to the grab QTE
             if (inputFree) ReadSwitchInput();
+
+            if (Time.unscaledTime >= _restoreAt)
+            {
+                _restoreAt = float.PositiveInfinity;
+                if (_beforeGrab is { } kind) Select(kind);
+                _beforeGrab = null;
+            }
 
             AdvanceSwitch(Mathf.Min(Time.unscaledDeltaTime, 0.1f));
 
@@ -322,6 +333,8 @@ namespace Blink.Combat
         {
             if (_subscribed) return;
             _subscribed = true;
+            GrabQte.Began += OnGrabBegan;
+            GrabQte.Resolved += OnGrabResolved;
             if (pistol != null)
             {
                 pistol.Fired += OnPistolFired;
@@ -340,6 +353,8 @@ namespace Blink.Combat
         {
             if (!_subscribed) return;
             _subscribed = false;
+            GrabQte.Began -= OnGrabBegan;
+            GrabQte.Resolved -= OnGrabResolved;
             if (pistol != null)
             {
                 pistol.Fired -= OnPistolFired;
@@ -360,6 +375,21 @@ namespace Blink.Combat
             var ray = aimCamera != null ? aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f)) : new Ray(pistol.transform.position, pistol.transform.forward);
             RayFired?.Invoke(new ShotRay(WeaponKind.Pistol, ray, pistol.Range, hit, info, pistol.Muzzle));
             ShotFired?.Invoke(WeaponKind.Pistol);
+        }
+
+        // Hands out to push the zombie off. Selecting during the QTE works: the switch runs on unscaled time.
+        void OnGrabBegan()
+        {
+            if (!Has(WeaponKind.Hands)) return;
+            _restoreAt = float.PositiveInfinity;
+            _beforeGrab ??= _slots[_switch.Target].Kind;
+            Select(WeaponKind.Hands);
+        }
+
+        void OnGrabResolved(bool passed)
+        {
+            if (passed) _restoreAt = Time.unscaledTime + regrabWeaponDelay;
+            else _beforeGrab = null; // dead
         }
 
         void OnPistolDryFired() => DryFired?.Invoke(WeaponKind.Pistol);

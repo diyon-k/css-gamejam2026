@@ -80,6 +80,9 @@ namespace Blink.Player
 
         public static bool Active => _instance != null && _instance._running;
 
+        /// <summary>A correct press that didn't finish the QTE (a shove that hasn't broken free yet).</summary>
+        public static event Action Beat;
+
         /// <summary>
         /// True during a QTE and briefly after, so the Space presses and clicks used for it don't register as
         /// blinks or gunshots (Space is also the keyboard blink key).
@@ -103,6 +106,7 @@ namespace Blink.Player
             Bit = null;
             Began = null;
             Resolved = null;
+            Beat = null;
         }
 
         /// <summary>Starts a QTE for <paramref name="grabber"/>. Returns false if one is already running.</summary>
@@ -223,6 +227,7 @@ namespace Blink.Player
                 case GrabRing.Result.Hit:
                     _grabber.GrabShoved(false, pushedBack: true);
                     Jolt(1.5f, 0.03f);
+                    Beat?.Invoke();
                     _spot = GrabRing.PickSpot(Random01, _spot, Aspect);
                     _biteTimer = Mathf.Max(_biteTimer, 0.5f); // let the shove land before it lunges again
                     break;
