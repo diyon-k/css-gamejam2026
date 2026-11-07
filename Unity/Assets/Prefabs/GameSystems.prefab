@@ -1,0 +1,110 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2853669821103693377
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1664339692918104577}
+  - component: {fileID: 14680437188636886}
+  - component: {fileID: 8317930169537313389}
+  - component: {fileID: 2084506978649631558}
+  - component: {fileID: 42009090297751718}
+  - component: {fileID: 8742776031231881677}
+  m_Layer: 0
+  m_Name: GameSystems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1664339692918104577
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &14680437188636886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a37fec96cdce7b4085d3bfee6ec9481, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.UdpEyeStateSource
+  port: 5065
+  timeoutSeconds: 0.5
+  logConnectionChanges: 1
+--- !u!114 &8317930169537313389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37f739de7aaeb1f46921564895f87891, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.KeyboardEyeStateSource
+  key: 1
+--- !u!114 &2084506978649631558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f9c8b36b1f786243aa9a8c2cd047806, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.BlinkDetector
+  holdThreshold: 0.35
+  minClosedTime: 0.03
+  treatMissingFaceAsClosed: 1
+  logEvents: 0
+--- !u!114 &42009090297751718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7fdeace17beec5468b33e2918ade6ee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.TimeSkip.TimeSkipController
+  blinkSkipSeconds: 0.5
+  fastForwardScale: 3
+  detector: {fileID: 0}
+--- !u!114 &8742776031231881677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 018044a3888681643bdcd482132bb6d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.BlinkDebugOverlay
+  visible: 1
