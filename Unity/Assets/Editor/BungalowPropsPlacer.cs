@@ -239,7 +239,7 @@ namespace Blink.EditorTools
         {
             if (!AssetDatabase.IsValidFolder(PrefabDir.TrimEnd('/'))) AssetDatabase.CreateFolder(PropsDir.TrimEnd('/'), "Prefabs");
             var models = LoadModels();
-            int n = 0, boxes = 0, drawers = 0;
+            int n = 0, boxes = 0, drawers = 0, wired = 0;
             var missing = new List<string>();
             foreach (var m in models.Values)
             {
@@ -271,11 +271,12 @@ namespace Blink.EditorTools
                     boxes++;
                 }
                 drawers += SetupDrawers(go, m);
+                if (BungalowInteractables.Wire(go, m.name)) wired++;
                 PrefabUtility.SaveAsPrefabAsset(go, PrefabDir + m.name + ".prefab");
                 UnityEngine.Object.DestroyImmediate(go);
                 n++;
             }
-            return $"prefabs: {n} in {PrefabDir} ({boxes} with a box collider, {drawers} drawers)" + (missing.Count > 0 ? "; missing fbx: " + string.Join(", ", missing.ToArray()) : "");
+            return $"prefabs: {n} in {PrefabDir} ({boxes} with a box collider, {drawers} drawers, {wired} interactive)" + (missing.Count > 0 ? "; missing fbx: " + string.Join(", ", missing.ToArray()) : "");
         }
 
         static readonly System.Text.RegularExpressions.Regex DrawerName = new System.Text.RegularExpressions.Regex(@"_Drawer\d+$");
