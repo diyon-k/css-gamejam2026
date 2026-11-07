@@ -9,8 +9,8 @@ using UnityEngine;
 namespace Blink.Player
 {
     /// <summary>
-    /// Game start. Black screen with "BLINK to begin" and the world frozen. The first blink (or Space)
-    /// slowly opens the eyelids on the bedroom while the player sits up from lying on the bed, then hands
+    /// Game start. Black screen with "BLINK to begin" and the world frozen. The first webcam blink (or
+    /// eyes-shut) slowly opens the eyelids on the bedroom while the player sits up from lying on the bed, then hands
     /// over control and starts world time. Lives on GameSystems next to <see cref="BlinkEyelids"/>.
     ///
     /// Also the respawn: when the player dies they slump to the floor as the screen fades to black, then

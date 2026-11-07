@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1664339692918104577}
   - component: {fileID: 14680437188636886}
-  - component: {fileID: 8317930169537313389}
   - component: {fileID: 2084506978649631558}
   - component: {fileID: 42009090297751718}
   - component: {fileID: 8742776031231881677}
@@ -64,19 +63,6 @@ MonoBehaviour:
   timeoutSeconds: 0.5
   logConnectionChanges: 1
   launchSidecar: 1
---- !u!114 &8317930169537313389
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2853669821103693377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 37f739de7aaeb1f46921564895f87891, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.KeyboardEyeStateSource
-  key: 1
 --- !u!114 &2084506978649631558
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -91,7 +77,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Detection.BlinkDetector
   holdThreshold: 0.35
   minClosedTime: 0.03
-  treatMissingFaceAsClosed: 1
+  treatMissingFaceAsClosed: 0
   logEvents: 0
 --- !u!114 &42009090297751718
 MonoBehaviour:
@@ -133,9 +119,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7633161bb5e7ed741b9e4c1b5e9fac4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.BulletTracer
-  gun: {fileID: 0}
+  weapons: {fileID: 0}
   aimCamera: {fileID: 0}
-  missDistance: 60
   tracerMaterial: {fileID: 2100000, guid: 2239a65c8e7a9bc4bb558063cac97411, type: 2}
   tracerTint: {r: 1, g: 0.82, b: 0.58, a: 1}
   speed: 700
@@ -358,8 +343,14 @@ MonoBehaviour:
   sitUpAt: 3
   lyingPitch: -70
   lyingRoll: 12
-  lyingDrop: 0.9
+  lyingOffset: {x: 0, y: -0.9, z: 0}
   prompt: BLINK to begin
+  knockSeconds: 2
+  knockOffset: {x: 0, y: -1.2, z: 0}
+  knockRoll: 75
+  respawnPrompt: 'You were knocked out
+
+    BLINK to wake up'
 --- !u!114 &8105300627443483699
 MonoBehaviour:
   m_ObjectHideFlags: 0
