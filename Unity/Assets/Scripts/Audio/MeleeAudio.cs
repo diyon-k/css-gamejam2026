@@ -6,7 +6,8 @@ namespace Blink.Audio
     /// <summary>
     /// Axe sounds from the <see cref="PlayerWeapons"/> hub: a whoosh when a swing starts (2D, it's your swing),
     /// and on contact either a flesh hit or a wall thud at the impact point (3D). Lives on the Effects prefab and
-    /// finds the hub at runtime, like the other effect listeners.
+    /// finds the hub at runtime, like the other effect listeners. A melee item with its own cues (a plank's thud, see
+    /// <see cref="Interaction.SwingableProp"/>) plays those instead.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class MeleeAudio : MonoBehaviour
@@ -37,14 +38,20 @@ namespace Blink.Audio
 
         void OnSwing(WeaponKind weapon)
         {
-            if (swingCue != null && AudioService.Instance != null) AudioService.Instance.Play(swingCue);
+            var cue = Item?.SwingCue != null ? Item.SwingCue : swingCue;
+            if (cue != null && AudioService.Instance != null) AudioService.Instance.Play(cue);
         }
 
         void OnHit(MeleeHitInfo hit)
         {
-            var cue = hit.Target != null ? fleshHitCue : surfaceHitCue;
+            var cue = hit.Target != null
+                ? (Item?.HitCue != null ? Item.HitCue : fleshHitCue)
+                : (Item?.SurfaceHitCue != null ? Item.SurfaceHitCue : surfaceHitCue);
             if (cue != null && AudioService.Instance != null) AudioService.Instance.PlayAt(cue, hit.Point);
         }
+
+        // Only the melee slot's swings carry an item; the grab QTE's headbutt reports hits with the axe slot empty or not out.
+        Interaction.SwingableProp Item => _hub != null && _hub.Axe != null && _hub.ActiveKind == WeaponKind.Axe ? _hub.Axe.Equipped : null;
 
         void Unsubscribe()
         {

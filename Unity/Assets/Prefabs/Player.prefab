@@ -97,8 +97,10 @@ MonoBehaviour:
   acceleration: 20
   gravity: -20
   jumpHeight: 1
-  crawlSpeed: 1.5
-  crawlHeight: 0.8
+  crouchSpeed: 2.2
+  crouchHeight: 1.2
+  crawlSpeed: 1
+  crawlHeight: 0.7
   crawlTransitionSpeed: 4
   mouseSensitivity: 0.1
   gamepadSensitivity: 180

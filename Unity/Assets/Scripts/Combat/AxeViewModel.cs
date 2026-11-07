@@ -95,6 +95,9 @@ namespace Blink.Combat
 
         public AxeSwingTimeline Timeline => timeline;
 
+        /// <summary>The right hand's grip on the haft. The melee item in hand (the axe mesh, or a plank) hangs off it.</summary>
+        public Transform Grip => grip;
+
         void OnEnable()
         {
             if (registerForTimeSkips) TimeSkipController.Register(this);

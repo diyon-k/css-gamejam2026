@@ -7,8 +7,8 @@ namespace Blink.Player
 {
     /// <summary>
     /// First-person walk/look on a CharacterController, driven by the project-wide input actions
-    /// (Player/Move, Player/Look, Player/Jump, Player/Crouch). Crouch is held to crawl: the capsule and
-    /// camera drop, and the player stays down while something is overhead. No sprinting by design.
+    /// (Player/Move, Player/Look, Player/Jump, Player/Crouch, Player/Crawl). Crouch and Crawl are held: the
+    /// capsule and camera drop, and the player stays down while something is overhead. No sprinting by design.
     ///
     /// The player stands outside world time: it is deliberately NOT an <see cref="ISkippable"/>, so a
     /// blink skip leaves it where it is while the zombies jump, and movement runs on real time, so
@@ -25,9 +25,12 @@ namespace Blink.Player
         [SerializeField] float gravity = -20f;
         [SerializeField] float jumpHeight = 1f;
 
-        [Header("Crawl")]
-        [SerializeField] float crawlSpeed = 1.5f;
-        [SerializeField] float crawlHeight = 0.8f;
+        [Header("Crouch / Crawl")]
+        [SerializeField] float crouchSpeed = 2.2f;
+        [SerializeField] float crouchHeight = 1.2f;
+        [SerializeField] float crawlSpeed = 1f;
+        [Tooltip("Can't go below 2x the capsule radius.")]
+        [SerializeField] float crawlHeight = 0.7f;
         [Tooltip("Metres per second the capsule shrinks or grows when going down or getting up.")]
         [SerializeField] float crawlTransitionSpeed = 4f;
 
@@ -39,7 +42,8 @@ namespace Blink.Player
 
         public Vector3 Velocity => _velocity;
         public bool InputEnabled { get; set; } = true;
-        public bool IsCrawling { get; private set; }
+        public bool IsCrawling => _controller.height < (crouchHeight + crawlHeight) * 0.5f;
+        public bool IsCrouching => !IsCrawling && _controller.height < _standHeight - 0.01f;
         /// <summary>Camera pitch in degrees (positive looks down).</summary>
         public float Pitch => _pitch;
         /// <summary>Gamepad look multiplier; aim assist lowers it over a target (Fortnite-style slowdown).</summary>
@@ -47,7 +51,7 @@ namespace Blink.Player
 
         CharacterController _controller;
         Health _health;
-        InputAction _move, _look, _jump, _crouch;
+        InputAction _move, _look, _jump, _crouch, _crawl;
         Vector3 _velocity;
         float _pitch;
         float _standHeight, _feetY, _standPivotY;
@@ -71,6 +75,7 @@ namespace Blink.Player
             _look = actions.FindAction("Player/Look");
             _jump = actions.FindAction("Player/Jump");
             _crouch = actions.FindAction("Player/Crouch");
+            _crawl = actions.FindAction("Player/Crawl");
         }
 
         void OnEnable()
@@ -79,6 +84,7 @@ namespace Blink.Player
             _look?.Enable();
             _jump?.Enable();
             _crouch?.Enable();
+            _crawl?.Enable();
             if (_health != null) _health.Died += OnDied;
         }
 
@@ -153,27 +159,35 @@ namespace Blink.Player
             // Real time, not world time: the player must not gain ground from time skipping.
             float dt = RealDeltaTime(Time.deltaTime, Time.timeScale);
 
-            Crawl(dt);
+            Stance(dt);
 
-            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * (IsCrawling ? crawlSpeed : walkSpeed);
+            float speed = IsCrawling ? crawlSpeed : IsCrouching ? crouchSpeed : walkSpeed;
+            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
             Vector3 horizontal = Vector3.MoveTowards(new Vector3(_velocity.x, 0f, _velocity.z), wish, acceleration * dt);
 
             float vertical = _controller.isGrounded ? -2f : _velocity.y + gravity * dt;
-            if (_controller.isGrounded && !IsCrawling && _jump != null && _jump.WasPressedThisFrame())
+            if (_controller.isGrounded && !IsCrawling && !IsCrouching && _jump != null && _jump.WasPressedThisFrame())
                 vertical = Mathf.Sqrt(-2f * gravity * jumpHeight);
             _velocity = new Vector3(horizontal.x, vertical, horizontal.z);
             var flags = _controller.Move(_velocity * dt);
             if ((flags & CollisionFlags.Above) != 0 && _velocity.y > 0f) _velocity.y = 0f; // bonk the ceiling
         }
 
-        /// <summary>Holding Crouch shrinks the capsule (feet stay put) and drops the camera with it.</summary>
-        void Crawl(float dt)
+        /// <summary>
+        /// Holding Crouch or Crawl shrinks the capsule (feet stay put) and drops the camera with it.
+        /// Crawl wins if both are held. Won't rise into a ceiling: stays low until there's room.
+        /// </summary>
+        void Stance(float dt)
         {
+            float height = _controller.height;
             // Pad B also puts a note down; that press isn't a crouch.
-            bool held = _crouch != null && _crouch.IsPressed() && !Interaction.Readable.ClaimsCrouch;
-            IsCrawling = held || (IsCrawling && !HeadroomToStand());
+            bool crouchHeld = _crouch != null && _crouch.IsPressed() && !Interaction.Readable.ClaimsCrouch;
+            float target = _crawl != null && _crawl.IsPressed() ? crawlHeight
+                : crouchHeld ? crouchHeight
+                : _standHeight;
+            if (target > height && !Headroom(target - height)) target = height;
 
-            SetHeight(Mathf.MoveTowards(_controller.height, IsCrawling ? crawlHeight : _standHeight, crawlTransitionSpeed * dt));
+            SetHeight(Mathf.MoveTowards(height, target, crawlTransitionSpeed * dt));
         }
 
         void SetHeight(float height)
@@ -188,12 +202,11 @@ namespace Blink.Player
             }
         }
 
-        bool HeadroomToStand()
+        bool Headroom(float distance)
         {
             float r = _controller.radius * 0.9f;
             // Starts inside our own capsule, which casts ignore, so only real ceilings count.
             Vector3 origin = transform.TransformPoint(new Vector3(0f, _feetY + _controller.height - _controller.radius, 0f));
-            float distance = _standHeight - _controller.height;
             return !Physics.SphereCast(origin, r, Vector3.up, out _, distance, ~0, QueryTriggerInteraction.Ignore);
         }
 
@@ -220,7 +233,6 @@ namespace Blink.Player
             _controller.enabled = true;
             _velocity = Vector3.zero;
             _pitch = 0f;
-            IsCrawling = false;
             SetHeight(_standHeight);
         }
 
