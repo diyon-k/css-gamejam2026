@@ -41,10 +41,16 @@ namespace Blink.Combat
         [Tooltip("Slot order for keys 1, 2, 3 and for cycling. Weapons that aren't assigned are left out.")]
         [SerializeField] WeaponKind[] loadout = { WeaponKind.Hands, WeaponKind.Pistol, WeaponKind.Axe };
         [SerializeField] WeaponKind startWeapon = WeaponKind.Pistol;
-        [Tooltip("Off: the pistol slot stays locked until a Pickup with 'Gives Pistol' is found.")]
-        [SerializeField] bool startsWithPistol = true;
+        [Tooltip("Off: the pistol slot stays locked until a Pickup with 'Gives Pistol' is found. On, with one hand, the " +
+                 "starting pistol has no pickup to drop, so it can never be swapped for anything else.")]
+        [SerializeField] bool startsWithPistol;
+        [Tooltip("On: the axe starts in the hands. Off: no axe, unless 'Axe Starts At' puts it in the level.")]
+        [SerializeField] bool startsWithAxe;
         [Tooltip("Set: the axe starts lying here instead of in the hands (pick it up like any melee prop).")]
         [SerializeField] Transform axeStartsAt;
+        [Tooltip("One hand (see Hand): the player holds one thing at a time, so there is no weapon switching. Picking " +
+                 "something up swaps it for whatever is held, and G drops it.")]
+        [SerializeField] bool oneHanded = true;
 
         [Header("Switching (unscaled seconds)")]
         [Tooltip("Parent of every slot. Lowered and tilted out of view during a switch. Must not be animated.")]
@@ -61,6 +67,10 @@ namespace Blink.Combat
         [SerializeField, Min(0f)] float scrollCooldown = 0.08f;
         [Tooltip("When grabbed, the hands come out to push the zombie off; after breaking free the weapon comes back this long later (lets the shove play).")]
         [SerializeField, Min(0f)] float regrabWeaponDelay = 0.4f;
+
+        [Header("Attack cooldown (world seconds)")]
+        [Tooltip("After a melee swing, no melee weapon (axe, picked-up item) can attack again for this long. The pistol ignores it.")]
+        [SerializeField, Min(0f)] float attackCooldown = 2f;
 
         /// <summary>A gun fired (the pistol). Once per trigger pull, after its <see cref="RayFired"/> ray.</summary>
         public event Action<WeaponKind> ShotFired;
@@ -98,6 +108,9 @@ namespace Blink.Combat
         /// <summary>0 = weapon up, 1 = fully lowered.</summary>
         public float Lowered01 => _switch.Lowered01;
 
+        /// <summary>Attack cooldown left, 1 = just attacked, 0 = ready.</summary>
+        public float Cooldown01 => attackCooldown > 0f && ActiveKind != WeaponKind.Pistol ?Mathf.Clamp01((_readyAt - Time.time) / attackCooldown) : 0f;
+
         public int SlotCount => _slots.Count;
         public Gun Pistol => pistol;
         public MeleeWeapon Axe => axe;
@@ -105,6 +118,24 @@ namespace Blink.Combat
 
         /// <summary>The reload input (R / gamepad West), so prompts can show its binding for the device in use. Read-only use.</summary>
         public InputAction ReloadInput => _reload;
+
+        /// <summary>The drop input (G / d-pad down), for prompts. Read-only use.</summary>
+        public InputAction DropInput => _drop;
+
+        /// <summary>One hand: no weapon switching; a weapon takes the hand like any other item (see <see cref="Interaction.Hand"/>).</summary>
+        public bool OneHanded => oneHanded;
+
+        /// <summary>True while the pistol or a melee item is in the hand.</summary>
+        public bool HoldsWeapon => (_hasPistol && pistol != null) || (axe != null && axe.Equipped != null);
+
+        /// <summary>The weapon in hand, lower case ("pistol", "axe"), or null.</summary>
+        public string HeldWeaponName =>
+            axe != null && axe.Equipped != null ? axe.Equipped.DisplayName.ToLowerInvariant()
+            : _hasPistol && pistol != null ? (_pistolPickup != null ? _pistolPickup.displayName.ToLowerInvariant() : "pistol")
+            : null;
+
+        /// <summary>False if the pistol in hand has no pickup to drop back into the world (the player started with it).</summary>
+        public bool CanDropWeapon => !(_hasPistol && pistol != null && _pistolPickup == null);
 
         readonly List<Slot> _slots = new();
         WeaponSwitchState _switch = new(0);
@@ -114,7 +145,9 @@ namespace Blink.Combat
         float _nextScrollTime, _grabDown;
         WeaponKind? _beforeGrab;
         float _restoreAt = float.PositiveInfinity;
+        float _readyAt = float.NegativeInfinity;
         bool _subscribed, _brokeFree, _hasPistol = true;
+        Interaction.Pickup _pistolPickup; // where the pistol came from; dropping it puts this back on the floor
 
         InputAction _fire, _reload, _next, _previous, _scroll, _drop;
         InputAction[] _slotKeys = Array.Empty<InputAction>();
@@ -129,13 +162,17 @@ namespace Blink.Combat
             if (holster != null) holster.GetLocalPositionAndRotation(out _holsterPosition, out _holsterRotation);
             if (pistol != null) pistol.ReadsInput = false; // driven from here
             if (axe != null) axe.Init(); // its slot may start inactive, but it must know what it's holding
-            if (axe != null && axeStartsAt != null && axe.Drop(null) is { } dropped)
+            if (axe != null && (axeStartsAt != null || !startsWithAxe) && axe.Drop(null) is { } dropped)
             {
-                dropped.transform.SetPositionAndRotation(axeStartsAt.position, axeStartsAt.rotation);
-                var body = dropped.GetComponent<Rigidbody>(); // interpolated: move the body too, or it snaps back
-                body.position = axeStartsAt.position;
-                body.rotation = axeStartsAt.rotation;
-                body.linearVelocity = body.angularVelocity = Vector3.zero;
+                if (axeStartsAt == null) dropped.gameObject.SetActive(false); // not in this level
+                else
+                {
+                    dropped.transform.SetPositionAndRotation(axeStartsAt.position, axeStartsAt.rotation);
+                    var body = dropped.GetComponent<Rigidbody>(); // interpolated: move the body too, or it snaps back
+                    body.position = axeStartsAt.position;
+                    body.rotation = axeStartsAt.rotation;
+                    body.linearVelocity = body.angularVelocity = Vector3.zero;
+                }
             }
 
             _hasPistol = startsWithPistol;
@@ -206,7 +243,7 @@ namespace Blink.Combat
 
             if (!inputFree || _switch.IsSwitching || _slots.Count == 0) return;
             if (Interaction.Carryable.Held != null) return; // hands are full: Attack throws the prop instead
-            if (_drop.WasPressedThisFrame()) DropMelee();
+            if (_drop.WasPressedThisFrame()) DropHeld();
             var slot = _slots[_switch.Active];
             if (_fire != null && _fire.WasPressedThisFrame()) Use(slot);
             // Pad X is Reload and Interact: a press that began with something to interact with isn't a reload.
@@ -242,13 +279,46 @@ namespace Blink.Combat
             return false;
         }
 
-        /// <summary>Puts a picked-up melee item in the melee slot and brings it out, dropping whatever was in it.</summary>
+        /// <summary>Puts a picked-up melee item in the melee slot and brings it out, dropping whatever was in it (with one
+        /// hand, whatever was in the hand).</summary>
         public void EquipMelee(Interaction.SwingableProp item)
         {
             if (axe == null || item == null || item.IsHeld) return;
-            axe.Drop(GetComponent<Collider>()); // swap: the old item falls from the hands, as with G
+            if (oneHanded && Interaction.Hand.Instance is { } hand) { if (!hand.MakeRoom()) return; }
+            else axe.Drop(GetComponent<Collider>()); // swap: the old item falls from the hands, as with G
             axe.Equip(item);
             Select(WeaponKind.Axe);
+        }
+
+        /// <summary>
+        /// G / d-pad down. With one hand: drops whatever is held (an item, the pistol or a melee item). Otherwise drops the
+        /// melee item while it's out.
+        /// </summary>
+        public void DropHeld()
+        {
+            if (!oneHanded) { DropMelee(); return; }
+            if (Interaction.Hand.Instance is { Item: not null } hand) { hand.DropItem(); return; }
+            if (axe != null && axe.IsSwinging) return; // the swing plays out first
+            DropWeapon();
+        }
+
+        /// <summary>
+        /// Lets go of the weapon in hand (one-hand rule): a melee item falls from the hands, the pistol goes back on the floor
+        /// as its pickup (ammo kept). Then the empty hands come up. A pistol without a pickup stays (see <see cref="CanDropWeapon"/>).
+        /// </summary>
+        public void DropWeapon()
+        {
+            bool dropped = axe != null && axe.Drop(GetComponent<Collider>()) != null;
+            if (_hasPistol && pistol != null && _pistolPickup != null)
+            {
+                pistol.CancelReload();
+                _hasPistol = false;
+                var eye = aimCamera != null ? aimCamera.transform : transform;
+                _pistolPickup.PlaceAt(Interaction.Hand.DropPoint(eye));
+                _pistolPickup = null;
+                dropped = true;
+            }
+            if (dropped && ActiveKind != WeaponKind.Hands && !Select(WeaponKind.Hands)) Cycle(1);
         }
 
         /// <summary>Drops the melee item in hand (only while it's out and not mid-swing), then puts the hands up.</summary>
@@ -269,13 +339,17 @@ namespace Blink.Combat
         /// <summary>True if <paramref name="kind"/> is in the loadout (the pistol only once it's been found).</summary>
         public bool Has(WeaponKind kind) => IndexOf(kind) >= 0 && (kind != WeaponKind.Pistol || _hasPistol);
 
-        /// <summary>A floor pickup: unlocks the pistol (and brings it out) and/or adds reserve rounds.</summary>
-        public void GivePistol(bool unlock, int rounds)
+        /// <summary>
+        /// A floor pickup: unlocks the pistol (and brings it out) and/or adds reserve rounds. <paramref name="source"/> is the
+        /// pickup it came from, put back on the floor if the pistol is dropped.
+        /// </summary>
+        public void GivePistol(bool unlock, int rounds, Interaction.Pickup source = null)
         {
             if (pistol == null) return;
             pistol.AddAmmo(rounds);
             if (!unlock || _hasPistol) return;
             _hasPistol = true;
+            _pistolPickup = source;
             Select(WeaponKind.Pistol);
         }
 
@@ -315,6 +389,7 @@ namespace Blink.Combat
 
         void Use(Slot slot)
         {
+            if (slot.Kind != WeaponKind.Pistol && Time.time < _readyAt) return; // melee cooling down (OnAxeSwung); the pistol has no cooldown, only Gun.fireInterval
             switch (slot.Kind)
             {
                 case WeaponKind.Pistol: pistol.TryFire(); break;
@@ -339,6 +414,7 @@ namespace Blink.Combat
 
         void ReadSwitchInput()
         {
+            if (oneHanded) return; // one thing in hand: nothing to switch to
             for (int i = 0; i < _slotKeys.Length; i++)
                 if (_slotKeys[i].WasPressedThisFrame()) SelectSlot(i);
             if (_next.WasPressedThisFrame()) Cycle(1);
@@ -482,7 +558,11 @@ namespace Blink.Combat
         void OnPistolDryFired() => DryFired?.Invoke(WeaponKind.Pistol);
         void OnPistolReloadStarted() => ReloadStarted?.Invoke(WeaponKind.Pistol);
         void OnPistolReloadFinished() => ReloadFinished?.Invoke(WeaponKind.Pistol);
-        void OnAxeSwung() => MeleeSwing?.Invoke(WeaponKind.Axe);
+        void OnAxeSwung()
+        {
+            _readyAt = Time.time + attackCooldown;
+            MeleeSwing?.Invoke(WeaponKind.Axe);
+        }
         void OnMeleeHit(MeleeHitInfo hit) => MeleeHit?.Invoke(hit);
 
         sealed class Slot

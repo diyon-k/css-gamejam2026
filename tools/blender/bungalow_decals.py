@@ -339,14 +339,18 @@ wall("B2", "W", 7.5, 1.7, 0.8, 1.0, "mould_bloom")
 # Phase 6 match: the SPEC colours are deep orange in linear light and pushed every frame orange-red under ACES, while
 # the refs read as white-balanced tungsten (warm accents, near-neutral greys), so the colours are paler here and the
 # intensities a little higher for the refs' soft fill.
+# cone = a downward spot of that outer angle instead of a point light (ceiling domes and the fan's light kit): with the
+# emitter 0.08-0.45 m under the ceiling a point light burnt a ring into it that blew out at the room exposures.
+# Balance pass (SPEC 5.4): the lamps were cut where their pools / the wall next to them clipped (L2 3.0 -> 1.6,
+# H4 1.8 -> 1.1, R1 2.2 -> 1.4), and KW1 raised 0.8 -> 1.2 as the moonlit backdrop of the living -> kitchen sightline.
 FIXTURE_TUNING = {
-    "E1": dict(glow=2.0, col="#F5E8CC", i=1.4), "H1": dict(glow=1.2, col="#FFE4C0", i=1.6),
+    "E1": dict(glow=2.0, col="#F5E8CC", i=1.4, cone=150), "H1": dict(glow=1.2, col="#FFE4C0", i=1.6),
     "H2": dict(glow=1.5, col="#FFDDB0", i=0.45), "H3": dict(glow=1.5, col="#FFDDB0", i=0.45),
-    "H4": dict(glow=1.8, col="#FFD9A8", i=1.8), "H5": dict(glow=0.0), "H6": dict(glow=1.5, col="#FFDDB0", i=0.35),
-    "L1": dict(glow=3.0, col="#FFE6C4", i=1.5), "L2": dict(glow=2.5, col="#FFEED8", i=3.0),
+    "H4": dict(glow=1.8, col="#FFD9A8", i=1.1), "H5": dict(glow=0.0), "H6": dict(glow=1.5, col="#FFDDB0", i=0.35),
+    "L1": dict(glow=3.0, col="#FFE6C4", i=1.5, cone=150), "L2": dict(glow=2.5, col="#FFEED8", i=1.6),
     "L3": dict(glow=2.0, col="#FFDDB4", i=0.6), "L4": dict(glow=1.2, col="#FFDDB4", i=0.4),
-    "K1": dict(glow=2.0), "K2": dict(glow=2.0), "R1": dict(glow=1.6, col="#F5E6C8", i=2.2),
-    "R2": dict(glow=1.0, i=0.8), "RW1": dict(col="#B8BCB0", i=3.0),
+    "K1": dict(glow=2.0, cone=150), "K2": dict(glow=2.0, cone=150), "R1": dict(glow=1.6, col="#F5E6C8", i=1.4),
+    "R2": dict(glow=1.0, i=0.8), "RW1": dict(col="#B8BCB0", i=3.0), "KW1": dict(i=1.2),
     "W1": dict(glow=1.5, fizz=0.35, i=1.0), "WW1": dict(i=0.9), "CW2": dict(i=0.8),
     "C1": dict(glow=6.0), "C2": dict(glow=6.0, i=1.4),
     # revision 3: copied from the matching ground-floor fixture (dome E1, chandelier H1, lamp L2 / R2, fan L1, RW1)
@@ -395,7 +399,7 @@ def tuning():
     fx = []
     for fid, t in FIXTURE_TUNING.items():
         fx.append(dict(id=fid, glow=t.get("glow", 1.0), fizz=t.get("fizz", 0.0), i=t.get("i", -1.0),
-                       range=t.get("range", -1.0), col=t.get("col", "")))
+                       range=t.get("range", -1.0), col=t.get("col", ""), cone=t.get("cone", 0.0)))
     vols = [dict(name=k, **v) for k, v in POST_ROOMS.items()]
     return dict(fixtures=fx, globals=GLOBAL, post=dict(name="Global", **POST_GLOBAL), rooms=vols)
 

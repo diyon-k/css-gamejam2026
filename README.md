@@ -36,6 +36,8 @@ Tuning and troubleshooting the sidecar: see [docs/ARCHITECTURE.md](docs/ARCHITEC
 | Left click / right trigger | Shoot |
 | R / gamepad West | Reload |
 | Hold E | Force the jammed door |
+| E | Pick up / use. You have one hand: taking something swaps it for what you hold |
+| G / d-pad down | Drop what's in your hand |
 | **Blink** (webcam) | World skips 0.5 s |
 | **Eyes shut** (webcam) | World runs at 3× until you open them; a gamepad rumbles with your heartbeat |
 | Look away from the webcam | Nothing (counts as eyes open) |

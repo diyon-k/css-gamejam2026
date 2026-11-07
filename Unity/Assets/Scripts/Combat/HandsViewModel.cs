@@ -69,9 +69,14 @@ namespace Blink.Combat
         [Tooltip("Seconds to raise the hands onto the ladder, or drop them after.")]
         [SerializeField, Min(0.01f)] float climbBlendSeconds = 0.25f;
 
+        [Header("Held item")]
+        [Tooltip("Where a held item (a key, a candle) sits at rest, in camera space: bottom right, by the right hand.")]
+        [SerializeField] Vector3 holdPosition = new(0.2f, -0.2f, 0.42f);
+
         Vector3 _restPosition;
         Quaternion _restRotation = Quaternion.identity;
         bool _initialised;
+        Transform _hold;
         float _time;
         Interactor _interactor;
         float _reachAt = float.NegativeInfinity, _shoveAt = float.NegativeInfinity, _breakFreeAt = float.NegativeInfinity;
@@ -107,6 +112,33 @@ namespace Blink.Combat
 
         /// <summary>Plays the reach-and-take motion.</summary>
         public void Reach() => _reachAt = _time;
+
+        /// <summary>
+        /// Where a held item (<see cref="Hand"/>) sits: a child of the sway pivot placed at <see cref="holdPosition"/> (camera
+        /// space) when the pivot is at rest, so the item breathes, reaches and braces with the hands. Created on first use.
+        /// </summary>
+        public Transform HoldPoint
+        {
+            get
+            {
+                if (_hold != null) return _hold;
+                EnsureInitialised();
+                _hold = new GameObject("HeldItem").transform;
+                if (swayPivot == null)
+                {
+                    _hold.SetParent(transform, false);
+                    _hold.localPosition = holdPosition;
+                    return _hold;
+                }
+                // The pose is authored in this root's space (the camera's); express it relative to the pivot's rest pose.
+                var parent = swayPivot.parent;
+                Vector3 p = parent.InverseTransformPoint(transform.TransformPoint(holdPosition));
+                Quaternion r = Quaternion.Inverse(parent.rotation) * transform.rotation;
+                _hold.SetParent(swayPivot, false);
+                _hold.SetLocalPositionAndRotation(Quaternion.Inverse(_restRotation) * (p - _restPosition), Quaternion.Inverse(_restRotation) * r);
+                return _hold;
+            }
+        }
 
         /// <summary>Plays a shove; <paramref name="strength"/> 1 = one QTE press.</summary>
         public void Shove(float strength = 1f)

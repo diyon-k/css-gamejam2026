@@ -44,13 +44,18 @@ namespace Blink.Interaction
             _throw = InputSystem.actions?.FindAction("Player/Attack");
         }
 
-        public string Prompt(Interactor who) => Held == this ? "Drop" : "Pick up " + displayName;
-        public bool CanInteract(Interactor who) => Held == null || Held == this;
+        public string Prompt(Interactor who) =>
+            Held == this ? "Drop"
+            : Hand.Of(who) is { CanMakeRoom: false } ? "Hands full"
+            : Hand.Of(who)?.HeldName is { } held ? $"Swap {held} for {displayName}"
+            : "Pick up " + displayName;
+
+        public bool CanInteract(Interactor who) => Held == this || (Held == null && Hand.Of(who) is not { CanMakeRoom: false });
 
         public void Interact(Interactor who)
         {
             if (Held == this) Release(_body.linearVelocity); // keeps its swing, doesn't stop dead mid-air
-            else if (Held == null) Grab(who);
+            else if (Held == null && (Hand.Of(who) is not { } hand || hand.MakeRoom())) Grab(who); // one hand: drop what's held first
         }
 
         void Grab(Interactor who)

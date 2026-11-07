@@ -130,6 +130,13 @@ namespace Blink.Effects
         void OnDoorOpened() => Pulse(0.8f, 0.5f, 0.25f, 1);
         void OnDied() => enabled = false;
 
+        /// <summary>A hit-sized thump (0..1) for scripted scares that don't go through Health, e.g. Lily's doll on your face.</summary>
+        public void Thump(float strength01)
+        {
+            float f = Mathf.Clamp01(strength01);
+            Pulse(0.5f + 0.5f * f, 0.3f + 0.5f * f, 0.12f + 0.1f * f, 2);
+        }
+
         void OnDamaged(float amount, Vector3 point)
         {
             float f = Mathf.Clamp01(2f * amount / _health.Max);

@@ -46,5 +46,19 @@ namespace Blink.Tests
             }
             Assert.IsTrue(dipped, "the switch-on should drop near black once");
         }
+
+        [Test]
+        public void HeldMask_SwapsDefaultForViewmodel()
+        {
+            Assert.AreEqual(ViewmodelLighting.Layer, ViewmodelLighting.HeldMask(1u));
+            Assert.AreEqual(ViewmodelLighting.Layer | 2u, ViewmodelLighting.HeldMask(3u));
+        }
+
+        [Test]
+        public void WorldMask_RestoresDefault_AndRoundTrips()
+        {
+            Assert.AreEqual(1u, ViewmodelLighting.WorldMask(ViewmodelLighting.Layer));
+            Assert.AreEqual(3u, ViewmodelLighting.WorldMask(ViewmodelLighting.HeldMask(3u)));
+        }
     }
 }

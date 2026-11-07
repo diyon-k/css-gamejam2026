@@ -24,7 +24,7 @@ namespace Blink.EditorTools
     /// - a global post-processing Volume and one local Volume per room group (SPEC 5.2);
     /// - the atmosphere (<see cref="BungalowAtmosphereBuilder"/>): basement water and mesh decals.
     /// It also sets the scene's ambient / fog / reflection environment, assigns the LightingSettings asset
-    /// (GPU Progressive, Shadowmask), removes the grey-box's temporary light and disables DayNightCycle in this scene
+    /// (GPU Progressive, Shadowmask), removes the grey-box's temporary light and disables NightSky in this scene
     /// only (a prefab-instance override; GameSystems.prefab is untouched). Re-running replaces everything it made.
     /// Tuning lives in tools/blender/bungalow_decals.py -> Lighting/bungalow_atmosphere.json.
     /// </summary>
@@ -52,7 +52,7 @@ namespace Blink.EditorTools
         [Serializable] public class AreaLight { public string id; public float[] size, face; }
         [Serializable] public class Box { public string id; public float[] min, max; }
         [Serializable] public class Water { public float y; public string[] rooms; }
-        [Serializable] public class FixtureTune { public string id, col; public float glow, fizz, i, range; }
+        [Serializable] public class FixtureTune { public string id, col; public float glow, fizz, i, range, cone; }
         [Serializable] public class Globals { public string ambient, fog, fogMode; public float fogDensity; }
         [Serializable] public class Post
         {
@@ -170,7 +170,17 @@ namespace Blink.EditorTools
                     }
                     else
                     {
-                        light.type = LightType.Point;
+                        float cone = t?.cone ?? 0f;
+                        if (cone > 0f)
+                        {
+                            // ceiling dome / fan light kit: a wide downward spot, so the ceiling only gets bounce
+                            // (a point light this close to it burns a ring that clips at the room exposures)
+                            light.type = LightType.Spot;
+                            light.spotAngle = Mathf.Min(cone, 179f);
+                            light.innerSpotAngle = Mathf.Max(1f, light.spotAngle - SpotInnerFalloff);
+                            go.transform.rotation = Quaternion.LookRotation(Vector3.down, Vector3.forward);
+                        }
+                        else light.type = LightType.Point;
                         light.range = range;
                         light.shadows = LightShadows.Soft;
                         light.shapeRadius = f.kind == "lamp" ? 0.12f : f.kind == "bulb" ? 0.03f : 0.08f; // baked softness
@@ -215,7 +225,10 @@ namespace Blink.EditorTools
             return sb.ToString();
         }
 
-        const float SconceWallGap = 0.16f; // a sconce bulb sits ~16 cm off the wall; closer burns a hot spot into it
+        // A sconce light sits at least this far off the wall; closer burns a hot spot into it. 0.16 still clipped the
+        // paper round H2 / H3 / H6 at the room exposures; the halo peak goes with 1/gap^2, so 0.24 is ~2.2x dimmer.
+        const float SconceWallGap = 0.24f;
+        const float SpotInnerFalloff = 40f; // degrees between a ceiling spot's outer and inner cone
 
         /// <summary>Pushes a wall-mounted light out of the nearest wall of the room it is in, to at least gap metres.</summary>
         static Vector3 OffWall(Vector3 p, Layout layout, float gap)
@@ -614,26 +627,26 @@ namespace Blink.EditorTools
             return ls;
         }
 
-        /// <summary>DayNightCycle off in this scene only (prefab-instance override), keeping the night look.</summary>
+        /// <summary>NightSky (formerly DayNightCycle) off in this scene only (prefab-instance override), keeping the night look.</summary>
         static string DisableDayNight(Scene scene)
         {
             int n = 0;
             foreach (var go in scene.GetRootGameObjects())
-                foreach (var c in go.GetComponentsInChildren<Blink.DayNight.DayNightCycle>(true))
+                foreach (var c in go.GetComponentsInChildren<Blink.DayNight.NightSky>(true))
                 {
                     if (c.enabled)
                     {
-                        Undo.RecordObject(c, "Disable DayNightCycle");
+                        Undo.RecordObject(c, "Disable NightSky");
                         c.enabled = false;
                     }
                     if (PrefabUtility.IsPartOfPrefabInstance(c)) PrefabUtility.RecordPrefabInstancePropertyModifications(c);
                     n++;
                 }
-            return $"DayNightCycle disabled in this scene: {n}";
+            return $"NightSky disabled in this scene: {n}";
         }
 
         /// <summary>
-        /// With DayNightCycle off there is no sky: the scene's cameras (the Player instance) clear to the fog colour
+        /// With NightSky off there is no sky: the scene's cameras (the Player instance) clear to the fog colour
         /// instead of Skybox, so windows show a dark night rather than the camera's default blue. Scene override only.
         /// </summary>
         static string NightCameras(Scene scene)

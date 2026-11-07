@@ -52,9 +52,9 @@ namespace Blink.Mobs
 
         [Header("Axe launch (corpses fly from an axe hit; guns only shove)")]
         [Tooltip("Speed (m/s) an axe hit adds to the whole corpse, flat along the swing, on top of the axe impulse.")]
-        [SerializeField, Min(0f)] float axeLaunchSpeed = 4.5f;
+        [SerializeField, Min(0f)] float axeLaunchSpeed = 2.25f;
         [Tooltip("Upward speed (m/s) an axe hit adds to the whole corpse, so it lifts off the floor instead of dragging.")]
-        [SerializeField, Min(0f)] float axeLaunchLift = 2f;
+        [SerializeField, Min(0f)] float axeLaunchLift = 1f;
 
         [Header("Axe sweep")]
         [Tooltip("Radius of the sweep against corpses, metres.")]

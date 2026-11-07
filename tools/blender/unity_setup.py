@@ -9,7 +9,8 @@
   + keywords), tint + smoothness from lib.MATERIALS. Creates <Asset>_Baked.mat for baked assets.
 - *.fbx.meta: remaps every material name found in the FBX onto Materials/<name>.mat.
 - bungalow only: *.fbx.meta (recursive) importer settings: no cameras / lights / visibility / animation / colliders,
-  not readable, Generate Lightmap UVs OFF (the lightmap UVs come from Blender as UV2, lib.uv_lightmap).
+  not readable, Generate Lightmap UVs OFF (the lightmap UVs come from Blender as UV2, lib.uv_lightmap), except the
+  models in UNITY_LIGHTMAP_UV, whose Blender UV2 is broken.
 Folders that don't exist yet (no textures or materials) are skipped. When the mansion template material
 (Materials/Wood_Dark.mat) is missing, e.g. under a sparse checkout, materials are written from LIT_TEMPLATE.
 Refresh Unity afterwards.
@@ -147,17 +148,23 @@ def materials():
                   % uuid.uuid4().hex)
 
 
+# FBX whose Blender UV2 is unusable, so Unity generates the lightmap UVs instead. ClawfootTub: smart_project collapsed
+# the lathed shell (532 of 1124 tris zero-area in UV2, 95% of its surface, half its texels overlapping), so every bake
+# gave the tub garbage lighting (one bake a glowing white tub, the next a black one).
+UNITY_LIGHTMAP_UV = {"ClawfootTub.fbx"}
+
+
 def models():
     """Bungalow FBX importer settings (all FBX under ROOT, recursive)."""
     keys = (("importCameras", 0), ("importLights", 0), ("importVisibility", 0), ("addColliders", 0),
-            ("isReadable", 0), ("generateSecondaryUV", 0))
+            ("isReadable", 0))
     for d, _, files in os.walk(ROOT):
         for f in sorted(files):
             p = os.path.join(d, f + ".meta")
             if not f.endswith(".fbx") or not os.path.exists(p):
                 continue
             s = read(p)
-            for k, v in keys:
+            for k, v in keys + (("generateSecondaryUV", 1 if f in UNITY_LIGHTMAP_UV else 0),):
                 s = sub(s, r"^(    %s:) \d+" % k, r"\g<1> %d" % v)
             s = sub(s, r"^(  importAnimation:) \d+", r"\1 0")
             write(p, s)

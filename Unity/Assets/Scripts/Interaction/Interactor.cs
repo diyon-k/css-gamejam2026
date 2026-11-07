@@ -23,6 +23,8 @@ namespace Blink.Interaction
         [SerializeField] float reach = 2.2f;
 
         public Inventory Inventory { get; private set; }
+        /// <summary>The player's one hand: holds one thing at a time.</summary>
+        public Hand Hand { get; private set; }
         public PlayerController Player { get; private set; }
         /// <summary>What the player is looking at this frame, or null.</summary>
         public IInteractable Target { get; private set; }
@@ -44,6 +46,8 @@ namespace Blink.Interaction
             _eye = GetComponentInChildren<Camera>() is { } cam ? cam.transform : transform;
             _interact = InputSystem.actions?.FindAction("Player/Interact");
             gameObject.AddComponent<PickupGlint>();
+            Hand = GetComponent<Hand>();
+            if (Hand == null) Hand = gameObject.AddComponent<Hand>();
         }
 
         void OnEnable() => _interact?.Enable();

@@ -12,10 +12,10 @@ namespace Blink.EditorTools
     ///   1. Imports Art/Zombies/WhiteClown/WhiteClown.fbx (Mixamo) as a Humanoid with its own avatar, so the
     ///      shared humanoid clips in Art/Zombies/Animations retarget onto it.
     ///   2. Extracts its embedded textures and builds URP Lit materials (remapped onto the model).
-    ///   3. Writes Prefabs/ZombieClown.prefab: a copy of Prefabs/Zombie.prefab (AI, health, audio, hit reactions,
-    ///      same Zombie.controller) with the ZombieGirl model swapped for the clown. The tuned ragdoll on the
-    ///      ZombieGirl bones is re-created on the clown's bones via the humanoid bone map, sized to the new rig.
-    /// Safe to re-run: materials are updated in place and the prefab is overwritten (GUID kept).
+    ///   3. Rewrites Prefabs/Zombie.prefab in place (GUID kept, so scenes keep their zombies): the old ZombieGirl
+    ///      model is swapped for the clown, keeping AI, health, audio, hit reactions and Zombie.controller. The tuned
+    ///      ragdoll on the old bones is re-created on the clown's bones via the humanoid bone map, sized to the new rig.
+    /// Safe to re-run: once the clown is in, only the materials are refreshed.
     /// </summary>
     public static class ClownZombieBuilder
     {
@@ -23,9 +23,7 @@ namespace Blink.EditorTools
         const string ModelPath = Folder + "/WhiteClown.fbx";
         const string TexturesFolder = Folder + "/Textures";
         const string MaterialsFolder = Folder + "/Materials";
-        const string BasePrefabPath = "Assets/Prefabs/Zombie.prefab";
-        const string OutputPrefabPath = "Assets/Prefabs/ZombieClown.prefab";
-        const string PrefabName = "ZombieClown";
+        const string PrefabPath = "Assets/Prefabs/Zombie.prefab";
         const string ModelChildName = "WhiteClown";
 
         [MenuItem("BLINK/Zombies/Build White Clown Zombie")]
@@ -147,13 +145,18 @@ namespace Blink.EditorTools
 
         static void BuildPrefab(Avatar clownAvatar)
         {
-            var root = PrefabUtility.LoadPrefabContents(BasePrefabPath);
+            var root = PrefabUtility.LoadPrefabContents(PrefabPath);
             try
             {
                 var girlAnimator = root.GetComponentInChildren<Animator>(true);
                 if (girlAnimator == null || girlAnimator.avatar == null || !girlAnimator.avatar.isHuman)
                 {
                     Debug.LogError("[ClownZombie] Zombie.prefab has no humanoid Animator to copy from.");
+                    return;
+                }
+                if (girlAnimator.avatar == clownAvatar)
+                {
+                    Debug.Log("[ClownZombie] Zombie.prefab is already the clown; nothing to do.");
                     return;
                 }
                 var girlModel = girlAnimator.transform;
@@ -181,16 +184,15 @@ namespace Blink.EditorTools
                 ScaleRootToHeight(root, heightRatio);
 
                 Object.DestroyImmediate(girlModel.gameObject);
-                root.name = PrefabName;
-                PrefabUtility.SaveAsPrefabAsset(root, OutputPrefabPath, out bool saved);
+                PrefabUtility.SaveAsPrefabAsset(root, PrefabPath, out bool saved);
                 if (!saved)
                 {
-                    Debug.LogError("[ClownZombie] Failed to save " + OutputPrefabPath);
+                    Debug.LogError("[ClownZombie] Failed to save " + PrefabPath);
                     return;
                 }
-                Debug.Log($"[ClownZombie] Built {OutputPrefabPath}: {bodies} ragdoll bodies, height x{heightRatio:0.00} " +
+                Debug.Log($"[ClownZombie] Built {PrefabPath}: {bodies} ragdoll bodies, height x{heightRatio:0.00} " +
                           $"vs ZombieGirl, controller '{clownAnimator.runtimeAnimatorController?.name}'.",
-                          AssetDatabase.LoadAssetAtPath<GameObject>(OutputPrefabPath));
+                          AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath));
             }
             finally
             {

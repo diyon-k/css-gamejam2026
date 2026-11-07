@@ -7,8 +7,8 @@ namespace Blink.Interaction
     /// <summary>
     /// A melee weapon lying in the world (golf club, plank, candlestick, or the axe once dropped). Interact puts it
     /// in the melee slot in place of the axe model: it hangs off the axe view model's grip and swings with the axe's
-    /// animation (<see cref="MeleeWeapon"/>). One melee item at a time: picking one up swaps it for the one in the slot,
-    /// which falls from the hands as a physics prop (as with <see cref="PlayerWeapons"/>' Drop key).
+    /// animation (<see cref="MeleeWeapon"/>). It takes the player's one <see cref="Hand"/>: picking one up swaps it for
+    /// whatever was held, and a melee item falls from the hands as a physics prop (as with <see cref="PlayerWeapons"/>' Drop key).
     ///
     /// A blunt item (<see cref="KnocksDown"/>) barely hurts: it knocks a zombie flying as a ragdoll and stuns it
     /// (<see cref="Mobs.MobController.KnockDown"/>). The axe isn't blunt and keeps its own damage.
@@ -35,11 +35,11 @@ namespace Blink.Interaction
         [Tooltip("Barely hurts: these knock zombies away rather than kill them.")]
         [SerializeField, Min(0f)] float damage = 8f;
         [Tooltip("Speed (m/s) a hit gives every limb, flat along your view.")]
-        [SerializeField, Min(0f)] float launchSpeed = 1.25f;
+        [SerializeField, Min(0f)] float launchSpeed = 0.625f;
         [Tooltip("Upward speed (m/s) on top, so it flies instead of sliding.")]
-        [SerializeField, Min(0f)] float launchLift = 0.5625f;
+        [SerializeField, Min(0f)] float launchLift = 0.28125f;
         [Tooltip("Sideways speed (m/s) along the swing (the chop sweeps right to left).")]
-        [SerializeField] float launchSideways = 0.3125f;
+        [SerializeField] float launchSideways = 0.15625f;
         [Tooltip("World seconds a zombie lies stunned before getting back up (longer if it's still tumbling).")]
         [SerializeField, Min(0f)] float stunSeconds = 3.5f;
 
@@ -71,12 +71,14 @@ namespace Blink.Interaction
 
         public string Prompt(Interactor who)
         {
-            var inHand = Weapons(who) is { Axe: { } melee } ? melee.Equipped : null;
-            return inHand != null ? $"Swap {inHand.DisplayName} for {displayName}" : "Pick up " + displayName;
+            if (Hand.Of(who) is { CanMakeRoom: false }) return "Hands full";
+            var inHand = Weapons(who) is { OneHanded: true } ? Hand.Of(who)?.HeldName
+                : Weapons(who) is { Axe: { Equipped: { } melee } } ? melee.DisplayName : null;
+            return inHand != null ? $"Swap {inHand} for {displayName}" : "Pick up " + displayName;
         }
 
         public bool CanInteract(Interactor who) =>
-            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: not null };
+            !IsHeld && Carryable.Held == null && Weapons(who) is { Axe: not null } && Hand.Of(who) is not { CanMakeRoom: false };
 
         public void Interact(Interactor who) => Weapons(who).EquipMelee(this);
 
@@ -98,6 +100,7 @@ namespace Blink.Interaction
             Body.interpolation = RigidbodyInterpolation.None;
             foreach (var col in Colliders) col.enabled = false;
             transform.SetParent(viewModelGrip, false);
+            Blink.Player.ViewmodelLighting.SetHeld(gameObject, true);
             if (!_customPose)
             {
                 _heldRotation = lengthAxis.sqrMagnitude > 1e-6f ? Quaternion.FromToRotation(lengthAxis.normalized, Vector3.up) : Quaternion.identity;
@@ -111,6 +114,7 @@ namespace Blink.Interaction
         {
             IsHeld = false;
             transform.SetParent(null, true);
+            Blink.Player.ViewmodelLighting.SetHeld(gameObject, false);
             foreach (var col in Colliders)
             {
                 col.enabled = true;

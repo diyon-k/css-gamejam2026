@@ -49,6 +49,21 @@ namespace Blink.UI
             Ring(c, radius, thick, Fade(color, alpha));
         }
 
+        /// <summary>
+        /// Attack cooldown around the dot: a faint track with a bone arc that drains as <paramref name="remaining01"/>
+        /// goes 1 → 0, sitting just outside the hit ring. Nothing at 0.
+        /// </summary>
+        public static void CooldownRing(Vector2 c, float remaining01, float alpha)
+        {
+            if (remaining01 <= 0f || alpha <= 0f) return;
+            float radius = Px(Asset.hitRingRadius) * 1.6f;
+            float thick = Mathf.Max(1f, Px(Asset.hitRingThickness));
+            alpha *= Mathf.Clamp01(remaining01 * 8f); // fades the last bit instead of popping off
+            Ring(c, radius, thick + Px(2f), Fade(ShadowColor, alpha * 0.35f));
+            Ring(c, radius, thick, Fade(Bone, alpha * 0.15f));
+            Arc(c, radius, thick, 0f, Mathf.Clamp01(remaining01), Fade(Bone, alpha * 0.8f));
+        }
+
         // ---------------------------------------------------------------- key caps and prompts
 
         /// <summary>Size of a key cap for <paramref name="key"/>.</summary>
