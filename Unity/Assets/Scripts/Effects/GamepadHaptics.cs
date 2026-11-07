@@ -16,7 +16,8 @@ namespace Blink.Effects
     /// </summary>
     public sealed class GamepadHaptics : MonoBehaviour
     {
-        [SerializeField, Range(0f, 1f)] float strength = 1f;
+        [Tooltip("Multiplies every pattern. Above 1 boosts weak pulses; motor output is capped at 1.")]
+        [SerializeField, Range(0f, 2f)] float strength = 1.6f;
         [Tooltip("Heartbeat period (s) with no zombie near / with one touching you.")]
         [SerializeField] float beatSlow = 0.9f, beatFast = 0.35f;
         [Tooltip("Zombies further than this don't speed the heartbeat up.")]
@@ -138,8 +139,8 @@ namespace Blink.Effects
         // Only send on change: a DS4 drops a command sent while another is in flight.
         void Send(float low, float high)
         {
-            low = Mathf.Round(low * 20f) / 20f;
-            high = Mathf.Round(high * 20f) / 20f;
+            low = Mathf.Round(Mathf.Clamp01(low) * 20f) / 20f;
+            high = Mathf.Round(Mathf.Clamp01(high) * 20f) / 20f;
             if (low == _sentLow && high == _sentHigh) return;
             _pad.SetMotorSpeeds(low, high);
             (_sentLow, _sentHigh) = (low, high);

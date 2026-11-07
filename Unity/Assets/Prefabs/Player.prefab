@@ -126,7 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2752efc8ef1a8b04e9d3cf5f8bdfdb09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.GamepadHaptics
-  strength: 1
+  strength: 1.6
   beatSlow: 0.9
   beatFast: 0.35
   beatRange: 15
