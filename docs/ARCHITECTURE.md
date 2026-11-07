@@ -21,7 +21,8 @@ The core is already working end to end: the webcam sidecar's UDP messages (or th
 | F1 | Toggle the blink debug overlay |
 | Esc | Free the cursor (click to lock again) |
 
-3. **Real webcam:** one-time setup `py -3.13 -m venv blink_server/.venv` then `blink_server/.venv/Scripts/pip install -r blink_server/requirements.txt`. While in Play mode run `blink_server/.venv/Scripts/python blink_server/blink_server.py --preview` (the model downloads itself on first run). Too twitchy or not triggering? Tune `--close` / `--open`.
+3. **Real webcam:** run `powershell -File blink_server/setup.ps1` once. After that, pressing Play starts the webcam sidecar automatically (Editor on Windows; the model downloads itself on first run).
+   - **Tuning:** to see the camera and blink score, untick `launchSidecar` on the `UdpEyeStateSource` in GameSystems (so there aren't two senders), then run `blink_server/.venv/Scripts/python blink_server/blink_server.py --preview` while in Play mode. Too twitchy or not triggering? Tune `--close` / `--open`.
 4. **No webcam:** run `python blink_server/send_test_blinks.py demo` while in Play mode.
 
 ## Data flow
@@ -71,7 +72,7 @@ Unity/Assets/
   ```json
   {"t": 1731000000123, "present": true, "closed": false}
   ```
-  The sidecar does the open/close hysteresis; Unity does the blink-vs-hold timing. If packets stop for 0.5 s, the webcam source goes inactive and the keyboard still works.
+  The sidecar does the open/close hysteresis; Unity does the blink-vs-hold timing. With several people in view, the sidecar tracks the closest (largest) face. If packets stop for 0.5 s, the webcam source goes inactive and the keyboard still works.
 
 ### Time (`Blink.TimeSkip`)
 - **`TimeSkipController`** (singleton)
