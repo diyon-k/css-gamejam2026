@@ -30,6 +30,8 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Zombie moans](https://opengameart.org/content/zombie-moans-01-by-emopreben) | EmoPreben | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie idle groans |
 | [Zombie noises and moans](https://opengameart.org/content/zombie-noises-and-moans) | ianzazz | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie groans and an alert growl |
 | [Impact Sounds](https://kenney.nl/assets/impact-sounds) | Kenney | kenney.nl | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Player footsteps (wood), hit thuds, bullet-on-wall hits, door burst |
+| [Cormorant SC](https://github.com/CatharsisFonts/Cormorant) (Medium, SemiBold) | Christian Thalmann (Catharsis Fonts), the Cormorant Project Authors | [Google Fonts repository](https://github.com/google/fonts/tree/main/ofl/cormorantsc) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/CormorantSC-OFL.txt`) | UI titles, headings, small caps and prompts |
+| [EB Garamond](https://github.com/octaviopardo/EBGaramond12) (Regular, Medium) | Georg Duffner, Octavio Pardo, the EB Garamond Project Authors | [EBGaramond12 repository](https://github.com/octaviopardo/EBGaramond12) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/EBGaramond-OFL.txt`) | Note text, HUD numbers and key letters |
 
 ## Licence notes
 
