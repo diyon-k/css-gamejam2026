@@ -12,6 +12,12 @@ namespace Blink.Interaction
         public string itemId = "candle";
         public string displayName = "Candle";
 
+        [Header("Gun rewards (leave item id empty for a pure ammo box / pistol)")]
+        [Tooltip("Puts the pistol in the loadout (and brings it out) if the player doesn't have it yet.")]
+        public bool givesPistol;
+        [Tooltip("Pistol rounds added to the reserve.")]
+        [Min(0)] public int pistolRounds;
+
         [Tooltip("How long it takes to fly into the hand (real time). The hands' reach peaks at ~0.2 s.")]
         [SerializeField, Min(0.01f)] float flySeconds = 0.25f;
         [Tooltip("Where it ends up, in camera space: a little below and in front of the eye.")]
@@ -27,7 +33,10 @@ namespace Blink.Interaction
 
         public void Interact(Interactor who)
         {
-            who.Inventory.Add(itemId, displayName);
+            // ponytail: not put back on death (WakeUpSequence restores by inventory id), so ammo can't be farmed by dying.
+            if (!string.IsNullOrEmpty(itemId)) who.Inventory.Add(itemId, displayName);
+            if ((givesPistol || pistolRounds > 0) && Combat.PlayerWeapons.Instance is { } weapons)
+                weapons.GivePistol(givesPistol, pistolRounds);
             _taken = true;
             _homePos = transform.position;
             _homeRot = transform.rotation;
