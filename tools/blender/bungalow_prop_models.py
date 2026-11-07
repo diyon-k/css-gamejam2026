@@ -150,8 +150,10 @@ def ph(asset, tris, keys=None, objects=None, drop=(), name=None, recentre=True, 
     def budget(objs):
         return int(round(tris * sum(count[m] for m in objs) / total)) if tris else 0
 
+    # budgets first: joining the body invalidates every joined object but the first
     part_budgets = [budget([p]) for p in parts]
-    o = _ph_mesh(join(body, name or asset), asset, keys, budget(body))
+    body_budget = budget(body)
+    o = _ph_mesh(join(body, name or asset), asset, keys, body_budget)
     parts = [_ph_mesh(p, asset, keys, b) for p, b in zip(parts, part_budgets)]
     if recentre:
         # floor-centre on the whole model (body + split parts), as centre_floor did on the joined mesh

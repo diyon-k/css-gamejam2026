@@ -12,7 +12,8 @@ namespace Blink.EditorTools
     /// <summary>
     /// BLINK/Bungalow/Set Up Start Bedroom: the room the player wakes in (House_Bungalow, open in the editor).
     ///   - The chest of drawers (Bed_Dresser, GothicCommode_01) stands against the nightstand, right beside the bed.
-    ///   - On its top: a folded note (Readable) and the bedroom key (KeyPickup, item id <see cref="KeyId"/>).
+    ///   - On its top: a folded note (Readable). In its top drawer: the bedroom key (KeyPickup, item id
+    ///     <see cref="KeyId"/>), parented to the drawer so it slides out with it (<see cref="PlaceKeyInDrawer"/>).
     ///   - The bedroom door (D2) is shut and locked: a <see cref="Blink.World.Door"/> that takes the key (layout DOOR_STATE:
     ///     D2 locked, 1 x <see cref="KeyId"/>), set up by <see cref="BungalowDoorSetup"/> once the key is in the scene. The
     ///     Door turns the kit's D2_Leaf about its hinge and carves the navmesh while it's locked.
@@ -33,9 +34,14 @@ namespace Blink.EditorTools
         static readonly Vector3 DresserPos = new(5.59f, 0f, 9.13f);
         static readonly Vector3 VasePos = new(6.02f, 1.21f, 9.15f); // far end of the top, out of the way
 
-        // On the top, at the bed end: the note, then the key.
-        static readonly Vector2 NoteSpot = new(5.26f, 9.08f), KeySpot = new(5.66f, 9.03f);
-        const float NoteYaw = 14f, KeyYaw = -28f;
+        // On the top, at the bed end: the note.
+        static readonly Vector2 NoteSpot = new(5.26f, 9.08f);
+        const float NoteYaw = 14f;
+
+        // The key: in the top drawer, in the drawer's own space (+Z = out of the front). 0.22 m behind the front panel, so
+        // it lies clear of the carcass once the drawer is pulled out and the look ray clears the panel from close up.
+        const string KeyDrawer = "_Drawer1";
+        const float KeyBehindFront = 0.22f, KeyAcross = -0.18f, KeyYaw = -28f;
 
         const string NoteTitle = "Folded note";
         const string NoteText =
@@ -80,9 +86,7 @@ namespace Blink.EditorTools
 
             if (TopAt(NoteSpot, out var noteAt)) PlaceNote(root.transform, noteAt);
             else report.Append("NO SURFACE for the note; ");
-            if (TopAt(KeySpot, out var keyAt)) PlaceKey(root.transform, keyAt);
-            else report.Append("NO SURFACE for the key; ");
-            report.Append("key and note placed; ");
+            report.Append(PlaceKeyInDrawer(scene));
 
             // ---- the door: shut and locked (Setup Doors locks D2 now that its key is in the scene)
             report.Append(BungalowDoorSetup.Setup(scene, false));
@@ -119,22 +123,68 @@ namespace Blink.EditorTools
             go.AddComponent<Readable>().Setup("Read", NoteTitle, NoteText);
         }
 
-        static void PlaceKey(Transform root, Vector3 at)
+        /// <summary>
+        /// Puts the bedroom key in Bed_Dresser's top drawer (replacing any earlier Key_Bedroom), lying on the drawer's
+        /// bottom and parented to the drawer, so it slides out when the drawer opens. Doesn't save the scene.
+        /// </summary>
+        public static string PlaceKeyInDrawer(Scene scene)
         {
+            if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Leave Play mode first.");
+            var dresser = Find(scene, "Bed_Dresser");
+            if (dresser == null) throw new InvalidOperationException("No Bed_Dresser in " + scene.path);
+            Transform drawer = null;
+            foreach (var t in dresser.GetComponentsInChildren<Transform>(true))
+                if (t.name.EndsWith(KeyDrawer, StringComparison.Ordinal)) drawer = t;
+            if (drawer == null) throw new InvalidOperationException("Bed_Dresser has no " + KeyDrawer + ": rebuild the prop prefabs.");
+
+            for (var old = Find(scene, "Key_Bedroom"); old != null; old = Find(scene, "Key_Bedroom"))
+                Undo.DestroyObjectImmediate(old.gameObject);
+
+            var mesh = drawer.GetComponent<MeshFilter>().sharedMesh;
+            var b = mesh.bounds; // drawer space; the drawer's pivot is its centre
+            var local = new Vector3(KeyAcross, b.center.y, b.max.z - KeyBehindFront);
+            if (!DrawerFloor(drawer, mesh, drawer.TransformPoint(local), out var floor))
+                return "NO DRAWER FLOOR for the key; ";
+
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(KeyPrefab);
             if (prefab == null) throw new InvalidOperationException("Missing " + KeyPrefab);
-            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root.gameObject.scene);
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, scene);
+            Undo.RegisterCreatedObjectUndo(go, "Bedroom key in drawer");
             go.name = "Key_Bedroom";
-            go.transform.SetParent(root, false);
-            go.transform.SetPositionAndRotation(at, Quaternion.Euler(0f, KeyYaw, 0f));
-            // Rest it on the top: lift by however far the mesh reaches below its pivot.
+            go.transform.SetParent(drawer, true);
+            go.transform.SetPositionAndRotation(floor, drawer.rotation * Quaternion.Euler(0f, KeyYaw, 0f));
+            // Rest it on the drawer bottom: lift by however far the mesh reaches below its pivot.
             var renderers = go.GetComponentsInChildren<Renderer>();
             if (renderers.Length > 0)
             {
-                var b = renderers[0].bounds;
-                foreach (var r in renderers) b.Encapsulate(r.bounds);
-                go.transform.position += Vector3.up * (at.y - b.min.y + 0.001f);
+                var rb = renderers[0].bounds;
+                foreach (var r in renderers) rb.Encapsulate(r.bounds);
+                go.transform.position += Vector3.up * (floor.y - rb.min.y + 0.001f);
             }
+            ConfigureKey(go);
+            return $"key in {dresser.name}/{drawer.name} at {go.transform.position}; ";
+        }
+
+        /// <summary>The drawer's inside bottom below <paramref name="inside"/>: a ray down against the drawer mesh only.</summary>
+        static bool DrawerFloor(Transform drawer, Mesh mesh, Vector3 inside, out Vector3 point)
+        {
+            var probe = drawer.gameObject.AddComponent<MeshCollider>();
+            try
+            {
+                probe.sharedMesh = mesh;
+                Physics.SyncTransforms();
+                bool hit = probe.Raycast(new Ray(inside, Vector3.down), out var h, 1f);
+                point = h.point;
+                return hit;
+            }
+            finally
+            {
+                Object.DestroyImmediate(probe);
+            }
+        }
+
+        static void ConfigureKey(GameObject go)
+        {
 
             var pickup = go.GetComponent<Pickup>();
             pickup.itemId = KeyId;

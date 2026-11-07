@@ -505,12 +505,13 @@ The emitters in `fixtures.json` are authoritative for the lighting pass. The two
 - Poly Haven models, either from `Art/Mansion/PolyHaven` or downloaded, all decimated and re-baked into the atlases (§3.5). The CC0 authors are in §3.1, §3.2 and the Phase 5 report.
 - Self-built models in `bungalow_prop_models.py`.
 
-**Openable drawers:** the chest of drawers (`GothicCommode_01`: `Bed_Dresser` and `Liv_Sideboard`) has 3 drawers that open and close; they start empty.
-- The Blender build keeps the Poly Haven drawer objects as child meshes `GothicCommode_01_Drawer1`–`3` (top first, each pivoted at its own centre): `ph(..., split=("GothicCommode_01_door",))`. The 1,600-triangle budget is shared by triangle count.
+**Openable drawers:** the chest of drawers (`GothicCommode_01`: `Bed_Dresser` and `Liv_Sideboard`) has 3 drawers that open and close. (The kitchen cabinets', sink's, fridge's and mirror cabinet's doors and drawers are cut out of their welded meshes by `BungalowInteractables`, run from the same prefab build.)
+- The Blender build keeps the Poly Haven drawer objects as child meshes `GothicCommode_01_Drawer1`–`3` (top first, each pivoted at its own centre): `ph(..., split=("GothicCommode_01_door",))`. The model's triangle budget is shared by triangle count.
 - `BungalowPropsPlacer.SetupDrawers` (prefab build) gives every `<Model>_Drawer<N>` child:
-  - a sliding `Openable` ("drawer", 0.30 m out of the front over 0.3 s);
-  - a box collider 1 cm proud of the body's, so the look ray finds the drawer, not the body;
+  - a sliding `Openable` ("drawer", out of the front by 0.30 m or 60% of the drawer's depth, whichever is less, over 0.3 s);
+  - a box collider over the **lower 65% of the front panel only**, 5 cm deep and 1 cm proud of the body's box. The look ray finds the drawer rather than the body, and looking down into an open drawer from up to ~1 m passes over the panel to whatever lies inside;
   - no static flags and light-probe lighting, so it can move.
+- **The bedroom key (`key_bedroom`) is in `Bed_Dresser`'s top drawer.** It's parented to the drawer, 0.22 m behind the front, so it slides out with it; `BungalowStartBedroom.PlaceKeyInDrawer`, also run by Set Up Start Bedroom. While the drawer is shut, the body blocks the look ray; once it's open, the key can be taken from 0.35–0.9 m and twinkles like other pickups.
 - Covered by `Tests/EditMode/DrawerPrefabTests.cs`. Design: `docs/superpowers/specs/2026-11-07-openable-drawers-design.md`.
 
 **Placement data:** `tools/blender/bungalow_props.py` → `Props/bungalow_props.json`, 143 instances of 84 models.
