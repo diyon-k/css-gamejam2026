@@ -40,11 +40,20 @@ class EyeHysteresis:
         return self.closed
 
 
+def closest_face(face_landmarks) -> int | None:
+    """Index of the face with the largest landmark bounding box (= nearest the camera), or None if no faces."""
+    def area(lms):
+        xs, ys = [p.x for p in lms], [p.y for p in lms]
+        return (max(xs) - min(xs)) * (max(ys) - min(ys))
+    return max(range(len(face_landmarks)), key=lambda i: area(face_landmarks[i]), default=None)
+
+
 def blink_score(result) -> float | None:
-    """Average of eyeBlinkLeft/Right for the first face, or None if no face."""
-    if not result.face_blendshapes:
+    """Average of eyeBlinkLeft/Right for the closest face, or None if no face."""
+    i = closest_face(result.face_landmarks)
+    if i is None or not result.face_blendshapes:
         return None
-    scores = {c.category_name: c.score for c in result.face_blendshapes[0]}
+    scores = {c.category_name: c.score for c in result.face_blendshapes[i]}
     return (scores["eyeBlinkLeft"] + scores["eyeBlinkRight"]) / 2
 
 
@@ -67,7 +76,7 @@ def main() -> None:
     options = vision.FaceLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=str(MODEL_PATH)),
         running_mode=vision.RunningMode.VIDEO,
-        num_faces=1,
+        num_faces=3,
         output_face_blendshapes=True,
     )
     eyes = EyeHysteresis(args.close, args.open)
