@@ -949,7 +949,10 @@ public static partial class HouseBlockout
             l.shadows = LightShadows.Soft;
             l.shadowNearPlane = 0.25f;
             // Low tier (256 px per cube face) so 8 point lights x 6 faces fit the 2048 shadow atlas.
-            l.GetUniversalAdditionalLightData().additionalLightsShadowResolutionTier = UniversalAdditionalLightData.AdditionalLightsShadowResolutionTierLow;
+            // The property setter throws outside Play mode, so write the serialized field.
+            var so = new SerializedObject(l.GetUniversalAdditionalLightData());
+            var tier = so.FindProperty("m_AdditionalLightsShadowResolutionTier");
+            if (tier != null) { tier.intValue = UniversalAdditionalLightData.AdditionalLightsShadowResolutionTierLow; so.ApplyModifiedPropertiesWithoutUndo(); }
         }
         if (flicker > 0)
         {
@@ -1017,12 +1020,22 @@ public static partial class HouseBlockout
     static float DAlongT(Room r, DSide s, Vector3 p) =>
         DAlong(s) ? Mathf.InverseLerp(r.rect.xMin, r.rect.xMax, p.x) : Mathf.InverseLerp(r.rect.yMin, r.rect.yMax, p.z);
 
+    // URP shades with RenderSettings.ambientProbe, which Unity only regenerates on a lighting bake,
+    // so a freshly built scene would keep the previous scene's (near-black) probe.
+    static void SetAmbientProbe(Color c)
+    {
+        var sh = new SphericalHarmonicsL2();
+        sh.AddAmbientLight(c);
+        RenderSettings.ambientProbe = sh;
+    }
+
     // ================================================================ Lighting + render settings
     // One directional moon (the DayNightCycle drives it at runtime); ambient/fog here are the NIGHT baseline.
     static void BuildLighting(Transform p)
     {
         RenderSettings.ambientMode = AmbientMode.Flat;
         RenderSettings.ambientLight = NightAmbient;
+        SetAmbientProbe(NightAmbient);
         RenderSettings.fog = true;
         RenderSettings.fogMode = FogMode.ExponentialSquared;
         RenderSettings.fogDensity = FogDensity;

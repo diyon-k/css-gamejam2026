@@ -708,6 +708,7 @@ public static partial class HouseBlockout
         // Top-down cutaways per floor: no fog, flat bright ambient, everything above the cut (and the roof) hidden.
         RenderSettings.fog = false;
         RenderSettings.ambientLight = new Color(0.55f, 0.55f, 0.55f);
+        SetAmbientProbe(RenderSettings.ambientLight);
         var top = new GameObject("ShotCam").AddComponent<Camera>();
         top.orthographic = true;
         top.orthographicSize = 14f;

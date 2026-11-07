@@ -381,9 +381,9 @@ namespace Blink.Overgrowth.EditorTools
 
             // Floor: visual holes with grass, leaf litter, plaster fallen from the ceiling.
             var area = rc.width * rc.height;
-            if (!cellar && rng.NextDouble() < 0.55)
+            if (!cellar && rng.NextDouble() < 0.2) // sparse: many read as black blobs
             {
-                int n = area > 30 ? 2 : 1;
+                int n = 1;
                 for (int i = 0; i < n; i++)
                 {
                     var p = RandomFloorPoint(rc, room.floorY, 0.8f);

@@ -137,6 +137,10 @@ namespace Blink.DayNight
             }
 
             RenderSettings.ambientLight = Color.Lerp(Color.Lerp(_nightAmbient, dayAmbient, dayness), duskAmbient, twilight * 0.6f);
+            // URP shades with the ambient probe, which isn't regenerated from ambientLight at runtime.
+            var sh = new SphericalHarmonicsL2();
+            sh.AddAmbientLight(RenderSettings.ambientLight);
+            RenderSettings.ambientProbe = sh;
             RenderSettings.fogColor = Color.Lerp(Color.Lerp(_nightFog, dayFog, dayness), duskFog, twilight * 0.6f);
             RenderSettings.fogDensity = Mathf.Lerp(_nightFogDensity, dayFogDensity, dayness);
 
