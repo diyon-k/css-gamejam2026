@@ -42,7 +42,7 @@ namespace Blink.Mobs
         [SerializeField, Min(0f)] float hitImpulse = 10f;
         [Tooltip("Speed (m/s) the killing shot adds to the whole body, flat along the shot, so it falls away from " +
                  "the shooter. The hit impulse alone mostly just flicks the limb it hits.")]
-        [SerializeField, Min(0f)] float knockbackSpeed = 1.5f;
+        [SerializeField, Min(0f)] float knockbackSpeed = 0.375f;
         [Tooltip("Damage multiplier for shots to the head bone. The head hitbox is also flagged IsHead, so a " +
                  "headshot kills outright whatever this is.")]
         [SerializeField, Min(0f)] float headDamageMultiplier = 2f;
