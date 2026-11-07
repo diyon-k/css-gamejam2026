@@ -111,6 +111,13 @@ MonoBehaviour:
   fleshHitCue: {fileID: 11400000, guid: d8660ecc687f8a94b81cea1edb0b1242, type: 2}
   killCue: {fileID: 11400000, guid: 8d75c607321119c4cabd4d8e43630d50, type: 2}
   surfaceHitCue: {fileID: 11400000, guid: efa7025201bbb4e46ab59e2ea6c8b905, type: 2}
+  surfaceCues:
+  - surface: 3
+    cue: {fileID: 11400000, guid: 2bc2a67129c049f9b63c746da1178776, type: 2}
+  - surface: 5
+    cue: {fileID: 11400000, guid: 03fdcb98f3be42c69527047612d1d368, type: 2}
+  - surface: 7
+    cue: {fileID: 11400000, guid: 03fdcb98f3be42c69527047612d1d368, type: 2}
 --- !u!114 &7938290153227515327
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,3 +133,12 @@ MonoBehaviour:
   swingCue: {fileID: 11400000, guid: 1000d3a8ac948ce4385335fa4ea5acb9, type: 2}
   fleshHitCue: {fileID: 11400000, guid: 912ae4480d5e7c646825cd0ff295a135, type: 2}
   surfaceHitCue: {fileID: 11400000, guid: efa7025201bbb4e46ab59e2ea6c8b905, type: 2}
+  surfaceCues:
+  - surface: 1
+    cue: {fileID: 11400000, guid: 85047b6d8b9c4600b44604bdf76eb749, type: 2}
+  - surface: 3
+    cue: {fileID: 11400000, guid: 654bb9d80fb53614fbacbd9d190eb9f4, type: 2}
+  - surface: 5
+    cue: {fileID: 11400000, guid: 03fdcb98f3be42c69527047612d1d368, type: 2}
+  - surface: 7
+    cue: {fileID: 11400000, guid: 03fdcb98f3be42c69527047612d1d368, type: 2}
