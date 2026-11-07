@@ -403,6 +403,17 @@ public static partial class HouseBlockout
         };
         for (int i = 0; i < spawns.Length; i++) Marker($"ZombieSpawn_{i + 1:00}", p, spawns[i]);
 
+        // One zombie per spawn. Kept outside House so the navmesh bake (House children only) ignores their colliders.
+        var zombiePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Zombie.prefab");
+        var zombies = new GameObject("Zombies").transform;
+        for (int i = 0; i < spawns.Length; i++)
+        {
+            var z = (GameObject)PrefabUtility.InstantiatePrefab(zombiePrefab, zombies);
+            z.name = $"Zombie_{i + 1:00}";
+            z.transform.position = spawns[i];
+            z.transform.rotation = Quaternion.Euler(0f, i * 137f, 0f); // not rng: would reshuffle the dressing/decay rolls after this
+        }
+
         // Real Player + GameSystems prefabs so the house is walkable in Play mode. Faces the jammed door.
         PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/GameSystems.prefab"));
         var player = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Player.prefab"));
