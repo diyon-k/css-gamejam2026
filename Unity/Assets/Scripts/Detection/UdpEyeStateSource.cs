@@ -90,7 +90,9 @@ namespace Blink.Detection
                 return;
             }
             // Don't redirect stdout/stderr: nobody reads them, and a full pipe would freeze the sidecar.
-            _sidecar = Process.Start(new ProcessStartInfo(python, $"\"{Path.Combine(root, "blink_server/blink_server.py")}\"")
+            // --parent-pid: the sidecar exits on its own if the Editor crashes, so it doesn't keep the webcam.
+            string args = $"\"{Path.Combine(root, "blink_server/blink_server.py")}\" --parent-pid {Process.GetCurrentProcess().Id}";
+            _sidecar = Process.Start(new ProcessStartInfo(python, args)
             {
                 UseShellExecute = false,
                 CreateNoWindow = true,
@@ -104,7 +106,7 @@ namespace Blink.Detection
             {
                 if (_sidecar is { HasExited: false }) _sidecar.Kill(); // the venv launcher takes the real python with it
             }
-            catch (InvalidOperationException) { /* already gone */ }
+            catch (Exception) { /* already gone or exiting; never block the socket teardown in OnDisable */ }
             _sidecar?.Dispose();
             _sidecar = null;
         }
@@ -115,6 +117,14 @@ namespace Blink.Detection
             if (logConnectionChanges && active != _wasActive)
                 Debug.Log(active ? $"[Blink] Webcam sidecar connected on UDP {port}" : "[Blink] Webcam sidecar went quiet");
             _wasActive = active;
+
+            if (_sidecar is { HasExited: true })
+            {
+                Debug.LogWarning($"[Blink] Webcam sidecar exited (code {_sidecar.ExitCode}). Is the camera in use by another app? " +
+                                 "Run blink_server/.venv/Scripts/python blink_server/blink_server.py --preview to see the error. Space still works.");
+                _sidecar.Dispose();
+                _sidecar = null;
+            }
         }
 
         void ReceiveLoop()

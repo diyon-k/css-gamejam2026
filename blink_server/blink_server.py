@@ -57,17 +57,32 @@ def blink_score(result) -> float | None:
     return (scores["eyeBlinkLeft"] + scores["eyeBlinkRight"]) / 2
 
 
+def process_alive(pid: int) -> bool:
+    """Windows: is process `pid` still running? (os.kill(pid, 0) would send CTRL_C on Windows.)"""
+    import ctypes
+    k32 = ctypes.windll.kernel32
+    handle = k32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE
+    if not handle:
+        return False
+    alive = k32.WaitForSingleObject(handle, 0) == 0x102  # WAIT_TIMEOUT = still running
+    k32.CloseHandle(handle)
+    return alive
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--camera", type=int, default=0, help="camera index (default 0)")
     parser.add_argument("--close", type=float, default=0.5, help="blink score above this = closed")
     parser.add_argument("--open", type=float, default=0.35, help="blink score below this = open again")
     parser.add_argument("--preview", action="store_true", help="show a camera window with the score")
+    parser.add_argument("--parent-pid", type=int, help="exit when this process dies (Unity passes its own pid)")
     args = parser.parse_args()
 
     if not MODEL_PATH.exists():
         print(f"downloading {MODEL_PATH.name} ...")
-        urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+        part = MODEL_PATH.with_suffix(".part")  # an interrupted download must not leave a broken model behind
+        urllib.request.urlretrieve(MODEL_URL, part)
+        part.replace(MODEL_PATH)
 
     cap = cv2.VideoCapture(args.camera, cv2.CAP_DSHOW)  # DSHOW opens much faster than MSMF on Windows
     if not cap.isOpened():
@@ -87,9 +102,14 @@ def main() -> None:
     with vision.FaceLandmarker.create_from_options(options) as landmarker, \
             socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         print(f"sending to {HOST}:{PORT} from camera {args.camera} (Ctrl+C to stop)")
+        frame_no = 0
         while True:
+            frame_no += 1
+            if args.parent_pid and frame_no % 30 == 0 and not process_alive(args.parent_pid):
+                break  # Unity crashed or was killed: free the webcam
             ok, frame = cap.read()
             if not ok:
+                time.sleep(0.05)  # camera unplugged / taken: don't spin a core
                 continue
             ts = max(int((time.monotonic() - start) * 1000), last_ts + 1)  # VIDEO mode needs strictly increasing
             last_ts = ts
@@ -100,6 +120,7 @@ def main() -> None:
             present = score is not None
             was_closed = eyes.closed
             closed = eyes.update(score) if present else False
+            eyes.closed = closed  # face lost resets to open, so a lost face isn't counted as a blink every frame
             if was_closed and not closed:
                 blinks += 1
                 print(f"BLINK #{blinks}", flush=True)
