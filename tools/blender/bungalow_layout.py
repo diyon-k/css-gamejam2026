@@ -420,7 +420,7 @@ DOOR_STATE = {
     "D3": dict(locked=False, open=False),
     "D4": dict(locked=True, keys=0, open=False, note="kitchen back door, locked for story use"),
     "D5": dict(locked=False, open=False, note="basement door, shut like the rest (it was open for the B1-D5-B2 sightline)"),
-    # revision 3 north wing: unlocked, shut like every door
+    # revision 3 north wing: unlocked, shut like the rest (opening D6 then D7 shows the D1-D6-D7 sightline)
     "D6": dict(locked=False, open=False, note="hall -> corridor, on the D1 sightline"),
     "D7": dict(locked=False, open=False, note="corridor -> parlour, on the D1 sightline"),
     "D8": dict(locked=False, open=False),
