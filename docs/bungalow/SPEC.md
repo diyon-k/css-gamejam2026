@@ -197,7 +197,7 @@ Each room lists the ref it is based on and why. Material names are defined in §
 
 ---
 
-## 3. Materials (20 of ≤ 20)
+## 3. Materials (21: the cap is raised to 21 for revision 3's `M_Wall_Parlour`, §8.4)
 
 **Conventions:**
 - Every texture is **1024²** (CC0 1K downloads, used as is or repacked by script).
@@ -1235,7 +1235,7 @@ The user will later want a **long corridor**, an **attic** (pull-down ladder or 
 ### 8.2 Reserved attach points (drawn dashed grey on the plan, green = where it connects)
 | ID | What | Where | Notes |
 |---|---|---|---|
-| Corridor_N | **Long corridor wing** along the north side, 1.8 clear × 19.4 m | z 15.0–16.8, x 0.3–19.7; entered by a new 1.2 door in `Wall_Ext_N` at x 7.25–8.45 from the north landing | `Wall_Ext_N` becomes its south partition; a new exterior wall at z 16.8–17.1. WB1 / WK1 become borrowed lights into it; BW1's light well moves. A 19 m straight corridor is the strongest blink sightline in the house |
+| Corridor_N | **Built in revision 3**, see §8.4 | | |
 | AtticHatch | **Attic access**, pull-down ladder | Ceiling hole in the central hall north landing, x 9.7–10.9, z 12.1–12.8 | The ladder lands at z ≈ 11.0 on the 4.1 m-deep north landing, clear of A4 (z 10.5), H1 and the radiator wall. A narrow stair alternative fits along the landing's E wall. Add the `attic` level, attic rooms and a `ceiling_holes` entry |
 | Wing_E | **Utility / mudroom wing** | x 20.3–26.0, z 9.0–14.7, through D4 (kitchen back door) | D4 is already locked for story use; unlocking it opens the wing |
 
@@ -1245,3 +1245,24 @@ Other natural extensions: a west wing off the bedroom's W wall (WR1 side), and e
 - Doorways ≥ 1.2 × 2.2 (double doors or wide openings where they fit); hallways ≥ 1.8 clear; ceilings 3.00 on the ground floor.
 - Keep long views through **aligned openings** (§1.6) for the blink mechanic, with 1–3 zombies at a time.
 - New walls and floors snap to the 0.5 m grid; new rooms get a tint, a reference and lighting entries in the same tables.
+
+### 8.4 Revision 3: north wing (as built)
+The house grows north from 20 × 15 to **20 × 26** (`FOOTPRINT`; the builders take it from `WALLS`). Rooms are copies of existing ones, altered:
+
+| Room | Clear size | Copied from | Finish |
+|---|---|---|---|
+| Corridor | 19.4 × 1.8 | Central hall (hand-placed props) | Plank (boards along x), `M_Wall_Pale`, varnish, skirting / dado / picture / cornice |
+| MasterBedroom | 7.625 × 8.75 | Bedroom, without the fireplace items | Plank, `M_Wall_Damask`, paint_dark |
+| Parlour | 11.625 × 8.75 | Living | Parquet, `M_Wall_Parlour` (new), varnish |
+
+- **Openings.** DC1 (hall N wall) and DC2 (corridor → parlour) are both at x 8.65–9.85, centred on D1, so the **D1 → A2 → DC1 → DC2 sightline runs about 25.8 m** to the parlour's north wall. DC3 is corridor → master bedroom. DC4 (kitchen → corridor) and the AC1 arch (master ↔ parlour) add two chase loops. Windows: WM1, WM2, WP1, WP2 (boarded), WC1, WC2. WB1 and WK1 are now borrowed lights into the corridor, cased on both faces. BW1 and its light well are gone (they sat under the corridor).
+- **Doors.** All four leaves are panel4. DC1 opens to 170° so it folds flat on the corridor wall (at 90° it left 0.6 m of corridor). DC4 stays at 90°, which only closes the dead end by WC2.
+- **Hall changes.** `Radiator_Hall` and its drops are removed (DC1 is cut there). H2 / H3 now flank DC1 at x 8.20 / 10.30, and `Hal_Picture` moves to the hall W wall. Radiators are added in the parlour (E wall) and master bedroom (W wall).
+- **Props.** `bungalow_props.copy_room(src, dst, prefix, skip)` clones a room's rows: coordinates within 1.2 m of a wall keep their offset from the matching wall, and the rest map proportionally. The copies are then altered by hand (other models, regrouped furniture, curtains on the new windows) and kept clear of door swings, AC1, the radiators and the R6 patrol loop.
+- **Lights.** CO1 / CO2 (domes), CO3 (broken sconce, off), P1 (chandelier), P2 (table lamp on Par_EndTable), M1 (fan), M2 (bedside lamp on Mbr_Nightstand), and window area lights MW1, MW2, PW1, CW3, CW4. All are **Baked**. KW1 / WW1 now look into the corridor. Post: the corridor shares the Hall volume; Parlour and MasterBedroom get their own.
+- **Zombies.** Z5 patrols the corridor (R5); Z6 loops the parlour (R6).
+- **Material #21.** `M_Wall_Parlour`: a faded Regency stripe on the ambientCG `Wallpaper001C` paper scan (CC0), built like the other wallpapers (`bungalow_surfaces.py build <cache> --rev3`). No free juliovii.itch.io pack had a period wallpaper.
+- **Triangles (cap 100k for revision 3).** Shell 115,746 (+31.6k: corridor +11.5k, master bedroom +14.0k, parlour +10.0k, minus 4.2k for the removed radiator and BW1). New props and fixtures 45.5k (62 instances). **About 77k in total.**
+- **Rebuild.** `python -I tools/blender/bungalow_layout.py` → Blender `build_all.py -- --target bungalow Bungalow_Greybox Bungalow_Shell Bungalow_Kit` (the wear bake takes about 3 min on CPU with Blender 4.5) → `python tools/blender/unity_setup.py --target bungalow` (it also rewrites line endings on the Props and Trim metas; discard those) → `python -I tools/blender/bungalow_props.py` and `bungalow_decals.py` → in Unity: Build Surface Materials, then Build Shell Scene, Place Props, navmesh rebake, Build Lighting, bake (§6.5).
+- **Attic.** Designed and then deferred by the user. The layout is in commit `fda6026`: a steep stair on the hall E wall rising south, a 19.4 × 7.6 m attic with a 2.4 m ceiling. AtticHatch above stays reserved.
+
