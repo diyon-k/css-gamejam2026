@@ -15,6 +15,8 @@ namespace Blink.Interaction
     public sealed class HidingSpot : MonoBehaviour, IInteractable
     {
         public string noun = "wardrobe";
+        [Tooltip("Prompt is \"<verb> <noun>\", e.g. Hide under bed.")]
+        public string verb = "Hide in";
         [Tooltip("Where the eye sits inside, local space.")]
         public Vector3 eye = new Vector3(0f, 1.2f, 0.05f);
         [Tooltip("Where you land when you climb out, local floor point.")]
@@ -39,8 +41,9 @@ namespace Blink.Interaction
 
         void Awake() => _doors = GetComponentsInChildren<Openable>();
 
-        public string Prompt(Interactor who) => CanInteract(who) ? "Hide in " + noun : null;
-        public bool CanInteract(Interactor who) => Occupant == null && who.Player != null;
+        public string Prompt(Interactor who) => CanInteract(who) ? verb + " " + noun : null;
+        // No clear way back out (boxed in by walls / other crates): don't offer it.
+        public bool CanInteract(Interactor who) => Occupant == null && who.Player != null && TryExit(Radius(who.Player), out _);
         public void Interact(Interactor who) => _move = StartCoroutine(GetIn(who));
 
         IEnumerator GetIn(Interactor who)
@@ -82,9 +85,25 @@ namespace Blink.Interaction
             var body = _player.transform;
             SetDoors(true);
             yield return Wait(0.25f);
-            var outside = transform.TransformPoint(exit) + Vector3.up * _bodyAboveFloor;
+            if (!TryExit(Radius(_player), out var exitPoint)) exitPoint = transform.TransformPoint(exit); // blocked since we got in
+            var outside = exitPoint + Vector3.up * _bodyAboveFloor;
             yield return Hop(body.position, outside, body.rotation, body.rotation);
             Release();
+        }
+
+        static float Radius(PlayerController p) => p != null && p.GetComponent<CharacterController>() is { } cc ? cc.radius : 0.3f;
+
+        /// <summary>The exit floor point, or if something stands there (a wall, another crate) the first clear one
+        /// of the other three sides, turning the exit offset round the spot. False if all four are blocked.</summary>
+        bool TryExit(float r, out Vector3 point)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                point = transform.TransformPoint(Quaternion.Euler(0f, 90f * i, 0f) * exit);
+                if (!Physics.CheckCapsule(point + Vector3.up * (r + 0.1f), point + Vector3.up * 1.6f, r, ~0, QueryTriggerInteraction.Ignore)) return true;
+            }
+            point = default;
+            return false;
         }
 
         void Update()
