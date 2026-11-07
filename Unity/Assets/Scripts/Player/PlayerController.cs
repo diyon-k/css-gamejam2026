@@ -6,8 +6,8 @@ using UnityEngine.InputSystem;
 namespace Blink.Player
 {
     /// <summary>
-    /// First-person walk/sprint/look on a CharacterController, driven by the project-wide input
-    /// actions (Player/Move, Player/Look, Player/Sprint). No jumping by design.
+    /// First-person walk/look on a CharacterController, driven by the project-wide input actions
+    /// (Player/Move, Player/Look). No jumping or sprinting by design.
     ///
     /// The player stands outside world time: it is deliberately NOT an <see cref="ISkippable"/>, so a
     /// blink skip leaves it where it is while the zombies jump, and movement runs on real time, so
@@ -20,7 +20,6 @@ namespace Blink.Player
 
         [Header("Movement")]
         [SerializeField] float walkSpeed = 3.5f;
-        [SerializeField] float sprintSpeed = 5.5f;
         [SerializeField] float acceleration = 20f;
         [SerializeField] float gravity = -20f;
 
@@ -31,12 +30,11 @@ namespace Blink.Player
         [SerializeField] bool lockCursor = true;
 
         public Vector3 Velocity => _velocity;
-        public bool IsSprinting { get; private set; }
         public bool InputEnabled { get; set; } = true;
 
         CharacterController _controller;
         Health _health;
-        InputAction _move, _look, _sprint;
+        InputAction _move, _look;
         Vector3 _velocity;
         float _pitch;
 
@@ -54,14 +52,12 @@ namespace Blink.Player
             }
             _move = actions.FindAction("Player/Move");
             _look = actions.FindAction("Player/Look");
-            _sprint = actions.FindAction("Player/Sprint");
         }
 
         void OnEnable()
         {
             _move?.Enable();
             _look?.Enable();
-            _sprint?.Enable();
             if (_health != null) _health.Died += OnDied;
         }
 
@@ -107,13 +103,10 @@ namespace Blink.Player
         void Move()
         {
             Vector2 input = _move != null ? _move.ReadValue<Vector2>() : Vector2.zero;
-            IsSprinting = _sprint != null && _sprint.IsPressed() && input.y > 0.1f;
-            float speed = IsSprinting ? sprintSpeed : walkSpeed;
-
             // Real time, not world time: the player must not gain ground from time skipping.
             float dt = RealDeltaTime(Time.deltaTime, Time.timeScale);
 
-            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * speed;
+            Vector3 wish = (transform.right * input.x + transform.forward * input.y) * walkSpeed;
             Vector3 horizontal = Vector3.MoveTowards(new Vector3(_velocity.x, 0f, _velocity.z), wish, acceleration * dt);
 
             float vertical = _controller.isGrounded ? -2f : _velocity.y + gravity * dt;

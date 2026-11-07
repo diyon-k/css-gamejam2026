@@ -43,6 +43,10 @@ namespace Blink.Effects
 
         Transform _droplets;
         ParticleSystem[] _systems;
+        ParticleSystem.Burst[][] _baseBursts;
+        float[] _baseRates;
+        int[] _baseMaxParticles;
+        float _countMultiplier = 1f;
         Vector3 _baseScale = Vector3.one;
         bool _initialised;
 
@@ -56,6 +60,19 @@ namespace Blink.Effects
             _systems = GetComponentsInChildren<ParticleSystem>(true);
             _droplets = transform.Find(DropletsChildName);
             _baseScale = transform.localScale;
+
+            // Remember the authored emission, so a headshot can scale it up and the next hit put it back.
+            _baseBursts = new ParticleSystem.Burst[_systems.Length][];
+            _baseRates = new float[_systems.Length];
+            _baseMaxParticles = new int[_systems.Length];
+            for (int i = 0; i < _systems.Length; i++)
+            {
+                var emission = _systems[i].emission;
+                _baseBursts[i] = new ParticleSystem.Burst[emission.burstCount];
+                emission.GetBursts(_baseBursts[i]);
+                _baseRates[i] = emission.rateOverTimeMultiplier;
+                _baseMaxParticles[i] = _systems[i].main.maxParticles;
+            }
         }
 
         /// <summary>
@@ -64,9 +81,11 @@ namespace Blink.Effects
         /// <param name="rotation">Root rotation (local +Y is the way the splat quads face).</param>
         /// <param name="scale">Multiplier on the prefab's own scale.</param>
         /// <param name="dropletDirection">Which way the droplet cone fires; zero leaves it along the root's +Y.</param>
-        public void Play(Vector3 position, Quaternion rotation, float scale, Vector3 dropletDirection)
+        /// <param name="countMultiplier">Multiplier on every system's particle count (bursts and rate); 1 = as authored.</param>
+        public void Play(Vector3 position, Quaternion rotation, float scale, Vector3 dropletDirection, float countMultiplier = 1f)
         {
             Initialise();
+            SetCountMultiplier(countMultiplier);
             transform.SetPositionAndRotation(position, rotation);
             transform.localScale = _baseScale * scale;
             if (_droplets != null)
@@ -94,6 +113,43 @@ namespace Blink.Effects
         public void Clear()
         {
             if (Particles != null) Particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        void SetCountMultiplier(float multiplier)
+        {
+            multiplier = Mathf.Max(1f, multiplier);
+            if (Mathf.Approximately(multiplier, _countMultiplier)) return;
+            _countMultiplier = multiplier;
+            for (int i = 0; i < _systems.Length; i++)
+            {
+                var ps = _systems[i];
+                if (ps == null) continue;
+                var emission = ps.emission;
+                var bursts = _baseBursts[i];
+                for (int b = 0; b < bursts.Length; b++)
+                {
+                    var burst = bursts[b];
+                    burst.count = ScaleCurve(burst.count, multiplier);
+                    emission.SetBurst(b, burst);
+                }
+                emission.rateOverTimeMultiplier = _baseRates[i] * multiplier;
+                var main = ps.main;
+                main.maxParticles = BloodBurst.ScaleCount(_baseMaxParticles[i], multiplier);
+            }
+        }
+
+        static ParticleSystem.MinMaxCurve ScaleCurve(ParticleSystem.MinMaxCurve curve, float multiplier)
+        {
+            switch (curve.mode)
+            {
+                case ParticleSystemCurveMode.Constant:
+                    return new ParticleSystem.MinMaxCurve(curve.constant * multiplier);
+                case ParticleSystemCurveMode.TwoConstants:
+                    return new ParticleSystem.MinMaxCurve(curve.constantMin * multiplier, curve.constantMax * multiplier);
+                default:
+                    curve.curveMultiplier *= multiplier;
+                    return curve;
+            }
         }
 
         void OnParticleSystemStopped() => Stopped?.Invoke(this);

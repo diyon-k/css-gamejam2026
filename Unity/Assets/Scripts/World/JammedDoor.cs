@@ -1,3 +1,4 @@
+using System;
 using Blink.TimeSkip;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -19,9 +20,20 @@ namespace Blink.World
         public bool IsForcing => forceTimer.IsRunning;
         public float Progress01 => forceTimer.Progress01;
 
+        [Header("Noise (audible range in metres)")]
+        [SerializeField, Min(0f)] float forcingLoudness = 10f;
+        [SerializeField, Min(0.1f)] float forcingNoiseInterval = 1f;
+        [SerializeField, Min(0f)] float burstOpenLoudness = 20f;
+
+        /// <summary>The player started holding Interact on the door (for the creak loop).</summary>
+        public event Action ForcingStarted;
+        /// <summary>The player let go or walked away, or the door burst open (raised before <see cref="Opened"/>).</summary>
+        public event Action ForcingStopped;
+
         InputAction _interact;
         Transform _player;
-        bool _open, _inReach;
+        bool _open, _inReach, _forcing;
+        float _noiseTimer;
 
         void Awake() => _interact = InputSystem.actions?.FindAction("Player/Interact");
 
@@ -47,14 +59,30 @@ namespace Blink.World
             bool holding = _inReach && _interact != null && _interact.IsPressed();
             if (holding && !forceTimer.IsRunning) forceTimer.Resume();
             else if (!holding && forceTimer.IsRunning) forceTimer.Pause();
+            SetForcing(holding);
             forceTimer.Advance(Time.deltaTime);
+
+            if (holding && (_noiseTimer -= Time.deltaTime) <= 0f)
+            {
+                Noise.Make(transform.position, forcingLoudness);
+                _noiseTimer = forcingNoiseInterval;
+            }
         }
 
         public void Skip(float seconds) => forceTimer.Advance(seconds);
 
+        void SetForcing(bool forcing)
+        {
+            if (forcing == _forcing) return;
+            _forcing = forcing;
+            (forcing ? ForcingStarted : ForcingStopped)?.Invoke();
+        }
+
         void Open()
         {
             _open = true;
+            SetForcing(false);
+            Noise.Make(transform.position, burstOpenLoudness);
             // Pivot on the door's left edge (local x = -0.5 on a unit cube scaled to the door).
             var hinge = transform.TransformPoint(new Vector3(-0.5f, 0f, 0f));
             transform.RotateAround(hinge, Vector3.up, openAngle);
