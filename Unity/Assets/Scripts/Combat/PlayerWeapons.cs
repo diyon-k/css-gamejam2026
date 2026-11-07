@@ -41,6 +41,10 @@ namespace Blink.Combat
         [Tooltip("Slot order for keys 1, 2, 3 and for cycling. Weapons that aren't assigned are left out.")]
         [SerializeField] WeaponKind[] loadout = { WeaponKind.Hands, WeaponKind.Pistol, WeaponKind.Axe };
         [SerializeField] WeaponKind startWeapon = WeaponKind.Pistol;
+        [Tooltip("Off: the pistol slot stays locked until a Pickup with 'Gives Pistol' is found.")]
+        [SerializeField] bool startsWithPistol = true;
+        [Tooltip("Set: the axe starts lying here instead of in the hands (pick it up like any melee prop).")]
+        [SerializeField] Transform axeStartsAt;
 
         [Header("Switching (unscaled seconds)")]
         [Tooltip("Parent of every slot. Lowered and tilted out of view during a switch. Must not be animated.")]
@@ -110,7 +114,7 @@ namespace Blink.Combat
         float _nextScrollTime, _grabDown;
         WeaponKind? _beforeGrab;
         float _restoreAt = float.PositiveInfinity;
-        bool _subscribed, _brokeFree;
+        bool _subscribed, _brokeFree, _hasPistol = true;
 
         InputAction _fire, _reload, _next, _previous, _scroll, _drop;
         InputAction[] _slotKeys = Array.Empty<InputAction>();
@@ -125,9 +129,18 @@ namespace Blink.Combat
             if (holster != null) holster.GetLocalPositionAndRotation(out _holsterPosition, out _holsterRotation);
             if (pistol != null) pistol.ReadsInput = false; // driven from here
             if (axe != null) axe.Init(); // its slot may start inactive, but it must know what it's holding
+            if (axe != null && axeStartsAt != null && axe.Drop(null) is { } dropped)
+            {
+                dropped.transform.SetPositionAndRotation(axeStartsAt.position, axeStartsAt.rotation);
+                var body = dropped.GetComponent<Rigidbody>(); // interpolated: move the body too, or it snaps back
+                body.position = axeStartsAt.position;
+                body.rotation = axeStartsAt.rotation;
+                body.linearVelocity = body.angularVelocity = Vector3.zero;
+            }
 
+            _hasPistol = startsWithPistol;
             BuildSlots();
-            int start = Mathf.Max(0, IndexOf(startWeapon));
+            int start = Mathf.Max(0, Has(startWeapon) ? IndexOf(startWeapon) : IndexOf(WeaponKind.Hands));
             _switch = new WeaponSwitchState(start);
             for (int i = 0; i < _slots.Count; i++)
                 if (_slots[i].Root != null) _slots[i].Root.SetActive(i == start);
@@ -246,10 +259,25 @@ namespace Blink.Combat
             if (!Select(WeaponKind.Hands)) Cycle(1);
         }
 
-        bool Usable(Slot slot) => slot.Kind != WeaponKind.Axe || axe.Equipped != null;
+        bool Usable(Slot slot) => slot.Kind switch
+        {
+            WeaponKind.Axe => axe.Equipped != null,
+            WeaponKind.Pistol => _hasPistol,
+            _ => true,
+        };
 
-        /// <summary>True if <paramref name="kind"/> is in the loadout.</summary>
-        public bool Has(WeaponKind kind) => IndexOf(kind) >= 0;
+        /// <summary>True if <paramref name="kind"/> is in the loadout (the pistol only once it's been found).</summary>
+        public bool Has(WeaponKind kind) => IndexOf(kind) >= 0 && (kind != WeaponKind.Pistol || _hasPistol);
+
+        /// <summary>A floor pickup: unlocks the pistol (and brings it out) and/or adds reserve rounds.</summary>
+        public void GivePistol(bool unlock, int rounds)
+        {
+            if (pistol == null) return;
+            pistol.AddAmmo(rounds);
+            if (!unlock || _hasPistol) return;
+            _hasPistol = true;
+            Select(WeaponKind.Pistol);
+        }
 
         /// <summary>
         /// Runs the switch forward by <paramref name="seconds"/> (Update does this every frame on unscaled time).

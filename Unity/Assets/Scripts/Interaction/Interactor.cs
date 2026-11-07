@@ -43,6 +43,7 @@ namespace Blink.Interaction
             Player = GetComponent<PlayerController>();
             _eye = GetComponentInChildren<Camera>() is { } cam ? cam.transform : transform;
             _interact = InputSystem.actions?.FindAction("Player/Interact");
+            gameObject.AddComponent<PickupGlint>();
         }
 
         void OnEnable() => _interact?.Enable();
