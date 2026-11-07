@@ -255,8 +255,8 @@ MonoBehaviour:
   footstepCue: {fileID: 11400000, guid: e2919fb6be4f744488eab07d8e4303f0, type: 2}
   stepLength: 1.6
   minStepSpeed: 0.5
-  hurtCue: {fileID: 11400000, guid: e86f86bc562b6774f9414829b343f8f5, type: 2}
-  hitThudCue: {fileID: 11400000, guid: 63065c0c00100264dacae1d55091f2b9, type: 2}
+  hurtCue: {fileID: 0}
+  hitThudCue: {fileID: 0}
   deathCue: {fileID: 0}
   heartbeatCue: {fileID: 11400000, guid: e1a0091fc3ef4a940890d2b14adfaddb, type: 2}
   heartbeatRange: 15
