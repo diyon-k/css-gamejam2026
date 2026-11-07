@@ -163,6 +163,7 @@ namespace Blink.Combat
             AdvanceSwitch(Mathf.Min(Time.unscaledDeltaTime, 0.1f));
 
             if (!inputFree || _switch.IsSwitching || _slots.Count == 0) return;
+            if (Interaction.Carryable.Held != null) return; // hands are full: Attack throws the prop instead
             var slot = _slots[_switch.Active];
             if (_fire != null && _fire.WasPressedThisFrame()) Use(slot);
             if (_reload.WasPressedThisFrame()) Reload(slot);

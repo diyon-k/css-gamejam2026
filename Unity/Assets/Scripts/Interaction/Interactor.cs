@@ -18,6 +18,8 @@ namespace Blink.Interaction
         public PlayerController Player { get; private set; }
         /// <summary>What the player is looking at this frame, or null.</summary>
         public IInteractable Target { get; private set; }
+        /// <summary>The camera transform the look ray comes from.</summary>
+        public Transform Eye => _eye;
 
         static readonly IComparer<RaycastHit> ByDistance = Comparer<RaycastHit>.Create((a, b) => a.distance.CompareTo(b.distance));
         readonly RaycastHit[] _hits = new RaycastHit[16];
@@ -38,7 +40,8 @@ namespace Blink.Interaction
         void Update()
         {
             bool canAct = (Player == null || Player.InputEnabled) && !GrabQte.Active;
-            Target = canAct ? FindTarget() : null;
+            // A carried prop stays the target so Interact always drops it, wherever it's swinging.
+            Target = !canAct ? null : Carryable.Held != null ? Carryable.Held : FindTarget();
             // WasPressedThisFrame fires at the button's press point, so the action's Hold interaction
             // (used by JammedDoor) doesn't delay it: a tap interacts instantly.
             if (Target != null && _interact != null && _interact.WasPressedThisFrame() && Target.CanInteract(this))
