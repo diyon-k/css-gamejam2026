@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 6657893017002333534}
   - component: {fileID: 2940954342817297361}
   - component: {fileID: 7462373453109785836}
+  - component: {fileID: 7520849592680801623}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -221,10 +222,10 @@ MonoBehaviour:
   eyesShutSnapshot: {fileID: 4942417706681722364, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
   shutFadeSeconds: 0.15
   openFadeSeconds: 0.25
-  eyesShutCue: {fileID: 0}
-  eyesOpenCue: {fileID: 0}
+  eyesShutCue: {fileID: 11400000, guid: 197424f6d6dae4d42a96fe935eaff65d, type: 2}
+  eyesOpenCue: {fileID: 11400000, guid: 025e0b75c005b6c438d544fd2e06b7da, type: 2}
   grabStingCue: {fileID: 11400000, guid: 77796481d5257584199f331be48ab050, type: 2}
-  grabEscapedCue: {fileID: 0}
+  grabEscapedCue: {fileID: 11400000, guid: d32cc6548aa50364187514401b21768f, type: 2}
 --- !u!114 &1429646944804865027
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -243,7 +244,7 @@ MonoBehaviour:
   minStepSpeed: 0.5
   hurtCue: {fileID: 0}
   hitThudCue: {fileID: 0}
-  deathCue: {fileID: 0}
+  deathCue: {fileID: 11400000, guid: 6a8deca0c3fbc3f49a2afeb039aeca60, type: 2}
   heartbeatCue: {fileID: 11400000, guid: e1a0091fc3ef4a940890d2b14adfaddb, type: 2}
   heartbeatRange: 15
   panicDistance: 2
@@ -346,6 +347,9 @@ MonoBehaviour:
   lyingRoll: 12
   lyingOffset: {x: 0, y: -0.9, z: 0}
   prompt: BLINK to begin
+  title: BLINK
+  promptFadeIn: 1.4
+  promptFadeOut: 0.8
   knockSeconds: 2
   knockOffset: {x: 0, y: -1.2, z: 0}
   knockRoll: 75
@@ -383,10 +387,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.DayNight.ClockHud
   clock: {fileID: 0}
   font: {fileID: 0}
+  themeColors: 1
   dayColor: {r: 0.95, g: 0.95, b: 0.92, a: 0.95}
   nightColor: {r: 0.7, g: 0.82, b: 1, a: 0.95}
   jumpColor: {r: 1, g: 0.85, b: 0.4, a: 1}
   jumpSeconds: 1.5
+  minutesPerSecond: 0.016666668
+  minutesPerBlink: 1
 --- !u!114 &2940954342817297361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -418,4 +425,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.MusicAudio
   musicCue: {fileID: 11400000, guid: 4272cc8bfd31a4c5ebcba357e64efc73, type: 2}
+  fadeInSeconds: 4
+--- !u!114 &7520849592680801623
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df7d7bc12e7d4eefb59cb59321804ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.MusicAudio
+  musicCue: {fileID: 11400000, guid: 5792087be1af6e949a30ae465047f504, type: 2}
   fadeInSeconds: 4

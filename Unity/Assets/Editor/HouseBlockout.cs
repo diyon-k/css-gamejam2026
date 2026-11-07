@@ -416,6 +416,7 @@ public static partial class HouseBlockout
 
         // Real Player + GameSystems prefabs so the house is walkable in Play mode. Faces the jammed door.
         PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/GameSystems.prefab"));
+        PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Effects.prefab")); // gun/melee/impact audio + blood
         var player = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Player.prefab"));
         player.transform.position = new Vector3(4f, FloorY(2) + 0.05f, 6.5f);
         player.transform.rotation = Quaternion.LookRotation(Vector3.forward);

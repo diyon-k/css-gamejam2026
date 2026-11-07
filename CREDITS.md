@@ -37,6 +37,11 @@ Add an entry here **when you import an asset**, with its author, title, link and
 | [Pipe Wrench](https://polyhaven.com/a/pipe_wrench), [Crowbar 01](https://polyhaven.com/a/crowbar_01), [Brass Pan 01](https://polyhaven.com/a/brass_pan_01) | Poly Haven | polyhaven.com | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Melee props you can pick up and swing |
 | [Cormorant SC](https://github.com/CatharsisFonts/Cormorant) (Medium, SemiBold) | Christian Thalmann (Catharsis Fonts), the Cormorant Project Authors | [Google Fonts repository](https://github.com/google/fonts/tree/main/ofl/cormorantsc) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/CormorantSC-OFL.txt`) | UI titles, headings, small caps and prompts |
 | [EB Garamond](https://github.com/octaviopardo/EBGaramond12) (Regular, Medium) | Georg Duffner, Octavio Pardo, the EB Garamond Project Authors | [EBGaramond12 repository](https://github.com/octaviopardo/EBGaramond12) | [SIL OFL 1.1](https://openfontlicense.org) (licence text in `Unity/Assets/Art/UI/Fonts/EBGaramond-OFL.txt`) | Note text, HUD numbers and key letters |
+| [Grunts: male death and pain](https://opengameart.org/content/grunts-male-death-and-pain) | thebardofblasphemy | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Player death cries |
+| [Breathing (tired)](https://opengameart.org/content/breathing-tired) | mikeask | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Eyes-shut / eyes-open breaths, grab-escape pant |
+| [Fabric rustling](https://opengameart.org/content/fabric-rustling) | iochi-glaucus | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Reload-start cloth rustle |
+| [Zombie moans](https://opengameart.org/content/zombie-moans) | darsycho | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Zombie searching vocals |
+| [Windy ambient noise](https://opengameart.org/content/windy-ambient-noise) | some-weirdo | OpenGameArt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/) | Wind ambience bed (looped) |
 
 ## Licence notes
 
