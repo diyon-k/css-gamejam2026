@@ -26,6 +26,7 @@ GameObject:
   - component: {fileID: 8105300627443483699}
   - component: {fileID: 6657893017002333534}
   - component: {fileID: 2940954342817297361}
+  - component: {fileID: 7462373453109785836}
   m_Layer: 0
   m_Name: GameSystems
   m_TagString: Untagged
@@ -133,9 +134,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7633161bb5e7ed741b9e4c1b5e9fac4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Effects.BulletTracer
-  gun: {fileID: 0}
+  weapons: {fileID: 0}
   aimCamera: {fileID: 0}
-  missDistance: 60
   tracerMaterial: {fileID: 2100000, guid: 2239a65c8e7a9bc4bb558063cac97411, type: 2}
   tracerTint: {r: 1, g: 0.82, b: 0.58, a: 1}
   speed: 700
@@ -213,7 +213,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a485c8ffacfda7469e366eec923d2c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.AudioService
-  voices2D: 8
+  voices2D: 9
   voices3D: 16
   defaultOutput: {fileID: 24300002, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
 --- !u!114 &7233619342902630301
@@ -358,8 +358,14 @@ MonoBehaviour:
   sitUpAt: 3
   lyingPitch: -70
   lyingRoll: 12
-  lyingDrop: 0.9
+  lyingOffset: {x: 0, y: -0.9, z: 0}
   prompt: BLINK to begin
+  knockSeconds: 2
+  knockOffset: {x: 0, y: -1.2, z: 0}
+  knockRoll: 75
+  respawnPrompt: 'You were knocked out
+
+    BLINK to wake up'
 --- !u!114 &8105300627443483699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,3 +431,17 @@ MonoBehaviour:
   nightZenith: {r: 0.008, g: 0.012, b: 0.03, a: 1}
   nightHorizon: {r: 0.045, g: 0.06, b: 0.095, a: 1}
   moonDiscColor: {r: 0.85, g: 0.9, b: 1, a: 1}
+--- !u!114 &7462373453109785836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2853669821103693377}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7df7d7bc12e7d4eefb59cb59321804ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.MusicAudio
+  musicCue: {fileID: 11400000, guid: 4272cc8bfd31a4c5ebcba357e64efc73, type: 2}
+  fadeInSeconds: 4
