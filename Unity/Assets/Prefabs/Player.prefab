@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1607570296416809711}
   - component: {fileID: 4229830482227302727}
   - component: {fileID: 6127039504923669072}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -165,7 +165,7 @@ MonoBehaviour:
   fireInterval: 0.25
   hitMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 4294966459
   magazineSize: 8
   reserveAmmo: 32
   reloadSeconds: 2.3333335

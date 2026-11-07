@@ -11,7 +11,8 @@ namespace Blink.Mobs
     /// Zombie brain: chase the player on the navmesh, attack in range, die when its Health runs out.
     /// On a blink skip it jumps along its navmesh path by speed x seconds x skipDistanceMultiplier,
     /// keeps running without a hitch, and can land a hit if it was already in range. Hitting the player while their eyes are shut interrupts fast-forward.
-    /// On death it falls over (unless the Animator plays a "Dead" clip) and the body is removed after
+    /// On death it goes limp as a <see cref="ZombieRagdoll"/> if it has one (otherwise it plays the
+    /// Animator's "Dead" clip, or falls over procedurally) and the body is removed after
     /// <see cref="corpseLifetime"/> world seconds, which skips also count towards.
     ///
     /// Animation is optional: if the Animator has a float "Speed", a trigger "Attack" or a bool
@@ -51,6 +52,8 @@ namespace Blink.Mobs
 
         [Header("Optional")]
         [SerializeField] Animator animator;
+        [Tooltip("Defaults to the ZombieRagdoll on this object. Without one, death plays the \"Dead\" clip or topples.")]
+        [SerializeField] ZombieRagdoll ragdoll;
 
         public event Action<State> StateChanged;
         public event Action Attacked;
@@ -85,6 +88,7 @@ namespace Blink.Mobs
             _agent.speed = moveSpeed;
             _agent.stoppingDistance = attackRange * 0.8f;
             if (animator == null) animator = GetComponentInChildren<Animator>();
+            if (ragdoll == null) ragdoll = GetComponent<ZombieRagdoll>();
             CacheAnimatorParameters();
         }
 
@@ -251,12 +255,23 @@ namespace Blink.Mobs
         void OnDied()
         {
             SetState(State.Dead);
+            // Read before the agent is switched off, which zeroes it: the body keeps its running speed.
+            Vector3 velocity = _agent.enabled ? _agent.velocity : Vector3.zero;
             if (_agent.isOnNavMesh) _agent.isStopped = true;
             _agent.enabled = false;
-            foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
+            foreach (var col in GetComponents<Collider>()) col.enabled = false;
 
-            if (_hasDeadParam) animator.SetBool(DeadParam, true);
-            else StartTopple();
+            if (ragdoll != null)
+            {
+                // Physics owns the bones from here; the root must not move or rotate again.
+                ragdoll.Activate(velocity);
+            }
+            else
+            {
+                foreach (var col in GetComponentsInChildren<Collider>()) col.enabled = false;
+                if (_hasDeadParam) animator.SetBool(DeadParam, true);
+                else StartTopple();
+            }
 
             if (corpseLifetime > 0f)
             {
