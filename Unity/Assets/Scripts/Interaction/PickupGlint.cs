@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Blink.Interaction
@@ -10,7 +10,7 @@ namespace Blink.Interaction
     /// </summary>
     public sealed class PickupGlint : MonoBehaviour
     {
-        const float Range = 8f, Period = 2.6f, FlashSeconds = 0.4f, BasePixels = 34f, Rescan = 1f;
+        const float Range = 8f, Period = 2.2f, FlashSeconds = 0.5f, BasePixels = 64f, Rescan = 1f;
         static readonly Color Tint = new(1f, 0.93f, 0.75f);
 
         static Texture2D _star;
@@ -29,10 +29,10 @@ namespace Blink.Interaction
         {
             _draw.Clear();
             if (_cam == null) return;
-            if (Time.time >= _nextScan)
+            if (Time.unscaledTime >= _nextScan)
             {
                 // ponytail: rescans the scene once a second; swap for OnEnable/OnDisable registration if item counts get large.
-                _nextScan = Time.time + Rescan;
+                _nextScan = Time.unscaledTime + Rescan;
                 _items.Clear();
                 _items.AddRange(FindObjectsByType<Pickup>(FindObjectsSortMode.None));
                 _items.AddRange(FindObjectsByType<SwingableProp>(FindObjectsSortMode.None));
@@ -46,7 +46,7 @@ namespace Blink.Interaction
                 if (item is SwingableProp { IsHeld: true } || item is Pickup { Taken: true } || ReferenceEquals(item, Readable.Current)) continue;
 
                 // Flash briefly once per period, each item at its own offset so they don't pulse in sync.
-                float phase = Mathf.Repeat(Time.time + (item.GetHashCode() & 1023) * 0.37f, Period);
+                float phase = Mathf.Repeat(Time.unscaledTime + (item.GetHashCode() & 1023) * 0.37f, Period);
                 if (phase > FlashSeconds) continue;
 
                 var rend = item.GetComponentInChildren<Renderer>();
