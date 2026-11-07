@@ -45,16 +45,16 @@ namespace Blink.Mobs
         [SerializeField, Min(0f)] float hitImpulse = 2.5f;
         [Tooltip("Speed (m/s) the killing shot adds to the whole body, flat along the shot, so it falls away from " +
                  "the shooter. The hit impulse alone mostly just flicks the limb it hits.")]
-        [SerializeField, Min(0f)] float knockbackSpeed = 0.375f;
+        [SerializeField, Min(0f)] float knockbackSpeed = 0.1875f;
         [Tooltip("Damage multiplier for shots to the head bone. The head hitbox is also flagged IsHead, so a " +
                  "headshot kills outright whatever this is.")]
         [SerializeField, Min(0f)] float headDamageMultiplier = 2f;
 
         [Header("Axe kill launch (added on top of the death push)")]
         [Tooltip("Speed (m/s) a killing axe blow adds to the whole body, flat along the swing. Sends it several metres.")]
-        [SerializeField, Min(0f)] float axeLaunchSpeed = 6f;
+        [SerializeField, Min(0f)] float axeLaunchSpeed = 3f;
         [Tooltip("Upward speed (m/s) a killing axe blow adds to the whole body, so it flies instead of sliding.")]
-        [SerializeField, Min(0f)] float axeLaunchLift = 2.5f;
+        [SerializeField, Min(0f)] float axeLaunchLift = 1.25f;
         [Tooltip("Impulse (N·s) a killing axe blow gives the part it hit, at the hit point, for spin. Limbs weigh 4-9 kg.")]
         [SerializeField, Min(0f)] float axeHitImpulse = 15f;
 
