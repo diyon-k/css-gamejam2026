@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2179215392067340665}
   - component: {fileID: 1607570296416809711}
   - component: {fileID: 4229830482227302727}
+  - component: {fileID: 3141592653589793238}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -244,6 +245,18 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6233756666962240348}
   m_Enabled: 1
+--- !u!114 &3141592653589793238
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 370471841403644919}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 238400d3909a4f94b8291c5dfacc2f35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Combat.GunHud
 --- !u!1001 &9009180411610391213
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -91,7 +91,11 @@ Unity/Assets/
 ### Combat (`Blink.Combat`)
 - **`IDamageable`**: `IsDead`, `TakeDamage(amount, point, direction)`. Bullets find it with `GetComponentInParent`.
 - **`Health`**: `Damaged(amount, point)`, `Healed(amount)`, `Died`; `Current`, `Max`, `Fraction`, `Heal()`, `ResetHealth()`.
-- **`Gun`**: hitscan from screen centre. Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster.
+- **`Gun`**: hitscan from screen centre (34 damage, so 3 shots kill a 100 HP zombie). Events `Fired(bool hit, RaycastHit)`, `DryFired`, `ReloadStarted`, `ReloadFinished`; `AmmoInMagazine`, `ReserveAmmo`, `ReloadProgress01`, `Muzzle`. Reload is a `WorldTimer`, so blinking finishes it faster. Won't fire once its owner is dead.
+- **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
+  - `GunHud` (on Player): crosshair with a hit marker (red on a kill), ammo count and reload bar, player HP.
+  - `DamageFlash` (on Zombie): tints the renderers red for a moment on `Health.Damaged` via a MaterialPropertyBlock (`_BaseColor`).
+  - `HealthBar` (on Zombie): bar above the head once hurt; hidden when dead, far away or behind a wall.
 
 ### Player (`Blink.Player`)
 - **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death).
@@ -100,6 +104,7 @@ Unity/Assets/
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.
   - On a skip it jumps along its navmesh path by speed × seconds, and can land a hit if it was already in range.
   - Events `StateChanged(State)`, `Attacked`.
+  - On death: agent and colliders off, then it falls over (procedural, only when there's no `Dead` animator param) and the body is removed after `corpseLifetime` world seconds (6 s). It stays an `ISkippable`, so blinking makes bodies vanish sooner.
   - Animation hook: if the Animator has a float `Speed`, a trigger `Attack` or a bool `Dead`, they're set automatically. Build an Animator Controller with those parameters and it just works.
 - Levels need a **NavMeshSurface** (AI Navigation package, already installed) baked over the floor.
 
