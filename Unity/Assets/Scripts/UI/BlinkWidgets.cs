@@ -223,9 +223,9 @@ namespace Blink.UI
 
         /// <summary>
         /// Weapon readout, bottom-right: a small-caps name (or "reloading" with a filling ring), and for guns a row of
-        /// bullet icons, one per magazine slot. "no ammo" in the accent when magazine and reserve are both empty.
+        /// bullet icons, one per loaded round. "no ammo" in the accent when magazine and reserve are both empty.
         /// </summary>
-        public static void Ammo(string weaponName, bool usesAmmo, int loaded, int capacity, int reserve, bool reloading, float reloadProgress, float alpha)
+        public static void Ammo(string weaponName, bool usesAmmo, int loaded, int reserve, bool reloading, float reloadProgress, float alpha)
         {
             if (alpha <= 0f) return;
             float right = ScreenWidth - Margin, bottom = ScreenHeight - Margin;
@@ -245,17 +245,13 @@ namespace Blink.UI
             }
             if (!usesAmmo) return;
 
-            // One bullet per magazine slot, right-aligned: loaded ones solid, spent ones a faint outline.
+            // One bullet per loaded round: the first at the right edge, each next one added to its left.
             float bw = PxText(9f), bh = PxText(28f), step = bw + PxText(6f), by = bottom - PxText(30f) - bh * 0.5f;
-            for (int i = 0; i < capacity; i++)
-            {
-                var r = new Rect(right - bw - i * step, by, bw, bh);
-                bool full = capacity - 1 - i < loaded;
-                var col = full ? Fade(Bone, alpha * (reloading ? 0.55f : 0.9f)) : Fade(Muted, alpha * 0.35f);
-                float tip = bw * 0.5f, edge = full ? 0f : Mathf.Max(1f, PxText(1.2f));
-                GUI.DrawTexture(r, Texture2D.whiteTexture, ScaleMode.StretchToFill, true, 0f, col,
-                    new Vector4(edge, edge, edge, edge), new Vector4(tip, tip, PxText(1f), PxText(1f)));
-            }
+            var col = Fade(Bone, alpha * (reloading ? 0.55f : 0.9f));
+            float tip = bw * 0.5f;
+            for (int i = 0; i < loaded; i++)
+                GUI.DrawTexture(new Rect(right - bw - i * step, by, bw, bh), Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                    true, 0f, col, Vector4.zero, new Vector4(tip, tip, PxText(1f), PxText(1f)));
         }
 
         /// <summary>

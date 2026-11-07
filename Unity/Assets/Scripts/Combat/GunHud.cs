@@ -140,7 +140,7 @@ namespace Blink.Combat
         void DrawWeapon(IWeaponStatus weapon)
         {
             if (weapon == null || _ammoAlpha <= 0f || weapon.Kind == WeaponKind.Hands) return;
-            BlinkWidgets.Ammo(weapon.Kind.ToString(), weapon.UsesAmmo, weapon.AmmoLoaded, weapon.AmmoCapacity, weapon.AmmoReserve,
+            BlinkWidgets.Ammo(weapon.Kind.ToString(), weapon.UsesAmmo, weapon.AmmoLoaded, weapon.AmmoReserve,
                 weapon.IsReloading, weapon.ReloadProgress01, BlinkTheme.EaseOut(_ammoAlpha));
         }
     }
