@@ -30,6 +30,18 @@ MATERIALS = {
     "Ceramic": ((0.92, 0.91, 0.86), "Smooth", (0.98, 0.97, 0.93), 0.85, 1),
     "Leather_Brown": ((0.3, 0.15, 0.08), "Leather", (0.45, 0.25, 0.14), 1.0, 1),
     "Leather_Green": ((0.1, 0.2, 0.12), "Leather", (0.18, 0.32, 0.2), 1.0, 1),
+    # Bungalow grey-box: flat colours by surface type (no texture family), replaced by the scan materials later
+    "GB_Floor": ((0.42, 0.33, 0.25), None, (0.42, 0.33, 0.25), 0.2, 1),
+    "GB_FloorTile": ((0.58, 0.58, 0.53), None, (0.58, 0.58, 0.53), 0.2, 1),
+    "GB_Wall": ((0.76, 0.74, 0.69), None, (0.76, 0.74, 0.69), 0.1, 1),
+    "GB_Ceiling": ((0.88, 0.88, 0.86), None, (0.88, 0.88, 0.86), 0.1, 1),
+    "GB_Trim": ((0.24, 0.15, 0.09), None, (0.24, 0.15, 0.09), 0.3, 1),
+    "GB_Stair": ((0.5, 0.38, 0.27), None, (0.5, 0.38, 0.27), 0.2, 1),
+    "GB_Basement": ((0.55, 0.56, 0.57), None, (0.55, 0.56, 0.57), 0.1, 1),
+    "GB_Brick": ((0.86, 0.84, 0.8), None, (0.86, 0.84, 0.8), 0.1, 1),
+    "GB_Glass": ((0.55, 0.7, 0.8), None, (0.55, 0.7, 0.8), 0.8, 1),
+    "GB_Gate": ((0.2, 0.5, 0.25), None, (0.2, 0.5, 0.25), 0.3, 1),
+    "GB_Ground": ((0.24, 0.27, 0.21), None, (0.24, 0.27, 0.21), 0.1, 1),
 }
 TEX_DIR = None  # set by build_all to the Textures folder
 
@@ -469,6 +481,31 @@ def empty(name, loc, parent):
     e.location = loc
     bpy.context.scene.collection.objects.link(e)
     return child(e, parent)
+
+
+def uv_lightmap(o, margin=0.02, name="UVLightmap"):
+    """Second UV layer for Unity's baked lightmaps (Unity reads it as UV2; set the importer's Generate Lightmap
+    UVs off). Smart UV islands (coplanar faces stay together), packed with a margin, never overlapping.
+    The first UV layer stays active for render/export order."""
+    me = o.data
+    if not me.uv_layers:
+        me.uv_layers.new(name="UVMap")
+    if name in me.uv_layers:
+        me.uv_layers.remove(me.uv_layers[name])
+    uv0 = me.uv_layers[0]
+    lm = me.uv_layers.new(name=name)
+    me.uv_layers.active = lm
+    for ob in bpy.context.view_layer.objects:
+        ob.select_set(ob is o)
+    bpy.context.view_layer.objects.active = o
+    bpy.ops.object.mode_set(mode='EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=margin, area_weight=0.0,
+                             correct_aspect=True, scale_to_bounds=False)
+    bpy.ops.object.mode_set(mode='OBJECT')
+    me.uv_layers.active = uv0
+    uv0.active_render = True
+    return o
 
 
 def tri_count():

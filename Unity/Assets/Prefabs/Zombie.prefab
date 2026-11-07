@@ -283,7 +283,7 @@ MonoBehaviour:
   groanCue: {fileID: 11400000, guid: 8e3d4f8222a4d464393c57e5e52e9a65, type: 2}
   groanInterval: {x: 5, y: 12}
   alertCue: {fileID: 11400000, guid: 9a68fec1f7e79754684a53e3807a0a07, type: 2}
-  searchCue: {fileID: 0}
+  searchCue: {fileID: 11400000, guid: d304cf42b5c2fab41b946ec14901fff1, type: 2}
   attackCue: {fileID: 11400000, guid: 3cdd0c04111cf5646ab2a862ee79fb76, type: 2}
   painCue: {fileID: 11400000, guid: 722a4ad2a49f4174d839fdbb066f4df0, type: 2}
   painChance: 0.5

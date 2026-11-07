@@ -1,7 +1,16 @@
-"""Build + export every mansion asset to Unity.
+"""Build + export Blender assets to Unity, per target.
 
-  blender -b --factory-startup --python tools/blender/build_all.py -- [AssetName ...] [--preview DIR] [--lit]
-          [--no-export] [--textures]
+  blender -b --factory-startup --python tools/blender/build_all.py -- [--target mansion|bungalow] [AssetName ...]
+          [--preview DIR] [--lit] [--no-export] [--textures]
+
+--target mansion (default, unchanged behaviour) builds the mansion hero assets below.
+--target bungalow builds the Bungalow level into Unity/Assets/Art/Environment/Bungalow/<subdir>/ with sidecar JSON:
+  Bungalow_Greybox (bungalow_greybox.py, Phase 2), Bungalow_Shell and Bungalow_Kit (bungalow_kit.py, Phase 3: the
+  modular kit + UV2 wear atlas bake via bungalow_wear.py; --no-wear skips the bake). The trim sheet textures come
+  from bungalow_trim.py (plain Python, run separately).
+Importing this module has no side effects (export / bake / preview can be reused); Blender's --python runs main().
+
+Mansion target:
 
 1. Shared tiling PBR sets (textures.py) -> Unity/Assets/Art/Mansion/Blender/Textures/<Family>_*.png
    (generated when missing or with --textures).
@@ -27,8 +36,44 @@ import lib  # noqa: E402
 import assets  # noqa: E402
 import textures  # noqa: E402
 
-OUT = os.path.abspath(os.path.join(HERE, "..", "..", "Unity", "Assets", "Art", "Mansion", "Blender"))
+ART = os.path.abspath(os.path.join(HERE, "..", "..", "Unity", "Assets", "Art"))
+TARGET_OUT = {
+    "mansion": os.path.join(ART, "Mansion", "Blender"),
+    "bungalow": os.path.join(ART, "Environment", "Bungalow"),
+}
+OUT = TARGET_OUT["mansion"]
 TEX = os.path.join(OUT, "Textures")
+
+
+def set_target(name):
+    """Point OUT / TEX (used by export, bake) and lib.TEX_DIR at a target's Unity folder."""
+    global OUT, TEX
+    OUT = TARGET_OUT[name]
+    TEX = os.path.join(OUT, "Textures")
+    lib.TEX_DIR = TEX
+
+
+def _mansion_textures(argv):
+    if "--textures" in argv or not os.path.exists(os.path.join(TEX, "Wood_Albedo.png")):
+        textures.build(TEX)
+
+
+def target_config(name):
+    """builders: {asset: fn() -> root}; subdir: {asset: folder under OUT}; after: fn(asset, out_dir) or None."""
+    if name == "mansion":
+        return dict(builders=assets.BUILDERS, bake=BAKE, sharp=assets.SHARP, subdir={}, textures=_mansion_textures,
+                    after=None)
+    if name == "bungalow":
+        import bungalow_greybox  # noqa: E402  (bpy-only modules, imported on demand)
+        import bungalow_kit  # noqa: E402
+
+        def after(asset, out_dir):
+            mod = bungalow_kit if asset in bungalow_kit.BUILDERS else bungalow_greybox
+            mod.after_export(asset, out_dir)
+        return dict(builders={**bungalow_greybox.BUILDERS, **bungalow_kit.BUILDERS}, bake={},
+                    sharp={**bungalow_greybox.SHARP, **bungalow_kit.SHARP},
+                    subdir={**bungalow_greybox.SUBDIR, **bungalow_kit.SUBDIR}, textures=None, after=after)
+    raise SystemExit(f"unknown --target {name!r} (mansion, bungalow)")
 
 # asset: (target tris for the low-poly, bake resolution, cage extrusion m)
 BAKE = {
@@ -41,10 +86,11 @@ BAKE = {
 KEEP_SHARED = ("Glass", "Wax")   # transparent / emissive slots stay on the shared materials
 
 
-def export(name):
-    os.makedirs(OUT, exist_ok=True)
+def export(name, subdir=""):
+    out = os.path.join(OUT, subdir)
+    os.makedirs(out, exist_ok=True)
     bpy.ops.export_scene.fbx(
-        filepath=os.path.join(OUT, name + ".fbx"),
+        filepath=os.path.join(out, name + ".fbx"),
         use_selection=False, object_types={'MESH', 'EMPTY'},
         apply_unit_scale=True, apply_scale_options='FBX_SCALE_UNITS', global_scale=1.0,
         axis_forward='-Z', axis_up='Y', bake_space_transform=True,
@@ -225,6 +271,13 @@ def preview(name, path, lit):
 
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    target = "mansion"
+    if "--target" in argv:
+        i = argv.index("--target")
+        target = argv[i + 1]
+        del argv[i:i + 2]
+    set_target(target)
+    cfg = target_config(target)
     prev = None
     if "--preview" in argv:
         i = argv.index("--preview")
@@ -232,29 +285,35 @@ def main():
         del argv[i:i + 2]
     do_export = "--no-export" not in argv
     lit = "--lit" in argv
-    if "--textures" in argv or not os.path.exists(os.path.join(TEX, "Wood_Albedo.png")):
-        textures.build(TEX)
-    lib.TEX_DIR = TEX
-    names = [a for a in argv if not a.startswith("--")] or list(assets.BUILDERS)
+    if target == "bungalow" and "--no-wear" in argv:
+        import bungalow_kit  # noqa: E402
+        bungalow_kit.OPTS["wear"] = False
+    if cfg["textures"]:
+        cfg["textures"](argv)
+    names = [a for a in argv if not a.startswith("--")] or list(cfg["builders"])
     for name in names:
         lib.clear_scene()
         lib.seed(zlib.crc32(name.encode()))
-        root = assets.BUILDERS[name]()
+        root = cfg["builders"][name]()
         for o in bpy.context.scene.objects:
             if o.type == 'MESH':
-                lib.finish(o, assets.SHARP.get(name, 50.0))
+                lib.finish(o, cfg["sharp"].get(name, 50.0))
         before = lib.tri_count()
-        if name in BAKE:
-            bake(name, root, *BAKE[name])
+        if name in cfg["bake"]:
+            bake(name, root, *cfg["bake"][name])
         lo, hi = lib.bounds()
         size = hi - lo
         kids = sorted(o.name for o in bpy.context.scene.objects if o.parent)
         print(f"ASSET {name}: tris={lib.tri_count()} (built {before}) size=({size.x:.3f}, {size.y:.3f}, "
               f"{size.z:.3f}) children={kids}")
         if do_export:
-            export(name)
+            sub = cfg["subdir"].get(name, "")
+            export(name, sub)
+            if cfg["after"]:
+                cfg["after"](name, os.path.join(OUT, sub))
         if prev:
             preview(name, prev, lit)
 
 
-main()
+if __name__ == "__main__":
+    main()

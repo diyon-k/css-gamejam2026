@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Wood_Thunk
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 2a569fe5ad2f3c944bfd703e21941338, type: 3}
+  - {fileID: 8300000, guid: 6848c4b976a52a84bbf9697a2ed49461, type: 3}
+  - {fileID: 8300000, guid: 93f7b16cadec56d45a276dd766cea1ec, type: 3}
+  order: 1
+  volume: {x: 0.5, y: 0.65}
+  pitch: {x: 1.05, y: 1.2}
+  spatialBlend: 1
+  minDistance: 1.5
+  maxDistance: 25
+  output: {fileID: 759600572209101891, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 120
+  cooldown: 0

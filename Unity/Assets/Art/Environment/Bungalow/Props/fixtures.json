@@ -1,0 +1,582 @@
+{
+ "source": "tools/blender/bungalow_props.py",
+ "note": "emitterWorld = where the light goes (the <Prefab>_Emitter child of instance FX_<id>); the shade / glass / bulb is the <Prefab>_Emissive child (M_Shade)",
+ "fixtures": [
+  {
+   "id": "E1",
+   "instance": "FX_E1",
+   "prefab": "FX_Dome",
+   "kind": "dome",
+   "mount": [
+    9.25,
+    3.0,
+    2.0
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    -0.08,
+    -0.0
+   ],
+   "emitterWorld": [
+    9.25,
+    2.92,
+    2.0
+   ],
+   "layoutLight": [
+    9.25,
+    2.92,
+    2.0
+   ],
+   "deviation": 0.0,
+   "emitterChild": "FX_Dome_Emitter",
+   "emissiveChild": "FX_Dome_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "K1",
+   "instance": "FX_K1",
+   "prefab": "FX_Dome",
+   "kind": "dome",
+   "mount": [
+    14.0,
+    3.0,
+    10.9
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    -0.08,
+    -0.0
+   ],
+   "emitterWorld": [
+    14.0,
+    2.92,
+    10.9
+   ],
+   "layoutLight": [
+    14.0,
+    2.92,
+    10.9
+   ],
+   "deviation": 0.0,
+   "emitterChild": "FX_Dome_Emitter",
+   "emissiveChild": "FX_Dome_Emissive",
+   "off": false,
+   "mode": "Mixed"
+  },
+  {
+   "id": "K2",
+   "instance": "FX_K2",
+   "prefab": "FX_Dome",
+   "kind": "dome",
+   "mount": [
+    17.6,
+    3.0,
+    10.9
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    -0.08,
+    -0.0
+   ],
+   "emitterWorld": [
+    17.6,
+    2.92,
+    10.9
+   ],
+   "layoutLight": [
+    17.6,
+    2.92,
+    10.9
+   ],
+   "deviation": 0.0,
+   "emitterChild": "FX_Dome_Emitter",
+   "emissiveChild": "FX_Dome_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "H1",
+   "instance": "FX_H1",
+   "prefab": "FX_Chandelier3",
+   "kind": "chand",
+   "mount": [
+    7.7,
+    3.0,
+    9.6
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    -0.55,
+    -0.0
+   ],
+   "emitterWorld": [
+    7.7,
+    2.45,
+    9.6
+   ],
+   "layoutLight": [
+    7.7,
+    2.45,
+    9.6
+   ],
+   "deviation": 0.0,
+   "emitterChild": "FX_Chandelier3_Emitter",
+   "emissiveChild": "FX_Chandelier3_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "L1",
+   "instance": "FX_L1",
+   "prefab": "FX_CeilingFan",
+   "kind": "fan",
+   "mount": [
+    14.6,
+    3.0,
+    2.9
+   ],
+   "yaw": 20.0,
+   "emitterLocal": [
+    -0.0,
+    -0.45,
+    -0.0
+   ],
+   "emitterWorld": [
+    14.6,
+    2.55,
+    2.9
+   ],
+   "layoutLight": [
+    14.6,
+    2.55,
+    2.9
+   ],
+   "deviation": 0.0,
+   "emitterChild": "FX_CeilingFan_Emitter",
+   "emissiveChild": "FX_CeilingFan_Emissive",
+   "off": false,
+   "mode": "Mixed"
+  },
+  {
+   "id": "C1",
+   "instance": "FX_C1",
+   "prefab": "FX_BulbPendant",
+   "kind": "bulb",
+   "mount": [
+    8.9,
+    -0.25,
+    12.4
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    -0.42,
+    -0.0
+   ],
+   "emitterWorld": [
+    8.9,
+    -0.67,
+    12.4
+   ],
+   "layoutLight": [
+    8.9,
+    -0.65,
+    12.4
+   ],
+   "deviation": 0.02,
+   "emitterChild": "FX_BulbPendant_Emitter",
+   "emissiveChild": "FX_BulbPendant_Emissive",
+   "off": false,
+   "mode": "Realtime"
+  },
+  {
+   "id": "C2",
+   "instance": "FX_C2",
+   "prefab": "FX_BulbPendant",
+   "kind": "bulb",
+   "mount": [
+    16.6,
+    -0.25,
+    9.4
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    -0.42,
+    -0.0
+   ],
+   "emitterWorld": [
+    16.6,
+    -0.67,
+    9.4
+   ],
+   "layoutLight": [
+    16.6,
+    -0.65,
+    9.4
+   ],
+   "deviation": 0.02,
+   "emitterChild": "FX_BulbPendant_Emitter",
+   "emissiveChild": "FX_BulbPendant_Emissive",
+   "off": true,
+   "mode": "Realtime"
+  },
+  {
+   "id": "H2",
+   "instance": "FX_H2",
+   "prefab": "FX_SconceBrass",
+   "kind": "sconce",
+   "mount": [
+    8.45,
+    1.82,
+    14.7
+   ],
+   "yaw": 180.0,
+   "emitterLocal": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emitterWorld": [
+    8.45,
+    1.9,
+    14.6
+   ],
+   "layoutLight": [
+    8.45,
+    1.9,
+    14.62
+   ],
+   "deviation": 0.02,
+   "emitterChild": "FX_SconceBrass_Emitter",
+   "emissiveChild": "FX_SconceBrass_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "H3",
+   "instance": "FX_H3",
+   "prefab": "FX_SconceBrass",
+   "kind": "sconce",
+   "mount": [
+    10.05,
+    1.82,
+    14.7
+   ],
+   "yaw": 180.0,
+   "emitterLocal": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emitterWorld": [
+    10.05,
+    1.9,
+    14.6
+   ],
+   "layoutLight": [
+    10.05,
+    1.9,
+    14.62
+   ],
+   "deviation": 0.02,
+   "emitterChild": "FX_SconceBrass_Emitter",
+   "emissiveChild": "FX_SconceBrass_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "W1",
+   "instance": "FX_W1",
+   "prefab": "FX_SconceBrass",
+   "kind": "sconce",
+   "mount": [
+    4.4,
+    1.92,
+    14.7
+   ],
+   "yaw": 180.0,
+   "emitterLocal": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emitterWorld": [
+    4.4,
+    2.0,
+    14.6
+   ],
+   "layoutLight": [
+    4.4,
+    2.0,
+    14.62
+   ],
+   "deviation": 0.02,
+   "emitterChild": "FX_SconceBrass_Emitter",
+   "emissiveChild": "FX_SconceBrass_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "H5",
+   "instance": "FX_H5",
+   "prefab": "FX_SconceBroken",
+   "kind": "sconce",
+   "mount": [
+    7.075,
+    2.02,
+    8.0
+   ],
+   "yaw": 90.0,
+   "emitterLocal": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emitterWorld": [
+    7.175,
+    2.1,
+    8.0
+   ],
+   "layoutLight": [
+    7.13,
+    2.1,
+    8.0
+   ],
+   "deviation": 0.045,
+   "emitterChild": "FX_SconceBroken_Emitter",
+   "emissiveChild": "FX_SconceBroken_Emissive",
+   "off": true,
+   "mode": "off"
+  },
+  {
+   "id": "H6",
+   "instance": "FX_H6",
+   "prefab": "FX_SconceBrass",
+   "kind": "sconce",
+   "mount": [
+    11.425,
+    1.82,
+    6.6
+   ],
+   "yaw": 270.0,
+   "emitterLocal": [
+    -0.0,
+    0.08,
+    0.1
+   ],
+   "emitterWorld": [
+    11.325,
+    1.9,
+    6.6
+   ],
+   "layoutLight": [
+    11.37,
+    1.9,
+    6.6
+   ],
+   "deviation": 0.045,
+   "emitterChild": "FX_SconceBrass_Emitter",
+   "emissiveChild": "FX_SconceBrass_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "L3",
+   "instance": "FX_L3",
+   "prefab": "FX_SconceTulip",
+   "kind": "sconce",
+   "mount": [
+    11.575,
+    1.79,
+    5.3
+   ],
+   "yaw": 90.0,
+   "emitterLocal": [
+    -0.0,
+    0.11,
+    0.12
+   ],
+   "emitterWorld": [
+    11.695,
+    1.9,
+    5.3
+   ],
+   "layoutLight": [
+    11.62,
+    1.9,
+    5.3
+   ],
+   "deviation": 0.075,
+   "emitterChild": "FX_SconceTulip_Emitter",
+   "emissiveChild": "FX_SconceTulip_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "L4",
+   "instance": "FX_L4",
+   "prefab": "FX_SconceTulip",
+   "kind": "sconce",
+   "mount": [
+    16.75,
+    1.89,
+    6.925
+   ],
+   "yaw": 180.0,
+   "emitterLocal": [
+    -0.0,
+    0.11,
+    0.12
+   ],
+   "emitterWorld": [
+    16.75,
+    2.0,
+    6.805
+   ],
+   "layoutLight": [
+    16.75,
+    2.0,
+    6.85
+   ],
+   "deviation": 0.045,
+   "emitterChild": "FX_SconceTulip_Emitter",
+   "emissiveChild": "FX_SconceTulip_Emissive",
+   "off": false,
+   "mode": "Baked"
+  },
+  {
+   "id": "L2",
+   "instance": "FX_L2",
+   "prefab": "FX_TableLamp",
+   "kind": "lamp",
+   "mount": [
+    15.78,
+    0.7,
+    5.15
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    0.27,
+    -0.0
+   ],
+   "emitterWorld": [
+    15.78,
+    0.97,
+    5.15
+   ],
+   "layoutLight": [
+    15.6,
+    1.0,
+    5.3
+   ],
+   "deviation": 0.236,
+   "emitterChild": "FX_TableLamp_Emitter",
+   "emissiveChild": "FX_TableLamp_Emissive",
+   "off": false,
+   "mode": "Mixed"
+  },
+  {
+   "id": "H4",
+   "instance": "FX_H4",
+   "prefab": "FX_TableLamp",
+   "kind": "lamp",
+   "mount": [
+    11.13,
+    0.95,
+    13.8
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    0.27,
+    -0.0
+   ],
+   "emitterWorld": [
+    11.13,
+    1.22,
+    13.8
+   ],
+   "layoutLight": [
+    11.0,
+    1.05,
+    13.8
+   ],
+   "deviation": 0.214,
+   "emitterChild": "FX_TableLamp_Emitter",
+   "emissiveChild": "FX_TableLamp_Emissive",
+   "off": false,
+   "mode": "Mixed"
+  },
+  {
+   "id": "R1",
+   "instance": "FX_R1",
+   "prefab": "FX_TableLamp",
+   "kind": "lamp",
+   "mount": [
+    0.8,
+    0.76,
+    1.0
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    0.27,
+    -0.0
+   ],
+   "emitterWorld": [
+    0.8,
+    1.03,
+    1.0
+   ],
+   "layoutLight": [
+    0.8,
+    1.0,
+    1.0
+   ],
+   "deviation": 0.03,
+   "emitterChild": "FX_TableLamp_Emitter",
+   "emissiveChild": "FX_TableLamp_Emissive",
+   "off": false,
+   "mode": "Mixed"
+  },
+  {
+   "id": "R2",
+   "instance": "FX_R2",
+   "prefab": "FX_TableLampSmall",
+   "kind": "lamp",
+   "mount": [
+    4.6,
+    0.7,
+    9.1
+   ],
+   "yaw": 0.0,
+   "emitterLocal": [
+    -0.0,
+    0.2295,
+    -0.0
+   ],
+   "emitterWorld": [
+    4.6,
+    0.9295,
+    9.1
+   ],
+   "layoutLight": [
+    4.6,
+    0.95,
+    9.0
+   ],
+   "deviation": 0.102,
+   "emitterChild": "FX_TableLampSmall_Emitter",
+   "emissiveChild": "FX_TableLampSmall_Emissive",
+   "off": false,
+   "mode": "Baked"
+  }
+ ]
+}

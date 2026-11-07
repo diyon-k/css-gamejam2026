@@ -5620,6 +5620,8 @@ MonoBehaviour:
   image: {fileID: 2800000, guid: 25c1109445d5f4947a48201be14a244c, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!43 &12314903
 Mesh:
   m_ObjectHideFlags: 0
@@ -10962,6 +10964,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &22435452
@@ -12380,6 +12384,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: knife
   displayName: Knife
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &25470170
@@ -29656,6 +29662,8 @@ MonoBehaviour:
   image: {fileID: 2800000, guid: 22db9157fb475314a9be97671807edfa, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!43 &65970653
 Mesh:
   m_ObjectHideFlags: 0
@@ -31868,6 +31876,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &70892873
@@ -56698,6 +56708,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &143170075
@@ -86028,6 +86040,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &221272575
@@ -92453,6 +92467,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &237805538
@@ -95015,6 +95031,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &242704608
@@ -97131,6 +97149,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &247476989
@@ -115329,6 +115349,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &298068089
@@ -120625,6 +120647,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &308786849
@@ -124709,6 +124733,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &320977231
@@ -134407,6 +134433,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: knife
   displayName: Knife
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &348641196
@@ -150188,6 +150216,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &387283522
@@ -164262,6 +164292,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &418911592
@@ -189657,6 +189689,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &483397267
@@ -221758,6 +221792,15 @@ MonoBehaviour:
   facing: {x: 0, y: 0, z: 1}
   inset: 0.1
   secondsPerMetre: 0.35
+  rungSpacing: 0.3
+  rungSeconds: 0.24
+  pullRoll: 1.5
+  pullPitch: 1.2
+  lookPitch: -5
+  mountSeconds: 0.35
+  mantleSeconds: 0.6
+  mantleHop: 0.12
+  mantlePitch: 12
 --- !u!65 &567074081
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -238058,6 +238101,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &613045657
@@ -242831,6 +242876,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &623506659
@@ -245915,6 +245962,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &630178845
@@ -285577,6 +285626,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &727796608
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -328198,6 +328249,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &839294390
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -339839,6 +339892,15 @@ MonoBehaviour:
   facing: {x: 0, y: 0, z: -1}
   inset: 0.1
   secondsPerMetre: 0.35
+  rungSpacing: 0.3
+  rungSeconds: 0.24
+  pullRoll: 1.5
+  pullPitch: 1.2
+  lookPitch: -5
+  mountSeconds: 0.35
+  mantleSeconds: 0.6
+  mantleHop: 0.12
+  mantlePitch: 12
 --- !u!65 &870236700
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -349393,6 +349455,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &894878755
@@ -390194,6 +390258,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &939039120
@@ -426415,6 +426481,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1030251074
@@ -453378,6 +453446,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &1100071571
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -486162,6 +486232,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1168770906
@@ -495909,6 +495981,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1198931267
@@ -517676,6 +517750,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1257822255
@@ -549174,6 +549250,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: key_brass
   displayName: Brass key
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1339298429
@@ -561484,6 +561562,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1371148872
@@ -565615,6 +565695,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1380489800
@@ -580382,6 +580464,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &1422910303
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -588506,6 +588590,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1443346418
@@ -613957,6 +614043,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: spoon
   displayName: Spoon
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1506632157
@@ -625587,6 +625675,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1536281043
@@ -637749,6 +637839,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: fork
   displayName: Fork
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1564929260
@@ -664862,6 +664954,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1629520096
@@ -678738,6 +678832,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &1661917352
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -684942,6 +685038,8 @@ MonoBehaviour:
   image: {fileID: 2800000, guid: 59b9796094d145749a75d0d4eaf21509, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!1 &1678198332
 GameObject:
   m_ObjectHideFlags: 0
@@ -691079,6 +691177,8 @@ MonoBehaviour:
   image: {fileID: 2800000, guid: b34643e782001d74c9555a446ac01bec, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!1 &1696732244
 GameObject:
   m_ObjectHideFlags: 0
@@ -711810,6 +711910,63 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 4a8bec996a852614891632f0d6ed6b07, type: 3}
   m_PrefabInstance: {fileID: 1751985126}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1751997417
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 710546703222901627, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7619794670287511441, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
+      propertyPath: m_Name
+      value: Effects
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 74b01788ea553fb4e834e2496d9fea33, type: 3}
 --- !u!1 &1752165297
 GameObject:
   m_ObjectHideFlags: 0
@@ -728787,6 +728944,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1795734630
@@ -765589,6 +765748,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1897137378
@@ -779271,6 +779432,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &1933153516
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -795754,6 +795917,8 @@ MonoBehaviour:
   image: {fileID: 0}
   maxDistance: 3
   raiseSeconds: 0.3
+  liftSeconds: 0.45
+  paperSeed: 0
 --- !u!23 &1976853563
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -798183,6 +798348,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1983207262
@@ -802194,6 +802361,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1994762056
@@ -803408,6 +803577,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: key_iron
   displayName: Iron key
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &1997408990
@@ -805068,6 +805239,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: fork
   displayName: Fork
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2001348529
@@ -818425,6 +818598,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2034583040
@@ -824993,6 +825168,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2053031011
@@ -829394,6 +829571,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Pickup
   itemId: candle
   displayName: Candle
+  givesPistol: 0
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!23 &2062219684
@@ -862417,3 +862596,4 @@ SceneRoots:
   - {fileID: 947610055}
   - {fileID: 1470989623}
   - {fileID: 2099095387}
+  - {fileID: 1751997417}

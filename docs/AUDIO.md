@@ -58,11 +58,11 @@ Master
 | Event | Component (prefab) | Cue | 2D/3D | Group |
 |---|---|---|---|---|
 | `TimeSkipController.Skipped` | TimeAudio (GameSystems) | `Skip_Hit`: camera-shutter click (3 variants, random no-repeat, ±3% pitch, volume 0.5–0.58). `Skip_Boom` layer is empty (silent) | 2D | Stingers |
-| `FastForwardStarted` | TimeAudio | `EyesShut` snapshot (+ optional `eyesShutCue`, unassigned) | | |
-| `FastForwardEnded(false)` | TimeAudio | `EyesOpen` snapshot (+ optional `eyesOpenCue`, unassigned) | | |
+| `FastForwardStarted` | TimeAudio | `EyesShut` snapshot + `Player_BreathIn` | | |
+| `FastForwardEnded(false)` | TimeAudio | `EyesOpen` snapshot + `Player_BreathOut` | | |
 | `FastForwardEnded(true)` (grab) | TimeAudio | `EyesOpen` instantly + `Grab_Sting` | 2D | Stingers |
 | `GrabQte.Began` | TimeAudio | `Grab_Sting` (1 s cooldown, so it doesn't double up with the interrupt) | 2D | Stingers |
-| `GrabQte.Resolved(true)` | TimeAudio | optional `grabEscapedCue` (unassigned) | 2D | |
+| `GrabQte.Resolved(true)` | TimeAudio | `Player_GrabEscaped` (pant) | 2D | Body |
 | `Gun.Fired` | WeaponAudio (Effects) | `Pistol_Shot` (3 variants with the room tail baked in, random no-repeat, ±3.5% pitch). `Pistol_Tail` is empty (silent), so there's no double tail | 2D | Gun |
 | `Gun.DryFired` | WeaponAudio | `Pistol_DryFire` | 2D | Gun |
 | `Gun.ReloadStarted` + `ReloadProgress01` | WeaponAudio | `Pistol_MagOut` (0.18 / 0.2), `Pistol_MagIn` (0.55), `Pistol_Slide` (0.82, empty reload only) | 2D | Gun |
@@ -70,14 +70,17 @@ Master
 | … and that shot killed it | ImpactAudio | + `Flesh_Kill` | 3D | Impacts |
 | `Gun.Fired`, hit a wall/prop | ImpactAudio | `Surface_Hit` | 3D | Impacts |
 | `MobController.StateChanged` calm → Chase/Attack | ZombieAudio (Zombie) | `Zombie_Alert` | 3D voice | Zombies |
-| `StateChanged` → Investigate | ZombieAudio | `searchCue` or `Zombie_Groan` | 3D voice | Zombies |
+| `StateChanged` → Investigate | ZombieAudio | `Zombie_Search` | 3D voice | Zombies |
 | Groan timer (5–12 world s, not while attacking) | ZombieAudio | `Zombie_Groan` | 3D voice | Zombies |
 | `MobController.Attacked` | ZombieAudio | `Zombie_Attack` | 3D voice | Zombies |
 | `Health.Damaged` (zombie) | ZombieAudio | `Zombie_Pain`: 50% chance, 0.8 s cooldown per zombie, not on the killing shot | 3D voice | Zombies |
 | `Health.Died` (zombie) | ZombieAudio | `Zombie_Death`; stops other vocals for good | 3D voice | Zombies |
 | Every 0.8 m the agent walks | ZombieAudio | `Zombie_Step` at the feet | 3D | Zombies |
 | Every 1.6 m the player walks (grounded) | PlayerAudio (GameSystems) | `Player_Step` | 2D | Body |
-| `Health.Damaged` (player) | PlayerAudio | `Player_HitThud` + `Player_Hurt` | 2D | Body |
+| `Health.Damaged` (player) | PlayerAudio | none for now (`Player_HitThud` + `Player_Hurt` exist but are unassigned) | 2D | Body |
+| `Health.Died` (player) | PlayerAudio | `Player_Death` | 2D | Body |
+| `Gun.ReloadStarted` | WeaponAudio | `Pistol_ReloadStart` (cloth rustle) | 2D | Gun |
+| Scene start | MusicAudio ×2 (GameSystems) | `Music_Bed` + `Ambience_Wind` (60 s seamless wind loop, vol 0.35) | 2D | Ambience |
 | Nearest living zombie within 15 m | PlayerAudio | `Heartbeat` lub-dub retriggered at 65 → 170 bpm, volume 0.25 → 1 (×0.35 with eyes open; full while `BlinkDetector.EyesShut`). Each beat also raises `PlayerAudio.Heartbeat(intensity, bpm)`, which `GamepadHaptics` follows during fast-forward, so the rumble beats with the sound | 2D | Body |
 | `JammedDoor.ForcingStarted` / `ForcingStopped` | WorldAudio (GameSystems) | `Door_ForcingLoop` loop at the door, 0.2 s fade out | 3D | World |
 | `JammedDoor.Opened` | WorldAudio | `Door_Burst` | 3D | World |
@@ -140,4 +143,4 @@ Better versions of what's in the game now, from the Feel Kit. All CC0 unless not
 | Zombie shuffling steps | https://freesound.org/s/189231/ (Starvolt) | `Zombie_Step` | GboxMikeFozzy steps |
 | Catastic Zombie Sound Pack Free | https://assetstore.unity.com/packages/audio/sound-fx/zombie-sound-pack-free-version-124430 | any zombie cue | (Asset Store login) |
 
-Not built yet (out of scope for this pass): ambience beds and music (the Feel Kit's Music section), breathing, blood drips, generator.
+Not built yet: blood drips, generator, interior creaks.

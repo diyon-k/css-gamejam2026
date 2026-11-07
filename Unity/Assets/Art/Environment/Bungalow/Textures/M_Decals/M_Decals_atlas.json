@@ -1,0 +1,161 @@
+{
+ "atlas": "M_Decals_Base.png",
+ "size": 1024,
+ "note": "uv_rect_unity = [u, v, w, h], bottom-left origin. tide_line and grime_band are seamless left-right: place quads end to end",
+ "cells": {
+  "leak_streaks": {
+   "px": [
+    0,
+    0,
+    512,
+    512
+   ],
+   "uv_rect_unity": [
+    0.0,
+    0.5,
+    0.5,
+    0.5
+   ]
+  },
+  "ceiling_stain": {
+   "px": [
+    512,
+    0,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.5,
+    0.75,
+    0.25,
+    0.25
+   ]
+  },
+  "mould_bloom": {
+   "px": [
+    768,
+    0,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.75,
+    0.75,
+    0.25,
+    0.25
+   ]
+  },
+  "floor_stain": {
+   "px": [
+    512,
+    256,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.5,
+    0.5,
+    0.25,
+    0.25
+   ]
+  },
+  "scuffs": {
+   "px": [
+    768,
+    256,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.75,
+    0.5,
+    0.25,
+    0.25
+   ]
+  },
+  "rust_streaks": {
+   "px": [
+    0,
+    512,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.0,
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "paper_scraps": {
+   "px": [
+    256,
+    512,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.25,
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "plaster_crumbs": {
+   "px": [
+    512,
+    512,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.5,
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "peel_edge": {
+   "px": [
+    768,
+    512,
+    256,
+    256
+   ],
+   "uv_rect_unity": [
+    0.75,
+    0.25,
+    0.25,
+    0.25
+   ]
+  },
+  "tide_line": {
+   "px": [
+    0,
+    768,
+    1024,
+    128
+   ],
+   "uv_rect_unity": [
+    0.0,
+    0.125,
+    1.0,
+    0.125
+   ]
+  },
+  "grime_band": {
+   "px": [
+    0,
+    896,
+    1024,
+    128
+   ],
+   "uv_rect_unity": [
+    0.0,
+    0.0,
+    1.0,
+    0.125
+   ]
+  }
+ }
+}

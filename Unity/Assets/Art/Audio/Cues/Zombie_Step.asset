@@ -20,7 +20,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 94d60b31d1b6d514596908327b3b8bec, type: 3}
   - {fileID: 8300000, guid: 174d2323623b6ce40990c729bf056612, type: 3}
   order: 1
-  volume: {x: 0.45, y: 0.6}
+  volume: {x: 0.7, y: 0.85}
   pitch: {x: 0.85, y: 1}
   spatialBlend: 1
   minDistance: 1.5
