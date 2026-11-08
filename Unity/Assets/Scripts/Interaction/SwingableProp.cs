@@ -64,6 +64,7 @@ namespace Blink.Interaction
         bool _customPose;
         Vector3 _heldPosition;
         Quaternion _heldRotation = Quaternion.identity;
+        Vector3 _heldScale = Vector3.one; // custom pose only: its size in the hands (it may lie shrunk in a drawer)
 
         // Lazy: the axe is wrapped on an inactive slot, so Awake may not have run when it's first held.
         Rigidbody Body => _body != null ? _body : _body = GetComponent<Rigidbody>();
@@ -107,6 +108,7 @@ namespace Blink.Interaction
                 _heldPosition = HandPoint - _heldRotation * Vector3.Scale(grip, transform.localScale);
             }
             transform.SetLocalPositionAndRotation(_heldPosition, _heldRotation);
+            if (_customPose) transform.localScale = _heldScale;
         }
 
         /// <summary>Out of the hands where it is, falling with <paramref name="velocity"/>. Never bumps <paramref name="holder"/>.</summary>
@@ -150,6 +152,7 @@ namespace Blink.Interaction
             item.displayName = name;
             item.knocksDown = false;
             item._customPose = true;
+            item._heldScale = mesh.transform.localScale;
             mesh.transform.GetLocalPositionAndRotation(out item._heldPosition, out item._heldRotation);
             return item;
         }

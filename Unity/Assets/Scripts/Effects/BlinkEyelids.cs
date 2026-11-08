@@ -126,7 +126,8 @@ namespace Blink.Effects
 
         /// <summary>
         /// White texture whose alpha is the upper lid's rim: solid at the top, fading out along an arc
-        /// that dips lowest in the middle, like a real eyelid.
+        /// that dips lowest at the corners and highest in the middle, so the lids close to a slit in the centre of the
+        /// screen instead of leaving gaps at the left and right edges.
         /// </summary>
         void EnsureTexture()
         {
@@ -150,7 +151,7 @@ namespace Blink.Effects
                 for (int x = 0; x < TexWidth; x++)
                 {
                     float u = x / (TexWidth - 1f) * 2f - 1f; // -1..1 across the screen
-                    float rim = soft + (1f - 2f * soft) * u * u; // lowest at the centre
+                    float rim = soft + (1f - 2f * soft) * (1f - u * u); // lowest at the corners, highest at the centre, so the last gap is a slit in the middle
                     float a = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(rim - soft, rim + soft, v));
                     pixels[y * TexWidth + x] = new Color32(255, 255, 255, (byte)(a * 255f));
                 }

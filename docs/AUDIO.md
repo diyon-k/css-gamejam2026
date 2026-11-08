@@ -1,6 +1,6 @@
 # BLINK: Audio
 
-How the game makes sound, how to add a sound, and which event plays what. Sound picks and mixing guidance come from [FEEL_KIT.md](FEEL_KIT.md); credits are in [CREDITS.md](../CREDITS.md).
+How the game makes sound, how to add a sound, and which event plays what. Sound picks and mixing guidance come from [FEEL_KIT.md](FEEL_KIT.md); credits are in [the README credits](../README.md#credits).
 
 ## How it fits together
 
@@ -84,8 +84,12 @@ Master
 | Nearest living zombie within 15 m | PlayerAudio | `Heartbeat` lub-dub retriggered at 65 â†’ 170 bpm, volume 0.25 â†’ 1 (Ã—0.35 with eyes open; full while `BlinkDetector.EyesShut`). Each beat also raises `PlayerAudio.Heartbeat(intensity, bpm)`, which `GamepadHaptics` follows during fast-forward, so the rumble beats with the sound | 2D | Body |
 | `JammedDoor.ForcingStarted` / `ForcingStopped` | WorldAudio (GameSystems) | `Door_ForcingLoop` loop at the door, 0.2 s fade out | 3D | World |
 | `JammedDoor.Opened` | WorldAudio | `Door_Burst` | 3D | World |
+| `Door.Opened` / `Closed` / `Rattled` (player or zombie) | WorldAudio | `Door_Open` creak / `Door_Close` thud / `Door_Rattle` (locked) | 3D, attached | World |
+| `Openable.Toggled` / `Rattled` (drawers, cupboards) | WorldAudio | `Drawer_Open` / `Drawer_Close` / `Door_Rattle` | 3D, attached | World |
+| `PlayerWeapons.MeleeSwing` / `MeleeHit` | MeleeAudio (Effects) | `Axe_Swing` (2D) / `Axe_Hit` on flesh / per-surface cue on the world (`Wood_Thunk` for planks and wood) | 2D / 3D | Gun / Impacts |
+| Barricade breaks | Breakable | `Door_Burst` (set by BLINK > Bungalow > Place Axe And Barricade) | 3D | World |
 
-**Unwired cues, ready for later:** `Axe_Swing` and `Axe_Hit`. Play them from `PlayerWeapons.MeleeSwing` / `MeleeHit` (see [ARCHITECTURE.md](ARCHITECTURE.md)).
+**Opening, forcing and chopping are loud on purpose** (playtest: they got lost under the music and breaths). Their cues sit at volume 0.9–1, minDistance 4–6 m and pitch about 0.8–0.95 (creakier, heavier). The clips were limit-boosted with ffmpeg (`volume=+10–12dB,alimiter=limit=0.89`) so they're 3–8 dB denser than the raw files; `Door_Creak_01/02` and `Door_Rattle_01/02` are cut from `Door_Creak_Loop` and the Kenney wood knocks. `Music_Bed` is at 0.4.
 
 ## Adding or replacing a sound
 
@@ -97,7 +101,7 @@ Master
    - Force To Mono, unless it must be stereo.
 3. Open the cue in `Assets/Art/Audio/Cues/` and add the clip to **Clips** (or replace one). That's it: every listener already uses the cue.
 4. New kind of sound? Create a cue (Create > BLINK > Sound Cue) and pick its mixer group. In the component that listens to the right event, add a `[SerializeField] SoundCue` and call `AudioService.Instance.Play/PlayAt(cue)`.
-5. Add a row to [CREDITS.md](../CREDITS.md) (required for CC-BY / OGA-BY). Only CC0, CC-BY and OGA-BY: no NC, SA or editorial licences.
+5. Add a row to [the README credits](../README.md#credits) (required for CC-BY / OGA-BY). Only CC0, CC-BY and OGA-BY: no NC, SA or editorial licences.
 
 ## Gunshot and shutter sources
 

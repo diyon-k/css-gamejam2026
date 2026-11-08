@@ -333,11 +333,37 @@ namespace Blink.UI
 
         // ---------------------------------------------------------------- title and death cards
 
+        /// <summary>Motion for <see cref="TitleCard"/>. <see cref="Still"/> draws the card at rest.</summary>
+        public struct TitleMotion
+        {
+            /// <summary>Heading letters arriving one by one, left to right: 0 none, 1 all.</summary>
+            public float reveal;
+            /// <summary>Heading squashed shut about its middle like an eyelid: 0 open, 1 shut.</summary>
+            public float lid;
+            /// <summary>Width of the red rule, 0..1 of its full width.</summary>
+            public float rule;
+            /// <summary>Strength 0..1 of the loading look: a red segment sweeping along a faint track where the rule sits.</summary>
+            public float loading;
+            /// <summary>Seconds; drives the loading sweep.</summary>
+            public float time;
+            /// <summary>Muted line in the subtitle's place while loading ("starting the camera").</summary>
+            public string status;
+            public float statusAlpha;
+            /// <summary>Subtitle letters arriving one by one: 0 none, 1 all.</summary>
+            public float subtitleReveal;
+
+            public static TitleMotion Still => new() { reveal = 1f, rule = 1f, subtitleReveal = 1f };
+        }
+
         /// <summary>
         /// Centred card on a dark screen: one large letterspaced serif line, a thin red rule, and a small-caps line under it.
         /// <paramref name="large"/> uses the title size (for "BLINK"); otherwise the heading size, shrunk to fit.
         /// </summary>
-        public static void TitleCard(string heading, string subtitle, float alpha, float subtitleAlpha, bool large)
+        public static void TitleCard(string heading, string subtitle, float alpha, float subtitleAlpha, bool large) =>
+            TitleCard(heading, subtitle, alpha, subtitleAlpha, large, TitleMotion.Still);
+
+        /// <summary><see cref="TitleCard(string,string,float,float,bool)"/> in motion: see <see cref="TitleMotion"/>.</summary>
+        public static void TitleCard(string heading, string subtitle, float alpha, float subtitleAlpha, bool large, TitleMotion m)
         {
             if (alpha <= 0f) return;
             float w = ScreenWidth, h = ScreenHeight;
@@ -352,16 +378,33 @@ namespace Blink.UI
             float cy = h * 0.47f;
             Smudge(new Rect(w * 0.5f - Px(560f), cy - Px(220f), Px(1120f), Px(440f)), alpha * 0.25f);
             var headRect = new Rect(0f, cy - headH * 0.5f - Px(large ? 34f : 22f), w, headH);
-            float headW = SpacedText(headRect, heading, style, Fade(Bone, alpha), tracking);
+            float headW = MeasureSpaced(heading, style, tracking);
+            var oldMatrix = GUI.matrix;
+            if (m.lid > 0f) GUIUtility.ScaleAroundPivot(new Vector2(1f, Mathf.Max(0.03f, 1f - m.lid)), headRect.center);
+            SpacedTextReveal(headRect, heading, style, Fade(Bone, alpha), tracking, m.reveal, Px(large ? 18f : 10f));
+            GUI.matrix = oldMatrix;
             style.fontSize = baseSize;
 
             float ruleY = cy + Px(large ? 52f : 28f);
             float ruleW = Mathf.Clamp(headW * 0.55f, Px(140f), Px(360f));
-            Rule(new Vector2(w * 0.5f, ruleY), ruleW, Mathf.Max(1f, Px(2f)), Fade(Accent, alpha));
+            float thick = Mathf.Max(1f, Px(2f));
+            if (m.loading > 0f)
+            {
+                // Faint track with a short segment gliding back and forth along it.
+                Rule(new Vector2(w * 0.5f, ruleY), ruleW, thick, Fade(Accent, alpha * m.loading * 0.22f));
+                float seg = ruleW * 0.3f;
+                float along = BlinkTheme.EaseInOut(0.5f + 0.5f * Mathf.Sin(m.time * 2.4f));
+                float x = w * 0.5f - ruleW * 0.5f + seg * 0.5f + along * (ruleW - seg);
+                Rule(new Vector2(x, ruleY), seg, thick, Fade(Accent, alpha * m.loading));
+            }
+            Rule(new Vector2(w * 0.5f, ruleY), ruleW * Mathf.Clamp01(m.rule), thick, Fade(Accent, alpha));
 
-            if (string.IsNullOrEmpty(subtitle)) return;
             var subRect = new Rect(0f, ruleY + Px(12f), w, Px(48f));
-            SpacedText(subRect, subtitle.ToLowerInvariant(), Subtitle, Fade(Bone, alpha * subtitleAlpha * 0.9f), 0.22f);
+            if (!string.IsNullOrEmpty(m.status) && m.statusAlpha > 0f)
+                SpacedText(subRect, m.status.ToLowerInvariant(), Subtitle, Fade(Muted, alpha * m.statusAlpha), 0.22f);
+            if (string.IsNullOrEmpty(subtitle)) return;
+            SpacedTextReveal(subRect, subtitle.ToLowerInvariant(), Subtitle, Fade(Bone, alpha * subtitleAlpha * 0.9f), 0.22f,
+                m.subtitleReveal, Px(8f));
         }
 
         // ---------------------------------------------------------------- note card

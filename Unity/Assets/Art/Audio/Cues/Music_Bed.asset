@@ -15,7 +15,7 @@ MonoBehaviour:
   clips:
   - {fileID: 8300000, guid: 9f39b31e4ba14fa0a8b01ae85fe2ade6, type: 3}
   order: 1
-  volume: {x: 0.5, y: 0.5}
+  volume: {x: 0.4, y: 0.4}
   pitch: {x: 1, y: 1}
   spatialBlend: 0
   minDistance: 1.5

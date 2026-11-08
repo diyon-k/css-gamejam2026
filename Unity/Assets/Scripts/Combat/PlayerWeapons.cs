@@ -177,7 +177,9 @@ namespace Blink.Combat
                         // in a drawer: held still and riding it, and a child of it so the look ray finds it inside
                         body.isKinematic = true;
                         body.interpolation = RigidbodyInterpolation.None;
+                        var size = dropped.transform.localScale; // unparented: its world size
                         dropped.transform.SetParent(axeStartsAt, true);
+                        dropped.transform.localScale = size; // so axeStartsAt's scale shrinks it to fit (back to size when held)
                     }
                 }
             }
@@ -312,19 +314,16 @@ namespace Blink.Combat
         /// <summary>
         /// Lets go of the weapon in hand (one-hand rule): a melee item falls from the hands, the pistol goes back on the floor
         /// as its pickup (ammo kept). Then the empty hands come up. A pistol without a pickup stays (see <see cref="CanDropWeapon"/>).
-        /// <paramref name="at"/>: a floor point to leave it on (where the player died) instead of in front of the player.
         /// </summary>
-        public void DropWeapon(Vector3? at = null)
+        public void DropWeapon()
         {
-            var melee = axe != null ? axe.Drop(GetComponent<Collider>()) : null;
-            if (melee != null && at is { } floor) melee.PlaceAt(floor);
-            bool dropped = melee != null;
+            bool dropped = axe != null && axe.Drop(GetComponent<Collider>()) != null;
             if (_hasPistol && pistol != null && _pistolPickup != null)
             {
                 pistol.CancelReload();
                 _hasPistol = false;
                 var eye = aimCamera != null ? aimCamera.transform : transform;
-                _pistolPickup.PlaceAt(at ?? Interaction.Hand.DropPoint(eye));
+                _pistolPickup.PlaceAt(Interaction.Hand.DropPoint(eye));
                 _pistolPickup = null;
                 dropped = true;
             }

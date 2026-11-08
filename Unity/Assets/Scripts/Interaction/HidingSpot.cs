@@ -9,8 +9,8 @@ namespace Blink.Interaction
     /// <summary>
     /// A wardrobe / cupboard you can climb into. Interact: the doors swing open, the player hops in in an arc,
     /// turns to face out and the doors pull to, left ajar to peek through (mouse look, clamped). Interact or Jump
-    /// hops back out. While someone is inside, <see cref="Occupant"/> is set and zombies can't see the player,
-    /// except one that watched you climb in: it comes over and <see cref="DragOut"/>s you into the grab.
+    /// hops back out. While someone is inside, <see cref="Occupant"/> is set and zombies can't see, grab or hurt the
+    /// player; one that watched you climb in searches outside the doors, then gives up.
     /// No doors (under a bed) works too: you just slide in and out.
     /// Put it on the furniture root; local +z faces out of the doors, local y 0 is the floor.
     /// </summary>
@@ -38,7 +38,7 @@ namespace Blink.Interaction
         /// <summary>The spot the player is hiding in, or null. Zombies treat the player as unseen while set.</summary>
         public static HidingSpot Occupant { get; private set; }
 
-        /// <summary>World floor point in front of the spot: where you land getting out, and where a zombie stands to drag you out.</summary>
+        /// <summary>World floor point in front of the spot: where you land getting out, and where a zombie that saw you get in searches.</summary>
         public Vector3 ExitPoint => transform.TransformPoint(exit);
 
         Openable[] _doors;
@@ -167,19 +167,6 @@ namespace Blink.Interaction
             if (!(_health is { IsDead: true })) _player.InputEnabled = true;
             Occupant = null;
             _move = null;
-        }
-
-        /// <summary>Yanked out by <paramref name="by"/>: doors fly open, you're on your feet at the exit facing it. Instant.</summary>
-        public void DragOut(Vector3 by)
-        {
-            if (Occupant != this) return;
-            if (_move != null) StopCoroutine(_move);
-            SetDoors(true);
-            Vector3 face = by - ExitPoint;
-            face.y = 0f;
-            _player.transform.SetPositionAndRotation(ExitPoint + Vector3.up * _bodyAboveFloor,
-                face.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(face) : _player.transform.rotation);
-            Release();
         }
 
         // Killed inside somehow: hand the body back to the respawn flow, don't leave zombies blind.

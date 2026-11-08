@@ -72,6 +72,12 @@ def face_planar(x, z):
     return _cell_uv("face", (x - FX0) / FW, (z - FZ0) / FH)
 
 
+def sub_uv_cloth(q):
+    """A single dress-cloth texel region for small ornaments (bow)."""
+    u0, v0, u1, v1 = sub("sleeve")
+    return ((u0 + u1) / 2, (v0 + v1) / 2)
+
+
 def eye_planar(x, z, R):
     return _cell_uv("eye", 0.5 + x / (2 * R), 0.5 + z / (2 * R))
 
@@ -181,15 +187,15 @@ def porcelain(base, h, smooth, ao, seed, crack_cell, density=1.0):
     smooth[:] = 0.86 - 0.10 * sstep(mid, 0.1, 0.9)
     warp = (fn(hh, ww, seed + 2, 1.3, lo=2, hi=60) * 0.9, fn(hh, ww, seed + 3, 1.3, lo=2, hi=60) * 0.9)
     wob = worley(hh, ww, seed + 4, crack_cell, warp=warp)
-    craze = 1.0 - sstep(wob, 0.4, 1.9)
+    craze = 1.0 - sstep(wob, 0.15, 0.95)
     patch = sstep(fn(hh, ww, seed + 5, 1.4, lo=1, hi=10), -0.25, 0.25) * density
     # a few long cracks: boundaries of a much bigger web, rarely present
     big = worley(hh, ww, seed + 6, crack_cell * 5.0, jit=0.9, warp=(warp[0] * 0.25, warp[1] * 0.25))
-    long = (1.0 - sstep(big, 0.5, 2.4)) * sstep(fn(hh, ww, seed + 7, 1.2, lo=1, hi=8), 0.15, 0.5)
-    line = np.clip(craze * patch * 0.8 + long, 0, 1)
-    base[:] = mix(base, col(0.36, 0.28, 0.20), np.clip(line * 0.55, 0, 1))
-    smooth[:] = smooth * (1 - 0.55 * line)
-    h[:] += -1.6 * line
+    long = (1.0 - sstep(big, 0.2, 1.1)) * sstep(fn(hh, ww, seed + 7, 1.2, lo=1, hi=8), 0.15, 0.5)
+    line = np.clip(craze * patch * 0.65 + long * 0.8, 0, 1)
+    base[:] = mix(base, col(0.36, 0.28, 0.20), np.clip(line * 0.42, 0, 1))
+    smooth[:] = smooth * (1 - 0.45 * line)
+    h[:] += -0.9 * line
     ao[:] = ao * (1 - 0.35 * line)
     return line
 
@@ -198,7 +204,7 @@ def paint_face(at):
     R = at.region("face")
     base, h, sm, ao = at.base[R].copy(), at.h[R].copy(), at.smooth[R].copy(), at.ao[R].copy()
     n = 1024
-    line = porcelain(base, h, sm, ao, 100, 38.0, density=0.75)
+    line = porcelain(base, h, sm, ao, 100, 26.0, density=0.6)
     rr, cc = np.mgrid[0:n, 0:n].astype(np.float32)
     X = FX0 + (cc + 0.5) / n * FW
     Z = FZ0 + (rr + 0.5) / n * FH
@@ -293,7 +299,7 @@ def paint_face(at):
 def paint_porc(at):
     R = at.region("porc")
     base, h, sm, ao = at.base[R].copy(), at.h[R].copy(), at.smooth[R].copy(), at.ao[R].copy()
-    porcelain(base, h, sm, ao, 200, 34.0, density=0.8)
+    porcelain(base, h, sm, ao, 200, 26.0, density=0.7)
     # fingers and palms: faint knuckle lines painted into the height
     hh, ww = h.shape
     knuckle = np.zeros_like(h)
@@ -337,11 +343,11 @@ def paint_dress(at):
     at.hs[R] = 1.0
 
 
-def lace_pattern(h, w, P, seed):
+def lace_pattern(h, w, P, seed, Py=None):
     """Thread coverage (1 = thread) for an h x w patch tiled with period P: a net with a rosette in each diamond."""
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
     x = (xx % P) / P
-    y = (yy % P) / P
+    y = (yy % (Py or P)) / (Py or P)
     q = 4.0
     d1 = np.abs(((x + y) * q) % 1.0 - 0.5) * 2    # 1 at the line centres' complement
     d2 = np.abs(((x - y) * q) % 1.0 - 0.5) * 2
@@ -368,8 +374,8 @@ def paint_lace(at):
     ao = np.ones((H, W), np.float32)
     thread = col(0.80, 0.765, 0.67)
     gap = col(0.10, 0.045, 0.045)
-    for (y0, y1, P, seed) in ((384, 512, 32, 400), (256, 384, 64, 401)):
-        m = lace_pattern(y1 - y0, W, P, seed)
+    for (y0, y1, P, Py, seed) in ((384, 512, 16, 16, 400), (256, 384, 16, 32, 401)):
+        m = lace_pattern(y1 - y0, W, P, seed, Py)
         grime = sstep(fn(y1 - y0, W, seed + 1, 1.3, lo=1, hi=30), 0.0, 0.8)
         edge = sstep(np.mgrid[0:y1 - y0, 0:W][0] / (y1 - y0), 0.5, 1.0)     # the outer edge is dirtier
         tcol = mix(thread * np.ones((y1 - y0, W, 1), np.float32), col(0.46, 0.38, 0.27), np.clip(grime * 0.5 + edge * 0.35, 0, 0.7))

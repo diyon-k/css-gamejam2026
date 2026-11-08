@@ -42,6 +42,7 @@ namespace Blink.EditorTools
             public string verb = "Hide in";
             public Vector3 eye, exit;
             public float hopHeight = 0.35f, maxYaw = 60f;
+            public Vector2 peekGap = new Vector2(0.14f, 1f); // tall door crack; wide and low under a bed
         }
 
         static Part Door(string name, Kind k, float x0, float y0, float z0, float x1, float y1, float z1, float back = 0f, string noun = null) =>
@@ -106,7 +107,7 @@ namespace Blink.EditorTools
             ["GothicBed_01"] = new Spec
             {
                 noun = "bed", verb = "Hide under", hide = true,
-                eye = new Vector3(0f, 0.2f, 0f), exit = new Vector3(0f, 0f, 1.5f), hopHeight = 0f, maxYaw = 80f, // out past the foot (+z)
+                eye = new Vector3(0f, 0.2f, 0f), exit = new Vector3(0f, 0f, 1.5f), hopHeight = 0f, maxYaw = 80f, peekGap = new Vector2(0.9f, 0.22f), // out past the foot (+z)
             },
         };
 
@@ -148,6 +149,7 @@ namespace Blink.EditorTools
                 h.exit = spec.exit;
                 h.hopHeight = spec.hopHeight;
                 h.maxYaw = spec.maxYaw;
+                h.peekGap = spec.peekGap;
             }
             return true;
         }
@@ -344,6 +346,17 @@ namespace Blink.EditorTools
             var col = go.AddComponent<BoxCollider>();
             col.center = mesh.bounds.center;
             col.size = mesh.bounds.size + Vector3.one * 0.02f;
+            // ...and proud of the carcass's box collider too: a front cut from inside the box (painted_wooden_cabinet's
+            // drawers and doors) would be hit after the carcass, so it could never be opened
+            if (p.kind != Kind.Lid && rot == Quaternion.identity && root.TryGetComponent(out BoxCollider carcass))
+            {
+                float front = carcass.center.z + carcass.size.z * 0.5f + 0.02f - pivot.z, back = col.center.z - col.size.z * 0.5f;
+                if (col.center.z + col.size.z * 0.5f < front)
+                {
+                    col.center = new Vector3(col.center.x, col.center.y, (front + back) * 0.5f);
+                    col.size = new Vector3(col.size.x, col.size.y, front - back);
+                }
+            }
 
             var o = go.AddComponent<Openable>();
             o.noun = p.noun ?? noun;

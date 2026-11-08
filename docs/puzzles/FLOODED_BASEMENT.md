@@ -14,6 +14,7 @@ You step into a basement room and the door slams shut behind you. In a bath agai
 
 ## Where it goes
 
+- **Built (2026-11-07) in the bungalow `B2` workshop** (`House_Bungalow.unity`, x 13.575..19.7, z 4.075..14.7, floor y −2.85, 2.6 m to the slab). The doorway is D5 in the west wall (x 13.5, z 12.4..13.6, off the `B1` cellar). The drain is dead centre at (16.64, 9.39), 4.7 m from the doorway; the bath (the upstairs bathroom's `ClawfootTub` prefab, running from its own taps) is against the east wall facing D5; the drawers and tall cupboard are on the north wall, the tool locker and crate on the west wall. The clue card is on a stake by the drain. **The door is D5's own `Door`** (the placement script sets `FloodedBasement.door`): on `FloodStarted` it slams in 0.12 s (`Door.Slam`, the `Door_Burst` cue, a jolt and a thump; just locks if already shut) and locks as a story lock (rattles, "Locked", carves the navmesh so clowns can't path through); on `Solved` or `WasReset` it unlocks and swings open away from the player. Re-run **BLINK > Place Puzzle: Flooded Basement** after a house rebuild, then Setup Doors (it keeps D5's `Door`, so the link holds; on a scene with no D5 `Door` yet, run Setup Doors before the placement too). The rest of this section is the original brief.
 - **Always `PuzzleRoom_5`** (basement, x 0..8, z 0..8, floor y −3.2, ceiling 3.0 m above the floor). Its only doorway is in the north wall at x ≈ 3.3..4.7, z 8, off `Basement_Passage`.
 - Layout (inside the walls, about 7.8 × 7.8 m):
   - **Drain** dead centre at (4, −3.2, 4).
@@ -43,7 +44,7 @@ Idle ──player fully inside──▶ Flooding ──cover levered off──�
 - **Flooding** starts when the player is `slamDepth` (1.5 m) inside the doorway:
   - The door **slams** shut and locks (see Door). Bang, dust, gamepad jolt.
   - The tap goes from a drip to running. The water starts rising.
-  - The crowbar is placed in a **random search spot** (re-rolled on every attempt).
+  - The crowbar is placed in a **random search spot** (re-rolled on every attempt). **As built in the bungalow:** it always lies in the big chest on the doorway wall (on a tray under the rim), there from the start (`FloodedBasement.crowbarSpot`; -1 brings back the random spot).
 - **Drowned:** the water surface reaches the camera (eye) height → drowning death (below).
 - **Draining:** the cover's off. The water drains, the tap is turned off (it splutters and stops), blinks now *help*.
 - **Solved:** water at 0, door unlocks and swings open a little on its own (a creak), `key_workshop` can be picked up. Permanent: later deaths elsewhere don't reset it (`WakeUpSequence` keeps world progress).
@@ -103,9 +104,9 @@ Level = metres of water above the room floor. Drive it from a pure `FloodLevel` 
   Clear it in a `SubsystemRegistration` reset like the other statics.
 - Reset while the screen is black, never in view.
 
-### Respawn distance (recommended)
+### Respawn distance
 
-Death respawns you in the start bedroom on the second floor. From there to `PuzzleRoom_5` is a long walk through most of the house, and this puzzle *will* kill people. Recommended: a checkpoint. Add `WakeUpSequence.SetCheckpoint(Vector3 pos, Quaternion rot)` and have this puzzle set it to `Basement_Passage` just outside the door, facing it, when Flooding starts. Wake-up there instead of the bed (keep the same eyelid animation; skip the lying-in-bed pose or lie on the floor). Clear it on Solved. If that's too much for the jam, flag it as a follow-up, don't silently skip it.
+Death in the basement (drowning, or clowns) respawns you in bed like any other death, not at a checkpoint outside the door. The room still resets on `WakeUpSequence.Respawned`.
 
 ---
 
@@ -166,10 +167,14 @@ Dressing: damp concrete, a single bare bulb (flickers when the door slams, `Ligh
 
 ### Water look
 
-URP, no extra packages:
-- A slightly transparent, murky green-brown plane with a scrolling normal or noise (simplest: a URP Lit transparent material with an animated offset). Must render from above and below (two-sided, or a second flipped plane), because the player's eyes end up just under it.
-- Ripple rings under the tap stream, a whirlpool (rotating decal/mesh + particles) over the drain while Draining.
-- Underwater screen tint when the camera is below the surface (only at the moment of drowning in practice).
+URP, no extra packages. Built (re-run the placer after changing the builder):
+- `Blink/FloodWater` (`Art/Puzzles/FloodedBasement/Shaders/`) on a ~12 cm grid, two-sided: crossing ripple normals, colour by depth (scene depth), refraction (opaque texture), foam where it meets walls and props, much clearer within ~1.4 m of the drain so the cover shows. Needs the PC renderer's depth + opaque textures (on).
+- Surge: the surface holds till the eyes open, then springs to the new level (overshoots a few cm, sloshes back), the water churns and a ring wave rolls out from the bath. Floaters rock harder.
+- Ripple rings where the bath spills onto the water while the tap runs.
+- Draining: the surface swirls into the drain with foam arms and a dark eye, and dips into a funnel over it; below ~7 cm it breaks up into puddles.
+- Wet marks (`Blink/FloodWetMark`): walls dark up to the high-water line with a tide mark, drying off over ~35 s (the stain last). No floor sheet: it z-fought the papers on the floor.
+- Underwater: a URP volume (green grade, vignette, slow lens wobble) under a lighter flat tint.
+- Tuning lives on `FloodedBasement` (Feel) and the `M_FloodWater` material.
 
 ### Movement in water (optional)
 
@@ -177,7 +182,7 @@ Slowing the player in deep water adds pressure (`walkSpeed` × ~0.7 above waist 
 
 ### Audio
 
-`SoundCue` assets in `Assets/Art/Audio/Cues/` (empty cue = silent placeholder): `Flood_Drip`, `Flood_TapRun` (loop), `Flood_DoorSlam`, `Flood_Surge` (on each blink jump, the slosh), `Flood_Gurgle` (drain loop), `Flood_CoverClang`, `Flood_Drown`. Use `AudioService.PlayLoop` / `PlayAt`. Third-party clips go in `CREDITS.md`.
+`SoundCue` assets in `Assets/Art/Audio/Cues/` (empty cue = silent placeholder): `Flood_Drip`, `Flood_TapRun` (loop), `Flood_DoorSlam`, `Flood_Surge` (on each blink jump, the slosh), `Flood_Gurgle` (drain loop), `Flood_CoverClang`, `Flood_Drown`. Use `AudioService.PlayLoop` / `PlayAt`. CC-BY clips go in the README credits.
 
 ---
 

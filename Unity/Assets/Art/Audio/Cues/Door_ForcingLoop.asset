@@ -15,11 +15,11 @@ MonoBehaviour:
   clips:
   - {fileID: 8300000, guid: 09a2a1b6236a00245bcc53602b5b5f34, type: 3}
   order: 0
-  volume: {x: 0.7, y: 0.8}
-  pitch: {x: 0.95, y: 1.05}
+  volume: {x: 1, y: 1}
+  pitch: {x: 0.82, y: 0.92}
   spatialBlend: 1
-  minDistance: 2
-  maxDistance: 25
+  minDistance: 5
+  maxDistance: 35
   output: {fileID: -4930995407971869687, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
   priority: 50
   cooldown: 0

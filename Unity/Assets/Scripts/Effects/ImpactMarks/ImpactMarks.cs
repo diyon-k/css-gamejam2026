@@ -229,6 +229,10 @@ namespace Blink.Effects
                 p.material = decalMaterial;
                 p.drawDistance = drawDistance;
                 p.pivot = Vector3.zero;
+                // Only the surface it was aimed at: a shelf top, rail or skirting the box reaches into would get the
+                // atlas smeared along the projection (needs ImpactDecal.shadergraph, URP's Decal with angle fade on).
+                p.startAngleFade = 50f;
+                p.endAngleFade = 75f;
                 _pool.Add(p);
                 return p;
             }

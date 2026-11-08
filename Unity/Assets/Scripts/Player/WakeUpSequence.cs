@@ -10,7 +10,9 @@ using UnityEngine;
 namespace Blink.Player
 {
     /// <summary>
-    /// Game start. Black screen with "BLINK to begin" and the world frozen. The first webcam blink (or
+    /// Game start. Black screen with the title and the world frozen. The title's letters arrive and it blinks now and
+    /// then; under it a red segment sweeps with "starting the camera" until the webcam sees a face, then "BLINK to begin"
+    /// comes in (blinks don't count until then). The first webcam blink (or
     /// eyes-shut) slowly opens the eyelids on the bedroom while the player sits up from lying on the bed, then hands
     /// over control and starts world time. Lives on GameSystems next to <see cref="BlinkEyelids"/>.
     ///
@@ -41,6 +43,18 @@ namespace Blink.Player
         [SerializeField, Min(0.01f)] float promptFadeIn = 1.4f;
         [SerializeField, Min(0.01f)] float promptFadeOut = 0.8f;
 
+        [Header("Title motion")]
+        [Tooltip("Real seconds for the title's letters to arrive one by one.")]
+        [SerializeField, Min(0.01f)] float titleRevealSeconds = 1.8f;
+        [Tooltip("Real seconds between the title's own blinks (picked at random in this range).")]
+        [SerializeField] Vector2 titleBlinkEvery = new(4f, 8f);
+        [Tooltip("Real seconds after the webcam first sees a face before a blink counts, so the prompt is on screen first.")]
+        [SerializeField, Min(0f)] float readyGrace = 0.6f;
+        [Tooltip("Shown under the title until the webcam is sending.")]
+        [SerializeField] string startingStatus = "starting the camera";
+        [Tooltip("Shown under the title while the webcam is sending but can't see a face.")]
+        [SerializeField] string noFaceStatus = "looking for your face";
+
         [Header("Death")]
         [Tooltip("Real seconds from dying to fully black.")]
         [SerializeField, Min(0.1f)] float knockSeconds = 2f;
@@ -62,12 +76,33 @@ namespace Blink.Player
         /// <summary>Overrides the next respawn screen's text once (e.g. "Lily wanted to play\nBLINK to wake up"), then clears.</summary>
         public static string NextRespawnPrompt { get; set; }
 
+        /// <summary>
+        /// Where the next respawns wake up instead of the bed, until <see cref="ClearCheckpoint"/> (e.g. outside a puzzle
+        /// room that kills a lot, so a retry isn't a walk across the house). The wake-up is the same, lying on the floor.
+        /// </summary>
+        public static void SetCheckpoint(Vector3 position, Quaternion rotation)
+        {
+            _checkpoint = true;
+            _checkpointPos = position;
+            _checkpointRot = rotation;
+        }
+
+        /// <summary>Respawns go back to the bed.</summary>
+        public static void ClearCheckpoint() => _checkpoint = false;
+
+        public static bool HasCheckpoint => _checkpoint;
+
+        static bool _checkpoint;
+        static Vector3 _checkpointPos;
+        static Quaternion _checkpointRot;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             Asleep = false;
             Respawned = null;
             NextRespawnPrompt = null;
+            _checkpoint = false;
         }
 
         BlinkEyelids _eyelids;
@@ -83,6 +118,9 @@ namespace Blink.Player
         Vector3 _bedPos, _diedPos;
         Quaternion _bedRot, _diedRot;
         float _diedAt = -1f; // -1 = alive
+        float _readyAt = -1f; // real time the webcam first saw a face on this prompt screen; -1 = still loading
+        string _status; // loading line, frozen once ready so it doesn't change while fading out
+        float _titleBlinkAt; // real time of the title's next (or current) idle blink
 
         void Start()
         {
@@ -108,6 +146,9 @@ namespace Blink.Player
         {
             _startedAt = -1f;
             _promptAt = Time.unscaledTime;
+            _readyAt = -1f;
+            _status = startingStatus;
+            _titleBlinkAt = _promptAt + titleRevealSeconds + 1.5f;
             enabled = true;
             Time.timeScale = 0f;
             TimeSkipController.Locked = true;
@@ -118,7 +159,7 @@ namespace Blink.Player
             Pose(0f);
 
             _detector = BlinkDetector.Instance;
-            if (_detector == null) { Begin(); return; }
+            if (_detector == null) { _readyAt = Time.unscaledTime - readyGrace; Begin(); return; }
             _detector.Blinked += Begin;
             _detector.EyesShutEnded += BeginAfterHold;
         }
@@ -157,7 +198,8 @@ namespace Blink.Player
             prompt = string.IsNullOrEmpty(NextRespawnPrompt) ? respawnPrompt : NextRespawnPrompt;
             NextRespawnPrompt = null;
             DropItems();
-            _player.Teleport(_bedPos, _bedRot);
+            if (_checkpoint) _player.Teleport(_checkpointPos, _checkpointRot);
+            else _player.Teleport(_bedPos, _bedRot);
             _health.ResetHealth();
             if (FindAnyObjectByType<Blink.Mobs.ClownSpawner>() is { } spawner) spawner.Restart(); // before the reset: spawned clowns go
             foreach (var mob in FindObjectsByType<Blink.Mobs.MobController>()) mob.ResetToSpawn();
@@ -188,17 +230,41 @@ namespace Blink.Player
 
         void BeginAfterHold(float _) => Begin();
 
+        /// <summary>The webcam has seen a face for long enough that "blink to begin" is on screen.</summary>
+        bool CanBegin => _readyAt >= 0f && Time.unscaledTime - _readyAt >= readyGrace;
+
         void Begin()
         {
-            if (_startedAt >= 0f) return;
+            if (_startedAt >= 0f || !CanBegin) return;
             Unsubscribe();
             _startedAt = Time.unscaledTime;
+        }
+
+        /// <summary>
+        /// Loading until the webcam is sending and sees a face, then ready (the prompt comes in). Ready stays put if the
+        /// face is lost, but goes back to loading if the webcam stops sending.
+        /// </summary>
+        void UpdateReadiness()
+        {
+            if (_detector == null) return;
+            if (_readyAt < 0f)
+            {
+                if (_detector.CameraRunning && _detector.FaceInView) _readyAt = Time.unscaledTime;
+                else _status = _detector.CameraRunning ? noFaceStatus : startingStatus;
+            }
+            else if (!_detector.CameraRunning) _readyAt = -1f;
         }
 
         void Update()
         {
             if (_diedAt >= 0f) { KnockOut(); return; }
-            if (_startedAt < 0f) return;
+            if (_startedAt < 0f)
+            {
+                UpdateReadiness();
+                if (Time.unscaledTime > _titleBlinkAt + TitleBlinkSeconds)
+                    _titleBlinkAt = Time.unscaledTime + UnityEngine.Random.Range(titleBlinkEvery.x, titleBlinkEvery.y);
+                return;
+            }
             float t = Time.unscaledTime - _startedAt;
             if (_eyelids != null) _eyelids.Hold01 = Mathf.Clamp01(lids.Evaluate(t));
             Pose(Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(sitUpAt, seconds, t)));
@@ -231,12 +297,27 @@ namespace Blink.Player
             if (PlayerWeapons.Instance is { Holster: { } holster }) holster.gameObject.SetActive(show);
         }
 
+        const float TitleBlinkSeconds = 0.3f;
+
+        /// <summary>The title's own blink, <paramref name="t"/> real seconds in: 0 open, 1 shut. Close, hold, open.</summary>
+        static float TitleLid(float t)
+        {
+            if (t < 0f || t >= TitleBlinkSeconds) return 0f;
+            if (t < 0.08f) return BlinkTheme.EaseInOut(t / 0.08f);
+            if (t < 0.14f) return 1f;
+            return 1f - BlinkTheme.EaseOut((t - 0.14f) / 0.16f);
+        }
+
+        /// <summary>How strongly the loading look shows <paramref name="t"/> real seconds into the prompt screen.</summary>
+        static float LoadingIn(float t) => BlinkTheme.EaseInOut((t - 0.8f) / 0.6f);
+
         void OnGUI()
         {
             if (Event.current.type != EventType.Repaint || _diedAt >= 0f) return;
             float now = Time.unscaledTime;
+            float shown = now - _promptAt;
             float alpha = _startedAt < 0f
-                ? BlinkTheme.EaseInOut((now - _promptAt) / promptFadeIn)
+                ? BlinkTheme.EaseInOut(shown / promptFadeIn)
                 : 1f - BlinkTheme.EaseInOut((now - _startedAt) / promptFadeOut);
             if (alpha <= 0f) return;
             GUI.depth = -1001; // above the eyelids (-1000)
@@ -247,8 +328,28 @@ namespace Blink.Player
             bool large = nl < 0;
             string heading = large ? title : prompt.Substring(0, nl).Trim();
             string sub = large ? prompt : prompt.Substring(nl + 1).Replace('\n', ' ').Trim();
+
+            // Letters arrive; then a red segment sweeps under the title with a status line until the webcam sees a face.
+            // Ready: the sweep fades, the rule widens out and the prompt comes in a letter at a time. The title blinks
+            // now and then by itself, and shuts for good when the player blinks.
+            bool ready = _readyAt >= 0f;
+            float sinceReady = ready ? now - _readyAt : 0f;
+            float loading = ready
+                ? LoadingIn(_readyAt - _promptAt) * (1f - BlinkTheme.EaseOut(sinceReady / 0.35f))
+                : LoadingIn(shown);
+            var motion = new BlinkWidgets.TitleMotion
+            {
+                reveal = shown / titleRevealSeconds,
+                lid = _startedAt >= 0f ? BlinkTheme.EaseInOut((now - _startedAt) / 0.12f) : TitleLid(now - _titleBlinkAt),
+                rule = ready ? BlinkTheme.EaseOut((sinceReady - 0.15f) / 0.6f) : 0f,
+                loading = loading,
+                time = now,
+                status = _status,
+                statusAlpha = loading * (0.75f + 0.25f * Mathf.Sin(now * 2f)),
+                subtitleReveal = ready ? (sinceReady - 0.45f) / 0.9f : 0f,
+            };
             float breathe = 0.7f + 0.3f * Mathf.Sin(now * 2f); // ~0.3 Hz
-            BlinkWidgets.TitleCard(heading, sub, alpha, breathe, large);
+            BlinkWidgets.TitleCard(heading, sub, alpha, breathe, large, motion);
         }
     }
 }
