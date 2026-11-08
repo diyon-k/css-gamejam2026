@@ -268,6 +268,11 @@ MonoBehaviour:
   doorForcingLoopCue: {fileID: 11400000, guid: 72e2e3863d8bc9946a6dbf554dace780, type: 2}
   doorForcingFadeOut: 0.2
   doorBurstCue: {fileID: 11400000, guid: a92f60b6d270bdb4ebac444501875a85, type: 2}
+  doorOpenCue: {fileID: 11400000, guid: 95d44b6c7e9c4c7ab9c3da60b16e31f2, type: 2}
+  doorCloseCue: {fileID: 11400000, guid: 1935b20aaa904f40bea5682c7f10e18f, type: 2}
+  doorRattleCue: {fileID: 11400000, guid: c687cc505efe44c3ac38aedc6be894c2, type: 2}
+  drawerOpenCue: {fileID: 11400000, guid: 9db75354c1d54b5f92f86e4bcf1e018a, type: 2}
+  drawerCloseCue: {fileID: 11400000, guid: a9fc91caa2c04a389ba63151a7f1bab5, type: 2}
   rescanInterval: 2
 --- !u!114 &6620184735510936172
 MonoBehaviour:
