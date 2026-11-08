@@ -167,10 +167,14 @@ Dressing: damp concrete, a single bare bulb (flickers when the door slams, `Ligh
 
 ### Water look
 
-URP, no extra packages:
-- A slightly transparent, murky green-brown plane with a scrolling normal or noise (simplest: a URP Lit transparent material with an animated offset). Must render from above and below (two-sided, or a second flipped plane), because the player's eyes end up just under it.
-- Ripple rings under the tap stream, a whirlpool (rotating decal/mesh + particles) over the drain while Draining.
-- Underwater screen tint when the camera is below the surface (only at the moment of drowning in practice).
+URP, no extra packages. Built (re-run the placer after changing the builder):
+- `Blink/FloodWater` (`Art/Puzzles/FloodedBasement/Shaders/`) on a ~12 cm grid, two-sided: crossing ripple normals, colour by depth (scene depth), refraction (opaque texture), foam where it meets walls and props, much clearer within ~1.4 m of the drain so the cover shows. Needs the PC renderer's depth + opaque textures (on).
+- Surge: the surface holds till the eyes open, then springs to the new level (overshoots a few cm, sloshes back), the water churns and a ring wave rolls out from the bath. Floaters rock harder.
+- Ripple rings where the bath spills onto the water while the tap runs.
+- Draining: the surface swirls into the drain with foam arms and a dark eye, and dips into a funnel over it; below ~7 cm it breaks up into puddles.
+- Wet marks (`Blink/FloodWetMark`): walls dark up to the high-water line with a tide mark, drying off over ~35 s (the stain last). No floor sheet: it z-fought the papers on the floor.
+- Underwater: a URP volume (green grade, vignette, slow lens wobble) under a lighter flat tint.
+- Tuning lives on `FloodedBasement` (Feel) and the `M_FloodWater` material.
 
 ### Movement in water (optional)
 
