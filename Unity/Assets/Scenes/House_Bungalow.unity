@@ -18908,8 +18908,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Look at
-  title: Wedding photo
-  body: 'On the back, in neat ink: ''A. & E., June 1934. Forever is a promise I intend to keep.'''
+  title: Game jam photo
+  body: 'On the back, in marker: ''Game jam, night one. Seven of us, 48 hours. Nobody leaves until it ships.''
+
+    You count the faces twice. There are six.'
   image: {fileID: 2800000, guid: aa74aacdd9fe4155a22debe3a21fdcc6, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
@@ -53286,10 +53288,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.Readable
   verb: Look at
-  title: Staff photograph
-  body: '''Household staff, 1945.''
+  title: Game jam photo, hour 47
+  body: 'On the back: ''Hour 47. Whoever''s still awake keeps watch.''
 
-    The boy on the end in the leather apron has been circled in ink, pressed hard enough to tear the paper.'
+    Every one of them has their hands over their eyes. The names underneath have been crossed out one at a time, each in a different pen.'
   image: {fileID: 2800000, guid: 907b78b7c41e4976976c8f20f449b518, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
