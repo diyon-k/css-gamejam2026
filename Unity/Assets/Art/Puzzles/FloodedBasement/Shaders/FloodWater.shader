@@ -10,8 +10,8 @@ Shader "Blink/FloodWater"
     Properties
     {
         [NoScaleOffset] _NormalMap ("Ripple normal (RGB)", 2D) = "bump" {}
-        _NormalTiling ("Ripple tiling (per metre)", Float) = 0.6
-        _NormalStrength ("Ripple strength", Range(0, 2)) = 0.45
+        _NormalTiling ("Ripple tiling (per metre)", Float) = 1.5
+        _NormalStrength ("Ripple strength", Range(0, 2)) = 0.22
         _ShallowColor ("Shallow tint", Color) = (0.92, 0.9, 0.78, 1)
         _DeepColor ("Deep colour (lit)", Color) = (0.05, 0.065, 0.035, 1)
         _Absorb ("Absorption per metre (RGB)", Vector) = (2.6, 2.1, 2.9, 0)
@@ -19,7 +19,7 @@ Shader "Blink/FloodWater"
         _ClearRadius ("Clear radius round the drain (m)", Float) = 1.4
         _Refraction ("Refraction", Range(0, 0.05)) = 0.006
         _Reflection ("Screen reflection", Range(0, 1)) = 0.8
-        _Smoothness ("Smoothness", Range(0, 1)) = 0.93
+        _Smoothness ("Smoothness", Range(0, 1)) = 0.97
         _FoamColor ("Foam", Color) = (0.72, 0.7, 0.6, 1)
         _FoamDepth ("Edge foam depth (m)", Float) = 0.07
         _SwirlRadius ("Swirl radius (m)", Float) = 1.3
@@ -89,7 +89,7 @@ Shader "Blink/FloodWater"
             float Height(float2 xz)
             {
                 float t = _Time.y;
-                float h = _Chop * 0.018 * (sin(xz.x * 3.1 + t * 2.3) + sin(xz.y * 2.7 - t * 1.9) + 0.5 * sin((xz.x + xz.y) * 5.3 + t * 3.7));
+                float h = _Chop * 0.006 * (sin(xz.x * 7.3 + t * 3.1) + sin(xz.y * 6.1 - t * 2.7) + 0.6 * sin((xz.x - xz.y) * 11.0 + t * 4.3)); // small chop, not a heaving floor
                 float r = distance(xz, _WaveOrigin.xz);
                 float front = r - _WaveTime * 2.2;
                 h += _WaveAmp * sin(front * 8.0) * exp(-front * front * 3.0) * exp(-_WaveTime * 0.9);
@@ -195,7 +195,7 @@ Shader "Blink/FloodWater"
                 float2 uv = posWS.xz * _NormalTiling;
                 float2 r1 = Ripple(uv + t * float2(0.031, 0.019));
                 float2 r2 = Ripple(uv * 1.73 + float2(0.37, 0.61) + t * float2(-0.024, 0.033));
-                float2 ripple = (r1 + r2) * _NormalStrength * (1 + _Chop * 2.5);
+                float2 ripple = (r1 + r2) * _NormalStrength * (1 + _Chop * 1.5);
 
                 // The drain: a log-polar swirl spiralling in, foam arms and a dark eye.
                 float2 toDrain = posWS.xz - _DrainPos.xz;
@@ -205,9 +205,9 @@ Shader "Blink/FloodWater"
                 float foam = 0;
                 if (swirl > 0.001)
                 {
-                    float2 polar = float2(theta * (3 / PI) + t * 1.4 / (dr + 0.3), log(dr + 0.05) * 1.2 + t * 0.9);
+                    float2 polar = float2(theta * (3 / PI) + t * 0.6 / (dr + 0.3), log(dr + 0.05) * 1.2 + t * 0.5);
                     ripple = lerp(ripple, Ripple(polar, 0) * 1.6, swirl);
-                    float arms = pow(saturate(0.5 + 0.5 * sin(4 * theta + 11 * sqrt(dr) + t * 7)), 4);
+                    float arms = pow(saturate(0.5 + 0.5 * sin(3 * theta + 11 * sqrt(dr) + t * 2.5)), 6);
                     foam += arms * swirl * smoothstep(0.06, 0.35, dr) * 0.85;
                 }
 
@@ -231,7 +231,8 @@ Shader "Blink/FloodWater"
                 float3 trans = exp(-thick * _Absorb.rgb * murk);
                 float transAvg = dot(trans, 1.0 / 3);
 
-                half4 white = PbrLit(posWS, n, viewWS, screenUV, i.positionCS, half3(1, 1, 1), 0);
+                // The murk scatters light from inside, so it takes the flat surface normal: ripple-shaded murk reads as plastic.
+                half4 white = PbrLit(posWS, above ? float3(0, 1, 0) : float3(0, -1, 0), viewWS, screenUV, i.positionCS, half3(1, 1, 1), 0);
                 half4 spec = PbrLit(posWS, n, viewWS, screenUV, i.positionCS, half3(0, 0, 0), _Smoothness);
 
                 // Foam where the water meets anything, broken up, heavier while it's churning.
