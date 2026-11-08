@@ -118,4 +118,4 @@ MonoBehaviour:
   ajarDegrees: 9
   maxYaw: 80
   doorLoudness: 4
-  peekGap: {x: 0.14, y: 1}
+  peekGap: {x: 0.9, y: 0.22}
