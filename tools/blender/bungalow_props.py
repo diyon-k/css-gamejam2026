@@ -194,13 +194,12 @@ put("Bath_Chair", "painted_wooden_chair_01", "Bathroom", X_BED_W + 0.30, 12.6, 9
 put("Bath_Plaster", "Debris_Plaster", "Bathroom", 3.8, 13.6, 0)
 
 # ------------------------------------------------------------------ BASEMENT (B1 cellar, B2 workshop)
+# No crates down here: the one under Vent_B stood in D5's doorway (the vent is reached from the floor), and the
+# flooded basement's own chest is the only one (Editor/PuzzleProps.FloodedBasement.cs).
 put("B1_Shelves", "steel_frame_shelves_01", "B1", 10.0, 4.075 + 0.27, 0, y=B)
 for k, lv in enumerate((0.64, 1.65)):
     put(f"B1_Jars{k}", "Jars_Shelf", "B1", 10.0, 4.36, 0, on=("B1_Shelves", lv))
-put("B1_Crate", "wooden_crate_01", "B1", 12.6, 4.6, 0, y=B)
 put("B1_Barrel", "barrel_03", "B1", 12.9, 5.85, 0, y=B)
-put("B1_CrateLong", "wooden_crate_02", "B1", 12.9, 13.1, 270, y=B,
-    note="under the Vent_B kitchen hole: the step up into it (its 0.46 top is in bungalow_layout.VENTS path); hiding chest, front west so you climb out by the vent exit")
 put("B1_Trash", "TrashBags", "B1", 11.55, 14.3, 180, y=B)
 put("B1_Float", "Debris_PaperFloat", "B1", 10.4, 9.0, 0, y=WATER + 0.002)
 put("B1_Boxes", "BoxStack", "B1", 9.7, 14.25, 180, y=B)
@@ -216,7 +215,6 @@ put("B2_Shelves", "steel_frame_shelves_01", "B2", 15.0, 4.075 + 0.27, 0, y=B)
 for k, lv in enumerate((0.13, 1.15)):
     put(f"B2_Jars{k}", "Jars_Shelf", "B2", 15.0, 4.36, 0, on=("B2_Shelves", lv))
 put("B2_Boxes", "BoxStack", "B2", 17.8, 4.5, 0, y=B)
-put("B2_Crate", "wooden_crate_01", "B2", 16.3, 4.35, 0, y=B)
 put("B2_Barrel", "barrel_03", "B2", 19.2, 8.4, 0, y=B)
 put("B2_Bucket", "wooden_bucket_01", "B2", 14.2, 8.0, 60, y=B)
 put("B2_Trash", "TrashBags", "B2", 14.3, 14.2, 180, y=B)
