@@ -518,6 +518,7 @@ namespace Blink.Mobs
             if (!NavMesh.CalculatePath(transform.position, floor.position, _agent.areaMask, _noisePath)) return;
             if (_noisePath.status != NavMeshPathStatus.PathComplete) return;
             if (!Noise.CanHear(loudness, NavPathUtility.PathLength(_noisePath.corners), hearing)) return;
+            if (Noise.MuffledByDoor(position, _noisePath.corners)) return;
             Investigate(floor.position);
         }
 
