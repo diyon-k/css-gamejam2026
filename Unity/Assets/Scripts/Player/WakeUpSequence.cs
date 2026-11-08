@@ -76,12 +76,33 @@ namespace Blink.Player
         /// <summary>Overrides the next respawn screen's text once (e.g. "Lily wanted to play\nBLINK to wake up"), then clears.</summary>
         public static string NextRespawnPrompt { get; set; }
 
+        /// <summary>
+        /// Where the next respawns wake up instead of the bed, until <see cref="ClearCheckpoint"/> (e.g. outside a puzzle
+        /// room that kills a lot, so a retry isn't a walk across the house). The wake-up is the same, lying on the floor.
+        /// </summary>
+        public static void SetCheckpoint(Vector3 position, Quaternion rotation)
+        {
+            _checkpoint = true;
+            _checkpointPos = position;
+            _checkpointRot = rotation;
+        }
+
+        /// <summary>Respawns go back to the bed.</summary>
+        public static void ClearCheckpoint() => _checkpoint = false;
+
+        public static bool HasCheckpoint => _checkpoint;
+
+        static bool _checkpoint;
+        static Vector3 _checkpointPos;
+        static Quaternion _checkpointRot;
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
         {
             Asleep = false;
             Respawned = null;
             NextRespawnPrompt = null;
+            _checkpoint = false;
         }
 
         BlinkEyelids _eyelids;
@@ -176,7 +197,8 @@ namespace Blink.Player
             prompt = string.IsNullOrEmpty(NextRespawnPrompt) ? respawnPrompt : NextRespawnPrompt;
             NextRespawnPrompt = null;
             DropItems();
-            _player.Teleport(_bedPos, _bedRot);
+            if (_checkpoint) _player.Teleport(_checkpointPos, _checkpointRot);
+            else _player.Teleport(_bedPos, _bedRot);
             _health.ResetHealth();
             if (FindAnyObjectByType<Blink.Mobs.ClownSpawner>() is { } spawner) spawner.Restart(); // before the reset: spawned clowns go
             foreach (var mob in FindObjectsByType<Blink.Mobs.MobController>()) mob.ResetToSpawn();
