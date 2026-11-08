@@ -32,10 +32,13 @@ You can't stop blinking, so you always lose a little ground. Holding your eyes s
 
 ## Screenshots
 
-| | |
-|---|---|
-| ![Pistol aimed down a long wallpapered corridor at a clown zombie](docs/media/08-corridor-clown-aim.png) | ![Axe in hand in the living room, the bedroom lamp glowing beyond](docs/media/12-axe-living-room.png) |
-| ![Lily's porcelain doll on a white chair against cracked bathroom tiles, under the flashlight](docs/media/09-lilys-doll-flashlight.png) | ![First-person view of a dim room with green damask wallpaper, pistol drawn](docs/media/07-bedroom-gun.png) |
+![Pistol aimed down a long wallpapered corridor at a clown zombie](docs/media/08-corridor-clown-aim.png)
+
+![Axe in hand in the living room, the bedroom lamp glowing beyond](docs/media/12-axe-living-room.png)
+
+![Lily's porcelain doll on a white chair against cracked bathroom tiles, under the flashlight](docs/media/09-lilys-doll-flashlight.png)
+
+![First-person view of a dim room with green damask wallpaper, pistol drawn](docs/media/07-bedroom-gun.png)
 
 *All screenshots are in-engine: real-time URP lighting, a baked lightmap and post-processing.*
 
