@@ -43,7 +43,7 @@ namespace Blink.World
         public float RattleDegrees { get; set; } = 1.8f;
         public float RattleHz { get; set; } = 14f;
 
-        float _from, _p = 1f, _wait, _rattleLeft, _rattleDir = 1f;
+        float _from, _p = 1f, _wait, _rattleLeft, _rattleDir = 1f, _moveSeconds;
 
         /// <param name="backAngle">Degrees it opens toward its back; negative = the same as <paramref name="openAngle"/>.</param>
         public DoorModel(bool locked, int keysRequired, float openAngle = 90f, float seconds = 0.5f, float backAngle = -1f)
@@ -52,7 +52,7 @@ namespace Blink.World
             KeysRequired = Mathf.Max(0, keysRequired);
             OpenAngle = openAngle;
             BackAngle = backAngle < 0f ? openAngle : backAngle;
-            Seconds = Mathf.Max(0.01f, seconds);
+            Seconds = _moveSeconds = Mathf.Max(0.01f, seconds);
         }
 
         /// <summary>Which way to swing so the leaf goes away from <paramref name="side"/> (&gt;0 = front, &lt;0 = back).</summary>
@@ -134,6 +134,22 @@ namespace Blink.World
 
         public void Unlock() => Locked = false;
 
+        /// <summary>
+        /// A story lock from code (a puzzle shutting you in): swings shut in <paramref name="seconds"/> (a slam), locked
+        /// from the first frame so nothing can open it on the way. False if it was already shut (it still locks).
+        /// </summary>
+        public bool Slam(float seconds)
+        {
+            bool moves = IsOpen;
+            if (moves)
+            {
+                SetTarget(0f, 0f);
+                _moveSeconds = Mathf.Max(0.01f, seconds);
+            }
+            Locked = true;
+            return moves;
+        }
+
         /// <summary>Puts keys in the lock without a press (a save, or a puzzle that hands one over).</summary>
         public void SetKeysUsed(int used) => KeysUsed = Mathf.Clamp(used, 0, KeysRequired);
 
@@ -151,6 +167,7 @@ namespace Blink.World
             Target = t;
             _p = 0f;
             _wait = Mathf.Max(0f, delay);
+            _moveSeconds = Seconds;
         }
 
         public void Rattle(float side)
@@ -170,7 +187,7 @@ namespace Blink.World
                 dt = -_wait; // the rest of this step swings
                 _wait = 0f;
             }
-            _p = Mathf.Min(1f, _p + dt / Seconds);
+            _p = Mathf.Min(1f, _p + dt / _moveSeconds);
             bool opening = Mathf.Abs(Target) > Mathf.Abs(_from);
             Angle = Mathf.LerpUnclamped(_from, Target, Openable.Ease(_p, opening ? Overshoot : 0f));
             if (_p >= 1f) Angle = Target;

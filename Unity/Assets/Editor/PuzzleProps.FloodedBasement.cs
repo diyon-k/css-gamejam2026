@@ -3,7 +3,7 @@
 // it's rebuilt. Everything sits in the room's own frame (x across from the doorway wall's corner, z along it), laid out
 // for the bungalow's B2 workshop around the props already there.
 //
-// The door itself is not built here: hook it to FloodedBasement's FloodStarted / Solved / WasReset events.
+// The door (D5) is the house's own Door (BLINK > Bungalow > Setup Doors first): the room slams and locks it itself.
 using System.Collections.Generic;
 using Blink.Interaction;
 using Blink.Puzzles;
@@ -71,6 +71,9 @@ namespace Blink.EditorTools
             var room = root.AddComponent<FloodedBasement>();
             room.roomBounds = box;
             room.doorway = doorway;
+            room.door = GameObject.Find(FloodDoor) is { } doorGo ? doorGo.GetComponent<Blink.World.Door>() : null;
+            if (room.door == null)
+                Debug.LogWarning($"[PuzzleProps] No Door on '{FloodDoor}': the room won't slam its door. Run BLINK > Bungalow > Setup Doors, then this again.");
 
             // The drain in the middle, the clue on a stake beside it.
             Vector3 drainPos = new Vector3(interior.center.x, floor, interior.center.z);
@@ -111,6 +114,7 @@ namespace Blink.EditorTools
             so.FindProperty("gurgleCue").objectReferenceValue = Cue("Flood_Gurgle", Clips + "Flood_Gurgle.wav", spatial: 1f, volume: 0.9f, maxDistance: 20f);
             so.FindProperty("coverClangCue").objectReferenceValue = Cue("Flood_CoverClang", Clips + "Flood_CoverClang.wav", spatial: 1f, volume: 1f, maxDistance: 25f);
             so.FindProperty("drownCue").objectReferenceValue = Cue("Flood_Drown", Clips + "Flood_Drown.wav", spatial: 0f, volume: 1f, maxDistance: 30f);
+            so.FindProperty("doorSlamCue").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Blink.Audio.SoundCue>("Assets/Art/Audio/Cues/Door_Burst.asset");
             so.ApplyModifiedPropertiesWithoutUndo();
 
             CheckFloodClearances(root.transform, interior);
@@ -121,7 +125,7 @@ namespace Blink.EditorTools
             Debug.Log($"[PuzzleProps] Flooded basement placed in '{FloodRoom}': doorway at ({doorCentre.x:0.00}, {doorCentre.z:0.00}) facing " +
                       $"({inward.x:0}, {inward.z:0}), drain at ({drainPos.x:0.00}, {drainPos.z:0.00}), {Vector3.Distance(Flat(doorCentre), Flat(drainPos)):0.0} m in; " +
                       $"bath at ({bath.position.x:0.00}, {bath.position.z:0.00}); {spots.Count} search spots; ceiling {interior.size.y:0.00} m. " +
-                      "Hook the door to FloodStarted / Solved / WasReset.");
+                      "Door: " + (room.door != null ? room.door.doorId : "none") + ".");
         }
 
         // ------------------------------------------------------------------ the room

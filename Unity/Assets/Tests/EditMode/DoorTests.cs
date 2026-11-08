@@ -25,6 +25,26 @@ namespace Blink.Tests
         }
 
         [Test]
+        public void Slam_ShutsFastAndLocks_UnlockOpensAgain()
+        {
+            var m = new DoorModel(false, 0, seconds: 0.5f);
+            m.Snap(90f);
+            Assert.IsTrue(m.Slam(0.12f));
+            Assert.IsTrue(m.Locked);
+            Assert.IsFalse(m.Open(-1f)); // locked from the first frame
+            Run(m, 0.14f);
+            Assert.AreEqual(0f, m.Angle, 1e-3f); // shut in the slam time, not the door's 0.5 s
+            Assert.AreEqual(DoorResult.Rattled, m.Interact(1f, 0, null));
+            Assert.AreEqual("Locked", m.Prompt(0));
+
+            m.Unlock();
+            Assert.IsTrue(m.Open(1f));
+            Run(m, 0.1f);
+            Assert.Less(Mathf.Abs(m.Angle), 89f); // a normal open is back to the door's own speed
+            Assert.IsFalse(new DoorModel(false, 0).Slam(0.12f)); // already shut: nothing moves, still locks
+        }
+
+        [Test]
         public void Toggle_OpensThenCloses()
         {
             var m = new DoorModel(false, 0);
