@@ -28,7 +28,7 @@ namespace Blink.EditorTools
         const string PlatesName = "FrontDoor_Locks";
         const string KeyPrefab = "Assets/Prefabs/Props/KeyPickup.prefab";
         const string BrassMaterial = "Assets/Materials/House/Brass.mat";
-        const string IronMaterial = "Assets/Materials/House/CastIron.mat";
+        const string IronMaterial = "Assets/Art/Props/Materials/House/CastIron.mat";
 
         /// <summary>The keys the front door takes, top lock first: item id and what the prompt calls it.</summary>
         public static readonly (string id, string name)[] Keys =

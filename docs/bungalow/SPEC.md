@@ -514,7 +514,7 @@ The emitters in `fixtures.json` are authoritative for the lighting pass. The two
 ### 4.3 Props per room (as built in Phase 5)
 
 **Sources:**
-- Poly Haven models, either from `Art/Mansion/PolyHaven` or downloaded, all decimated and re-baked into the atlases (§3.5). The CC0 authors are in §3.1, §3.2 and the Phase 5 report.
+- Poly Haven models, either from `Art/Mansion/PolyHaven` or downloaded, all decimated and re-baked into the atlases (§3.5). **`Art/Mansion` was removed on 2026-11-08** with the rest of the mansion. Rebuilding a Poly Haven prop now needs its download: `bungalow_prop_build.py -- --src <root>` with `dl_<asset>/`. The CC0 authors are in §3.1, §3.2 and the Phase 5 report.
 - Self-built models in `bungalow_prop_models.py`.
 
 **Openable drawers:** the chest of drawers (`GothicCommode_01`: `Bed_Dresser` and `Liv_Sideboard`) has 3 drawers that open and close. (The kitchen cabinets', sink's, fridge's and mirror cabinet's doors and drawers are cut out of their welded meshes by `BungalowInteractables`, run from the same prefab build.)
