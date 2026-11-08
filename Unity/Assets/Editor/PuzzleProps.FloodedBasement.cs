@@ -241,7 +241,7 @@ namespace Blink.EditorTools
 
         sealed class FloodMaterials
         {
-            public readonly Material Water, Stream, Whirl, Drop, Wood, DarkWood, Porcelain, Brass, Iron, Rust, Locker, Hole,
+            public readonly Material Water, Stream, Whirl, Drop, Wood, DarkWood, Brass, Iron, Rust, Locker, Hole,
                 Card, Bulb, Cord, Rag, Glass, Tin;
 
             public FloodMaterials()
@@ -252,7 +252,6 @@ namespace Blink.EditorTools
                 Drop = DropMat();
                 Wood = MatIn(FloodMats, "Wood", new Color(0.3f, 0.22f, 0.15f), 0.25f);
                 DarkWood = MatIn(FloodMats, "DarkWood", new Color(0.17f, 0.12f, 0.08f), 0.2f);
-                Porcelain = MatIn(FloodMats, "Porcelain", new Color(0.82f, 0.8f, 0.74f), 0.75f);
                 Brass = MatIn(FloodMats, "Brass", new Color(0.6f, 0.45f, 0.22f), 0.6f, 0.7f);
                 Iron = MatIn(FloodMats, "Iron", new Color(0.13f, 0.13f, 0.13f), 0.35f, 0.6f);
                 Rust = MatIn(FloodMats, "Rust", new Color(0.33f, 0.17f, 0.09f), 0.15f, 0.3f);
@@ -434,60 +433,51 @@ namespace Blink.EditorTools
 
         // ------------------------------------------------------------------ the bath
 
+        const string TubPrefab = "Assets/Art/Environment/Bungalow/Props/Prefabs/ClawfootTub.prefab";
+
         /// <summary>
-        /// A clawfoot bath (HouseBlockout.DBathtub's shape) along the wall facing the doorway, brim full, with a big tap on
-        /// the wall over it. Returns the bath; outs: the tap's mouth, the running water (stream, spill over the rim and
-        /// their splashes) and the drip emitter.
+        /// The upstairs bathroom's ClawfootTub along the wall facing the doorway, brim full, running from its own taps (the
+        /// spouts at the tub's local -x end, tools/blender/bungalow_prop_models.py ClawfootTub). Returns the bath; outs: the
+        /// tap's mouth, the running water (stream, spill over the rim and their splashes) and the drip emitter.
         /// </summary>
         static Transform BuildBath(Transform root, Frame frame, FloodMaterials m, out Transform mouth, out GameObject running, out ParticleSystem drips)
         {
-            const float Length = 1.7f, Width = 0.76f, Rim = 0.71f;
+            // The model: 1.68 x 0.76, outer rim 0.64 high, inner rim 0.62; spouts end at (-0.70, 0.76, +/-0.07), turned down.
+            const float Length = 1.68f, Width = 0.76f, Rim = 0.64f, Level = 0.6f;
+            var spout = new Vector3(-0.7f, 0.745f, 0.07f);
             float z = Mathf.Clamp(frame.DoorZ, Length * 0.5f + 0.4f, frame.Width - Length * 0.5f - 0.1f);
             var g = new GameObject("Bath").transform;
             g.SetParent(root, false);
             // Local x along the wall, local +z out into the room (towards the doorway).
             g.SetPositionAndRotation(frame.P(frame.Depth - Width * 0.5f - 0.03f, z), frame.Facing(-1f, 0f));
-            Part(g, PrimitiveType.Cube, "Tub", new Vector3(0f, 0.42f, 0f), Vector3.zero, new Vector3(Length, 0.56f, Width), m.Porcelain, keepCollider: true);
-            Part(g, PrimitiveType.Cube, "Water", new Vector3(0f, Rim - 0.012f, 0f), Vector3.zero, new Vector3(Length - 0.14f, 0.02f, Width - 0.14f), m.Water);
-            Part(g, PrimitiveType.Cube, "RimF", new Vector3(0f, Rim, Width * 0.5f - 0.03f), Vector3.zero, new Vector3(Length, 0.04f, 0.06f), m.Porcelain);
-            Part(g, PrimitiveType.Cube, "RimB", new Vector3(0f, Rim, -Width * 0.5f + 0.03f), Vector3.zero, new Vector3(Length, 0.04f, 0.06f), m.Porcelain);
-            Part(g, PrimitiveType.Cube, "RimL", new Vector3(-Length * 0.5f + 0.03f, Rim, 0f), Vector3.zero, new Vector3(0.06f, 0.04f, Width), m.Porcelain);
-            Part(g, PrimitiveType.Cube, "RimR", new Vector3(Length * 0.5f - 0.03f, Rim, 0f), Vector3.zero, new Vector3(0.06f, 0.04f, Width), m.Porcelain);
-            for (int i = 0; i < 4; i++)
-                Part(g, PrimitiveType.Sphere, "Foot", new Vector3(i % 2 == 0 ? -0.7f : 0.7f, 0.07f, i < 2 ? -0.28f : 0.28f), Vector3.zero, Vector3.one * 0.14f, m.Brass);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(TubPrefab);
+            if (prefab == null) Debug.LogWarning($"[PuzzleProps] {TubPrefab} not found; the bath's water and tap are placed without a tub.");
+            else ((GameObject)PrefabUtility.InstantiatePrefab(prefab, g)).name = "Tub";
+            // An ellipse fits inside the tub's squircle bowl (0.76 x 0.30 half-extents at this height); a box would poke through.
+            Part(g, PrimitiveType.Cylinder, "Water", new Vector3(0f, Level, 0f), Vector3.zero, new Vector3(1.5f, 0.01f, 0.58f), m.Water);
 
-            // The tap: a big brass spout off the wall, turned down over the bath, a wheel handle above it.
-            float wallZ = -Width * 0.5f - 0.03f;
-            var tap = new GameObject("Tap").transform;
-            tap.SetParent(g, false);
-            tap.localPosition = new Vector3(0f, 1.0f, wallZ);
-            Part(tap, PrimitiveType.Cylinder, "WallPlate", new Vector3(0f, 0f, 0.01f), new Vector3(90f, 0f, 0f), new Vector3(0.12f, 0.01f, 0.12f), m.Brass);
-            Part(tap, PrimitiveType.Cylinder, "Spout", new Vector3(0f, 0f, 0.13f), new Vector3(90f, 0f, 0f), new Vector3(0.06f, 0.12f, 0.06f), m.Brass);
-            Part(tap, PrimitiveType.Cylinder, "Nozzle", new Vector3(0f, -0.05f, 0.24f), Vector3.zero, new Vector3(0.06f, 0.06f, 0.06f), m.Brass);
-            Part(tap, PrimitiveType.Cylinder, "Stem", new Vector3(0f, 0.08f, 0.1f), Vector3.zero, new Vector3(0.025f, 0.05f, 0.025f), m.Brass);
-            Part(tap, PrimitiveType.Cylinder, "Wheel", new Vector3(0f, 0.13f, 0.1f), Vector3.zero, new Vector3(0.12f, 0.008f, 0.12f), m.Iron);
             mouth = new GameObject("Mouth").transform;
-            mouth.SetParent(tap, false);
-            mouth.localPosition = new Vector3(0f, -0.11f, 0.24f);
+            mouth.SetParent(g, false);
+            mouth.localPosition = spout;
 
             running = new GameObject("RunningWater");
             running.transform.SetParent(g, false);
-            float drop = 1.0f - 0.11f - (Rim - 0.012f);
-            Part(running.transform, PrimitiveType.Cylinder, "Stream", new Vector3(0f, Rim + drop * 0.5f, wallZ + 0.24f), Vector3.zero,
-                new Vector3(0.035f, drop * 0.5f, 0.035f), m.Stream).GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
-            // Spilling over the front rim onto the floor: a sheet down the outside of the tub.
+            float drop = spout.y - Level;
+            Part(running.transform, PrimitiveType.Cylinder, "Stream", new Vector3(spout.x, Level + drop * 0.5f, spout.z), Vector3.zero,
+                new Vector3(0.02f, drop * 0.5f, 0.02f), m.Stream).GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
+            // Spilling over the front rim onto the floor: a sheet down the outside of the tub, kept to the rim's straight middle.
             var sheet = Part(running.transform, PrimitiveType.Quad, "Spill", new Vector3(0f, Rim * 0.5f, Width * 0.5f + 0.015f), new Vector3(0f, 180f, 0f),
-                new Vector3(Length - 0.3f, Rim, 1f), m.Stream);
+                new Vector3(1.0f, Rim, 1f), m.Stream);
             sheet.GetComponent<Renderer>().shadowCastingMode = ShadowCastingMode.Off;
-            Splash(running.transform, "TapSplash", new Vector3(0f, Rim, wallZ + 0.24f), new Vector3(0.05f, 0.01f, 0.05f), 70f, m.Drop);
-            Splash(running.transform, "SpillSplash", new Vector3(0f, 0.02f, Width * 0.5f + 0.08f), new Vector3(Length - 0.3f, 0.01f, 0.05f), 90f, m.Drop);
+            Splash(running.transform, "TapSplash", new Vector3(spout.x, Level, spout.z), new Vector3(0.04f, 0.01f, 0.04f), 70f, m.Drop);
+            Splash(running.transform, "SpillSplash", new Vector3(0f, 0.02f, Width * 0.5f + 0.08f), new Vector3(1.0f, 0.01f, 0.05f), 90f, m.Drop);
             running.SetActive(false);
 
             drips = NewParticles(mouth, "Drips", m.Drop);
             var main = drips.main;
             main.loop = true;
             main.playOnAwake = true;
-            main.startLifetime = Mathf.Sqrt(2f * 0.18f / 9.81f);
+            main.startLifetime = Mathf.Sqrt(2f * drop / 9.81f);
             main.startSpeed = 0f;
             main.startSize = 0.025f;
             main.gravityModifier = 1f;
