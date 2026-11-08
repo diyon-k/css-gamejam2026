@@ -246,12 +246,12 @@ MonoBehaviour:
   hitThudCue: {fileID: 0}
   deathCue: {fileID: 11400000, guid: 6a8deca0c3fbc3f49a2afeb039aeca60, type: 2}
   heartbeatCue: {fileID: 11400000, guid: e1a0091fc3ef4a940890d2b14adfaddb, type: 2}
-  heartbeatRange: 15
+  heartbeatRange: 10
   panicDistance: 2
   bpm: {x: 65, y: 170}
-  heartbeatVolume: {x: 0.25, y: 1}
-  eyesOpenHeartbeat: 0.35
-  intensityResponse: 1.5
+  heartbeatVolume: {x: 0.45, y: 1}
+  eyesOpenHeartbeat: 0.85
+  intensityResponse: 2.5
   scanInterval: 0.25
 --- !u!114 &2923958057281167660
 MonoBehaviour:
