@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4ccbc2432de9a24f94ea5311e8a20de, type: 3}
+  m_Name: Drawer_Open
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Audio.SoundCue
+  clips:
+  - {fileID: 8300000, guid: 6e03735ecca44f0e91601f60a6e2f83b, type: 3}
+  - {fileID: 8300000, guid: acb958e5970340169dd845ccbf10f0ec, type: 3}
+  order: 1
+  volume: {x: 0.85, y: 0.95}
+  pitch: {x: 0.95, y: 1.1}
+  spatialBlend: 1
+  minDistance: 3
+  maxDistance: 25
+  output: {fileID: -4930995407971869687, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
+  priority: 60
+  cooldown: 0

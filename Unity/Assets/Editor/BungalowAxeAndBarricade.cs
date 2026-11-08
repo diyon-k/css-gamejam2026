@@ -18,6 +18,7 @@ public static class BungalowAxeAndBarricade
     const string PlankMat = "Assets/Art/Environment/Bungalow/Materials/M_FloorPlank.mat";
     const int BarricadeHits = 2;
     const string PlankMesh = "Assets/Art/Environment/Bungalow/Props/Prefabs/Meshes/Barricade_Plank.asset";
+    const string BreakCue = "Assets/Art/Audio/Cues/Door_Burst.asset"; // the planks give way with the door-burst crash
     // One board of M_FloorPlank's texture (it holds nine side by side): the planks show a single board, not stripes.
     const float BoardV0 = 0.737f, BoardV1 = 0.835f;
     // Doorway D8: x 3.4..4.6 on the wall at z 16.875; the corridor is the -z side.
@@ -106,7 +107,11 @@ public static class BungalowAxeAndBarricade
         var root = new GameObject("Barricade_" + DoorId);
         Undo.RegisterCreatedObjectUndo(root, "Place Barricade");
         root.transform.SetParent(door.transform.parent, true);
-        root.AddComponent<Breakable>().Configure(BarricadeHits, null, blade: true);
+        var breakable = root.AddComponent<Breakable>();
+        breakable.Configure(BarricadeHits, null, blade: true);
+        var so = new SerializedObject(breakable);
+        so.FindProperty("breakCue").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Blink.Audio.SoundCue>(BreakCue);
+        so.ApplyModifiedPropertiesWithoutUndo();
         root.AddComponent<Barricade>().Configure(door);
         var mat = AssetDatabase.LoadAssetAtPath<Material>(PlankMat);
         var mesh = BoardMesh();
