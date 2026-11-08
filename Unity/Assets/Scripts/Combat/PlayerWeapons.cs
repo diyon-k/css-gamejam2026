@@ -172,6 +172,13 @@ namespace Blink.Combat
                     body.position = axeStartsAt.position;
                     body.rotation = axeStartsAt.rotation;
                     body.linearVelocity = body.angularVelocity = Vector3.zero;
+                    if (axeStartsAt.GetComponentInParent<Interaction.Openable>() != null)
+                    {
+                        // in a drawer: held still and riding it, and a child of it so the look ray finds it inside
+                        body.isKinematic = true;
+                        body.interpolation = RigidbodyInterpolation.None;
+                        dropped.transform.SetParent(axeStartsAt, true);
+                    }
                 }
             }
 

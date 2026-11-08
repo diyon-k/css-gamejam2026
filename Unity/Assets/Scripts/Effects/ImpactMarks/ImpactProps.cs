@@ -118,7 +118,10 @@ namespace Blink.Effects
             // Break first, so a chandelier released by this hit also gets the knock.
             var breakable = c.GetComponentInParent<Breakable>();
             if (breakable == null) breakable = AddLightBreakable(c);
-            if (breakable != null) breakable.Hit(hit.Point, hit.Normal);
+            if (breakable != null)
+            {
+                if (!breakable.BladeOnly || (hit.Melee && hit.Tool == MeleeTool.Blade)) breakable.Hit(hit.Point, hit.Normal);
+            }
             else if (PaintingOf(c) is { } painting) Kick(painting, hit);
 
             var body = c.attachedRigidbody;
