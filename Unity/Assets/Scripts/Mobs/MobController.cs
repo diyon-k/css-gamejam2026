@@ -1,6 +1,7 @@
 using System;
 using Blink.Combat;
 using Blink.Player;
+using Blink.Puzzles;
 using Blink.TimeSkip;
 using Blink.World;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace Blink.Mobs
     ///   see you => walks over to the noise and searches. Noise can lure it off a chase.
     /// - You hide (<see cref="Interaction.HidingSpot"/>) => blind to you, searches where it last saw you. Unless it was
     ///   watching as you got in: then it walks to the spot and drags you out into the grab.
+    /// - You're in a puzzle room (<see cref="PuzzleRooms"/>) => blind and deaf to you there; a chase gives up and patrols.
     /// - Search over => back to the nearest waypoint. No patrol route => stands guard (Idle).
     /// Attacks in range, dies when its Health runs out.
     /// On a blink skip it jumps along its current navmesh path by speed x seconds x skipDistanceMultiplier,
@@ -272,10 +274,11 @@ namespace Blink.Mobs
             // Mid-chase it saw you duck in, even if its sight check didn't tick that frame. Lose it for loseSightTime first.
             bool onYourTail = _seesTarget || (CurrentState is (State.Chase or State.Attack) && _lostTimer > 0f);
             _hidingIn = KnownHidingSpot(hide, _hidingIn, onYourTail && targetAlive);
+            bool inPuzzleRoom = targetAlive && PuzzleRooms.Contains(target.position); // clowns don't follow you in
             if (!targetAlive) _seesTarget = false;
-            else if (hide != null || Interaction.Vent.Inside != null)
+            else if (hide != null || Interaction.Vent.Inside != null || inPuzzleRoom)
             {
-                if (hide == null || _hidingIn != hide) // in a vent nobody follows you: under the floor, off the navmesh
+                if (inPuzzleRoom || hide == null || _hidingIn != hide) // in a vent nobody follows you: under the floor, off the navmesh
                 {
                     _seesTarget = false;
                     _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
@@ -318,8 +321,8 @@ namespace Blink.Mobs
             }
             else if (hunting)
             {
-                if (targetAlive) Investigate(_lastSeen);
-                else StartPatrol(); // killed you: wander off
+                if (targetAlive && !inPuzzleRoom) Investigate(_lastSeen);
+                else StartPatrol(); // killed you, or you're in a puzzle room: wander off
             }
             else if (CurrentState is State.Investigate or State.Patrol)
             {
@@ -510,6 +513,7 @@ namespace Blink.Mobs
         void OnNoise(Vector3 position, float loudness)
         {
             if (CurrentState is State.Dead or State.Attack || _seesTarget || !_agent.isOnNavMesh) return;
+            if (PuzzleRooms.Contains(position)) return; // noise from in a puzzle room doesn't lure them in
             // Cheap straight-line reject first; walking distance is never shorter.
             if (!Noise.CanHear(loudness, Vector3.Distance(transform.position, position), hearing)) return;
             // Noises happen in the air (a gun at hand height): snap to the floor before pathing.
