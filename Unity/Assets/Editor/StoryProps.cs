@@ -33,14 +33,14 @@ public static class StoryProps
         const float Ground = 0f, Basement = -2.85f;
 
         // ---- Framed photos: from (x, z) at height h, hung on the first wall within 1.5 m in that direction.
-        Frame(root, "photo_wedding", "Wedding photo", 7.3f, 18.75f, 1.75f, Vector3.right, // MasterBedroom, E wall over the dresser
-            "On the back, in neat ink: 'A. & E., June 1934. Forever is a promise I intend to keep.'");
+        Frame(root, "photo_gamejam", "Game jam photo", 7.3f, 18.75f, 1.75f, Vector3.right, // MasterBedroom, E wall over the dresser
+            "On the back, in marker: 'Game jam, night one. Seven of us, 48 hours. Nobody leaves until it ships.'\nYou count the faces twice. There are six.");
         Frame(root, "photo_children_decayed", "Photo of two children", 2.0f, 16.2f, 1.6f, Vector3.forward, // Corridor, N wall by D8
             "On the back, in a child's hand: 'Tom and me. Summer.'\nThe faces have run, as if the picture got wet. It isn't damp.");
         Frame(root, "photo_family_decayed", "Family portrait", 10.8f, 11.4f, 1.7f, Vector3.right, // CentralHall walkway E wall, facing the clock
             "The Hales, in the front hall. Someone has scratched out every face, slowly, many times over.", 1.6f);
-        Frame(root, "photo_staff", "Staff photograph", 17.8f, 7.8f, 1.6f, Vector3.back, // Kitchen, S wall by the stove
-            "'Household staff, 1945.'\nThe boy on the end in the leather apron has been circled in ink, pressed hard enough to tear the paper.");
+        Frame(root, "photo_gamejam_2", "Game jam photo, hour 47", 17.8f, 7.8f, 1.6f, Vector3.back, // Kitchen, S wall by the stove
+            "On the back: 'Hour 47. Whoever's still awake keeps watch.'\nEvery one of them has their hands over their eyes. The names underneath have been crossed out one at a time, each in a different pen.");
 
         // ---- Notes: dropped onto whatever is at (x, z), floor or furniture top.
         Note(root, "Delivery docket", 4.45f, 6.7f, Ground, 20f, // Bedroom floor, in view as you wake (P0 at 4.8, 7.6)
@@ -128,7 +128,8 @@ public static class StoryProps
             Debug.LogWarning($"[StoryProps] Couldn't find the canvas in {FramePrefab}; {photo} uses a guessed size.");
         }
 
-        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(Photos + photo + ".png");
+        // The game jam team photos are 1024px JPGs, mounted on a card to fit the square canvas.
+        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(Photos + photo + ".png") ?? AssetDatabase.LoadAssetAtPath<Texture2D>(Photos + photo + ".jpg");
         var pic = GameObject.CreatePrimitive(PrimitiveType.Quad);
         pic.name = "Photo";
         Object.DestroyImmediate(pic.GetComponent<Collider>()); // the frame's box is the target
