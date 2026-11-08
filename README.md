@@ -4,7 +4,7 @@
 
 **Every time you blink, time skips forward. Use it, but only when it's safe.**
 
-*A webcam-controlled first-person horror game, made in a weekend for the CSS Game Jam 2026 (University of Bristol). Theme: **TIME**.*
+*A webcam-controlled first-person horror game, made in 24 hours for the CSS Game Jam 2026 (University of Bristol). Theme: **TIME**.*
 
 ![Unity 6](https://img.shields.io/badge/Unity-6000.6-000?logo=unity)
 ![URP](https://img.shields.io/badge/Render-URP%2017-2f6f9f)
