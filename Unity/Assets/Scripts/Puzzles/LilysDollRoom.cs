@@ -170,6 +170,11 @@ namespace Blink.Puzzles
             }
             _detector = BlinkDetector.Instance;
             if (_detector != null) _detector.EyesShutBegan += OnEyesShutBegan;
+            // A vent that comes out in her room (Vent_A into the Bathroom) climbs you out already facing her: you're in
+            // the room, so the rules apply the moment the fade lifts.
+            foreach (var vent in FindObjectsByType<Vent>())
+                for (int k = 0; k < vent.exit.Length && k < vent.lookAt.Length; k++)
+                    if (roomBounds.bounds.Contains(vent.exit[k] + Vector3.up * 0.5f)) vent.lookAt[k] = face;
             StartMusic();
         }
 

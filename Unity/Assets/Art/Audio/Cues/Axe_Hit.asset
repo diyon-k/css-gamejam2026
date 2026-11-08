@@ -16,10 +16,10 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 3f332a5564158394e823421a9b57b11f, type: 3}
   - {fileID: 8300000, guid: 46a9f9bca93e3624dbcecf9d961e9f76, type: 3}
   order: 1
-  volume: {x: 0.9, y: 1}
-  pitch: {x: 0.92, y: 1.08}
+  volume: {x: 1, y: 1}
+  pitch: {x: 0.85, y: 0.95}
   spatialBlend: 1
-  minDistance: 2
+  minDistance: 4
   maxDistance: 30
   output: {fileID: 759600572209101891, guid: b428bc222e3691648b5ebb00e54fd9b9, type: 2}
   priority: 30

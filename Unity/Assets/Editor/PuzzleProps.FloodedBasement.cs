@@ -34,6 +34,14 @@ namespace Blink.EditorTools
         const string KeyPrefab = "Assets/Prefabs/Props/KeyPickup.prefab";
         const float DrawerH = 0.26f;
 
+        /// <summary>Batch: Unity -batchmode -quit -projectPath Unity -executeMethod Blink.EditorTools.PuzzleProps.BatchFloodedBasement</summary>
+        public static void BatchFloodedBasement()
+        {
+            var scene = EditorSceneManager.OpenScene("Assets/Scenes/House_Bungalow.unity");
+            PlaceFloodedBasement();
+            EditorSceneManager.SaveScene(scene);
+        }
+
         [MenuItem("BLINK/Place Puzzle: Flooded Basement")]
         public static void PlaceFloodedBasement()
         {
@@ -754,17 +762,49 @@ namespace Blink.EditorTools
             if (tin) Part(parent, PrimitiveType.Cylinder, "Tin", local + Vector3.up * 0.05f, Vector3.zero, new Vector3(0.09f, 0.05f, 0.09f), m.Tin);
         }
 
-        /// <summary>A short jemmy (0.45 m): a bar with a bent claw at one end and a flat chisel at the other.</summary>
+        const string CrowbarPrefab = "Assets/Prefabs/Props/Crowbar.prefab";
+
+        /// <summary>
+        /// The house's crowbar model (<see cref="CrowbarPrefab"/>, 0.6 m along its local +y) shrunk to 0.45 m and laid flat
+        /// along x, so it fits every drawer and the crate's tray. Only its mesh: the world crowbar is a <see cref="SwingableProp"/>
+        /// (melee slot, needs the axe in hand), but the drain checks the inventory, so this one stays a <see cref="Pickup"/>.
+        /// Falls back to a primitive jemmy if the prefab is missing.
+        /// </summary>
         static Pickup BuildCrowbar(Transform anchor, FloodMaterials m)
         {
             var bar = new GameObject("Crowbar");
             bar.transform.SetParent(anchor, false);
-            Part(bar.transform, PrimitiveType.Cube, "Shaft", new Vector3(0f, 0.011f, 0f), Vector3.zero, new Vector3(0.4f, 0.022f, 0.022f), m.Rust);
-            Part(bar.transform, PrimitiveType.Cube, "Claw", new Vector3(-0.215f, 0.025f, 0f), new Vector3(0f, 0f, -40f), new Vector3(0.07f, 0.02f, 0.03f), m.Rust);
-            Part(bar.transform, PrimitiveType.Cube, "Chisel", new Vector3(0.215f, 0.011f, 0f), Vector3.zero, new Vector3(0.04f, 0.01f, 0.034f), m.Iron);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CrowbarPrefab);
+            if (prefab != null)
+            {
+                var model = (GameObject)PrefabUtility.InstantiatePrefab(prefab, bar.transform);
+                PrefabUtility.UnpackPrefabInstance(model, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                // Strip the world crowbar's behaviour (SwingableProp first: it requires the Rigidbody).
+                foreach (var c in model.GetComponents<SwingableProp>()) Object.DestroyImmediate(c);
+                foreach (var c in model.GetComponents<Rigidbody>()) Object.DestroyImmediate(c);
+                foreach (var c in model.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+                model.name = "Model";
+                // HideCrowbar zeroes the bar's own pose on its anchor, so the lie-flat turn lives on this child.
+                model.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(0f, 0f, -90f)); // length +y -> +x, thin side down
+                model.transform.localScale = Vector3.one * 0.75f;
+                var renderers = model.GetComponentsInChildren<Renderer>();
+                if (renderers.Length > 0) // rest it on the anchor
+                {
+                    var b = renderers[0].bounds;
+                    foreach (var r in renderers) b.Encapsulate(r.bounds);
+                    model.transform.position += Vector3.up * (anchor.position.y - b.min.y + 0.001f);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[PuzzleProps] {CrowbarPrefab} not found; building a primitive crowbar instead.");
+                Part(bar.transform, PrimitiveType.Cube, "Shaft", new Vector3(0f, 0.011f, 0f), Vector3.zero, new Vector3(0.4f, 0.022f, 0.022f), m.Rust);
+                Part(bar.transform, PrimitiveType.Cube, "Claw", new Vector3(-0.215f, 0.025f, 0f), new Vector3(0f, 0f, -40f), new Vector3(0.07f, 0.02f, 0.03f), m.Rust);
+                Part(bar.transform, PrimitiveType.Cube, "Chisel", new Vector3(0.215f, 0.011f, 0f), Vector3.zero, new Vector3(0.04f, 0.01f, 0.034f), m.Iron);
+            }
             var hit = bar.AddComponent<BoxCollider>(); // generous: it's what you're hunting for
             hit.center = new Vector3(0f, 0.03f, 0f);
-            hit.size = new Vector3(0.5f, 0.07f, 0.1f);
+            hit.size = new Vector3(0.55f, 0.07f, 0.14f);
             var pickup = bar.AddComponent<Pickup>();
             pickup.itemId = FloodedBasement.CrowbarId;
             pickup.displayName = "Crowbar";

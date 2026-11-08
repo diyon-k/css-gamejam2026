@@ -24,6 +24,9 @@ namespace Blink.Interaction
         public Vector3[] peek = new Vector3[2];
         [Tooltip("Per end: the world floor point you climb out onto.")]
         public Vector3[] exit = new Vector3[2];
+        /// <summary>Per end, optional: climbing out there turns you to face this (null = facing away from the grate).
+        /// Set at runtime, e.g. by <c>LilysDollRoom</c> for an end inside her room, so no scene wiring to go stale.</summary>
+        [System.NonSerialized] public Transform[] lookAt = new Transform[2];
         [Tooltip("Crawl speed, metres per second.")]
         public float crawlSpeed = 0.9f;
         [Tooltip("Head bob while crawling: metres up and down, and bobs per metre.")]
@@ -129,6 +132,7 @@ namespace Blink.Interaction
             Vector3 away = Flat(exit[end] - peek[end]);
             body.SetPositionAndRotation(exit[end], away.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(away) : body.rotation);
             _player.AddLook(0f, -_player.Pitch);
+            if (end < lookAt.Length && lookAt[end] != null) _player.TurnTowards(lookAt[end].position, 1e4f, 1f); // snap, under the fade
             Release();
             yield return Fade(0f);
         }
