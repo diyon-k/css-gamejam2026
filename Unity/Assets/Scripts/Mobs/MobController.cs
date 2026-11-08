@@ -99,7 +99,7 @@ namespace Blink.Mobs
         [Tooltip("Share of the shove the lowest limbs get (0 = feet stay planted, 1 = the whole body flies as one).")]
         [SerializeField, Range(0f, 1f)] float grabEscapeFeetShare = 0.3f;
         [Tooltip("World seconds it lies stunned after being flung off, before getting back up.")]
-        [SerializeField, Min(0f)] float grabEscapeStun = 3f;
+        [SerializeField, Min(0f)] float grabEscapeStun = 5f;
         [Tooltip("Metres above the head bone the camera looks at, for rigs without eye bones (with them it looks between the eyes).")]
         [SerializeField] float faceOffset = 0.08f;
 
@@ -269,7 +269,9 @@ namespace Blink.Mobs
             bool targetAlive = TargetAlive();
 
             var hide = Interaction.HidingSpot.Occupant;
-            _hidingIn = KnownHidingSpot(hide, _hidingIn, _seesTarget && targetAlive);
+            // Mid-chase it saw you duck in, even if its sight check didn't tick that frame. Lose it for loseSightTime first.
+            bool onYourTail = _seesTarget || (CurrentState is (State.Chase or State.Attack) && _lostTimer > 0f);
+            _hidingIn = KnownHidingSpot(hide, _hidingIn, onYourTail && targetAlive);
             if (!targetAlive) _seesTarget = false;
             else if (hide != null)
             {

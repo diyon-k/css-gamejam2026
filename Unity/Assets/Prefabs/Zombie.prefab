@@ -116,7 +116,7 @@ MonoBehaviour:
   grabEscapeThrow: 3.5
   grabEscapeLift: 1
   grabEscapeFeetShare: 0.3
-  grabEscapeStun: 3
+  grabEscapeStun: 5
   faceOffset: 0.08
   corpseLifetime: 6
   toppleDuration: 0.45
