@@ -554,6 +554,7 @@ namespace Blink.EditorTools
             chest.name = "ChestOfDrawers";
             float depth = chest.GetComponent<BoxCollider>() is { } body ? body.size.z : 0.58f;
             chest.transform.SetPositionAndRotation(frame.P(2.4f, depth * 0.5f + 0.02f), frame.Facing(0f, 1f));
+            if (chest.GetComponent<BoxCollider>() is { } box) Carve(chest, box.center, box.size);
             const float insideFloor = -0.085f; // drawer meshes are pivoted at their centre; measured inside floor
             int n = 0;
             foreach (Transform dr in chest.transform)
@@ -564,6 +565,17 @@ namespace Blink.EditorTools
                 anchors.Add(Anchor(dr, new Vector3(0f, insideFloor, 0.10f), 0f));
                 if (n++ == 1) Junk(dr, new Vector3(-0.3f, insideFloor, -0.1f), m, rag: true);
             }
+        }
+
+        /// <summary>Cuts <paramref name="go"/>'s box out of the navmesh: the puzzle is placed after the bake, so without
+        /// this the clowns' agents walk straight through it.</summary>
+        public static void Carve(GameObject go, Vector3 center, Vector3 size)
+        {
+            if (!go.TryGetComponent(out UnityEngine.AI.NavMeshObstacle o)) o = go.AddComponent<UnityEngine.AI.NavMeshObstacle>();
+            o.shape = UnityEngine.AI.NavMeshObstacleShape.Box;
+            o.center = center;
+            o.size = size;
+            o.carving = true;
         }
 
         /// <summary>Three primitive drawers (HouseBlockout.Drawers' shape): the fallback for <see cref="BuildChestOfDrawers"/>.</summary>
@@ -636,6 +648,7 @@ namespace Blink.EditorTools
             var g = new GameObject("Crate").transform;
             g.SetParent(root, false);
             g.SetPositionAndRotation(frame.P(d * 0.5f + 0.02f, z), frame.Facing(1f, 0f));
+            Carve(g.gameObject, new Vector3(0f, h * 0.5f, 0f), new Vector3(w, h, d));
             Part(g, PrimitiveType.Cube, "Base", new Vector3(0f, board, 0f), Vector3.zero, new Vector3(w, board * 2f, d), m.Wood, keepCollider: true);
             Part(g, PrimitiveType.Cube, "Front", new Vector3(0f, h * 0.5f, d * 0.5f - board * 0.5f), Vector3.zero, new Vector3(w, h, board), m.Wood, keepCollider: true);
             Part(g, PrimitiveType.Cube, "Back", new Vector3(0f, h * 0.5f, -d * 0.5f + board * 0.5f), Vector3.zero, new Vector3(w, h, board), m.Wood, keepCollider: true);
