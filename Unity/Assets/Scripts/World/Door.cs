@@ -273,6 +273,18 @@ namespace Blink.World
             Raise(DoorResult.Unlocked, false);
         }
 
+        /// <summary>
+        /// Story lock from code: slams shut in <paramref name="seconds"/> (real) and locks. <see cref="Unlock"/> undoes it.
+        /// False if it was already shut (it still locks).
+        /// </summary>
+        public bool Slam(float seconds = 0.12f)
+        {
+            bool moved = Model.Slam(seconds);
+            if (moved) Raise(DoorResult.Closed, true); // byPlayer: zombies hear the bang
+            else UpdateObstacles();
+            return moved;
+        }
+
         void Raise(DoorResult res, bool byPlayer)
         {
             switch (res)

@@ -8,6 +8,7 @@ using Blink.Interaction;
 using Blink.Player;
 using Blink.TimeSkip;
 using Blink.Visuals;
+using Blink.World;
 using UnityEngine;
 using UnityEngine.Events;
 using Random = UnityEngine.Random;
@@ -25,9 +26,8 @@ namespace Blink.Puzzles
     /// surge, the tap, the whirlpool, the sound, the drowning and the reset on respawn.
     /// </para>
     /// <para>
-    /// <b>The door is not handled here.</b> Hook it to <see cref="FloodStarted"/> / <see cref="onFloodStarted"/> (slam and
-    /// lock), <see cref="Solved"/> / <see cref="onSolved"/> (unlock, swing open) and <see cref="WasReset"/> /
-    /// <see cref="onReset"/> (open and unlocked again after a drowning).
+    /// <see cref="door"/> (D5) slams shut and locks when the flood starts, and unlocks and swings open when the water's
+    /// gone or the room resets after a drowning. The events below are for anything else.
     /// </para>
     /// Placed by BLINK > Place Puzzle: Flooded Basement.
     /// </summary>
@@ -42,6 +42,8 @@ namespace Blink.Puzzles
         public BoxCollider roomBounds;
         [Tooltip("At the doorway, on the floor, facing into the room.")]
         public Transform doorway;
+        [Tooltip("The room's door (D5): slammed and locked while the water's in.")]
+        public Door door;
         [Tooltip("Where the crowbar can be hidden: one per spot.")]
         public Openable[] searchSpots;
         [Tooltip("Where the crowbar lies in each spot (a child of the drawer, so it slides out with it). Same order as Search Spots.")]
@@ -112,20 +114,23 @@ namespace Blink.Puzzles
         [SerializeField] SoundCue gurgleCue;
         [SerializeField] SoundCue coverClangCue;
         [SerializeField] SoundCue drownCue;
+        [SerializeField] SoundCue doorSlamCue;
+        [Tooltip("Real seconds the door takes to slam shut.")]
+        [SerializeField, Min(0.01f)] float slamSeconds = 0.12f;
 
         [Header("Death")]
         [SerializeField] string respawnPrompt = "You drowned\nBLINK to wake up";
 
-        [Header("Hooks (the door goes here)")]
+        [Header("Hooks")]
         public UnityEvent onFloodStarted = new();
         public UnityEvent onSolved = new();
         public UnityEvent onReset = new();
 
-        /// <summary>The player walked in: the tap's running. Slam and lock the door here.</summary>
+        /// <summary>The player walked in: the tap's running, the door slammed.</summary>
         public event Action FloodStarted;
-        /// <summary>The water's gone. Unlock the door and let it swing open here.</summary>
+        /// <summary>The water's gone, the door unlocked and swinging open.</summary>
         public event Action Solved;
-        /// <summary>Back to the start after a drowning (screen black). The door should be open and unlocked again.</summary>
+        /// <summary>Back to the start after a drowning (screen black), the door open and unlocked again.</summary>
         public event Action WasReset;
 
         public FloodState State => _flood != null ? _flood.State : FloodState.Idle;
@@ -310,6 +315,12 @@ namespace Blink.Puzzles
                 if (_stutter != null) StopCoroutine(_stutter);
                 _stutter = StartCoroutine(StutterBulb());
             }
+            if (door != null && door.Slam(slamSeconds)) // already shut behind them: it just locks, quietly
+            {
+                PlayAt(doorSlamCue, door.Centre);
+                if (_cameraFeel != null) _cameraFeel.AddJolt(2f, 0.03f);
+                if (_haptics != null) _haptics.Thump(0.8f);
+            }
             FloodStarted?.Invoke();
             onFloodStarted.Invoke();
         }
@@ -425,8 +436,17 @@ namespace Blink.Puzzles
             SetKeyTakeable(true);
             SetMuffle(0f);
             SetWading(false);
+            ReleaseDoor();
             Solved?.Invoke();
             onSolved.Invoke();
+        }
+
+        /// <summary>Unlocks the door and swings it open, away from the player.</summary>
+        void ReleaseDoor()
+        {
+            if (door == null) return;
+            door.Unlock();
+            door.SetOpen(true, _player != null ? _player.transform.position : (Vector3?)null);
         }
 
         void SetKeyTakeable(bool on)
@@ -469,6 +489,7 @@ namespace Blink.Puzzles
         {
             if (State == FloodState.Solved) return;
             ResetRoom();
+            ReleaseDoor();
             WasReset?.Invoke();
             onReset.Invoke();
         }
