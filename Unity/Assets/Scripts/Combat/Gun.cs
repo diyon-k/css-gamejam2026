@@ -36,7 +36,7 @@ namespace Blink.Combat
         [Header("Ammo")]
         [SerializeField, Min(1)] int magazineSize = 8;
         [Tooltip("Rounds loaded when the gun is found (capped at the magazine size).")]
-        [SerializeField, Min(0)] int startLoaded = 4;
+        [SerializeField, Min(0)] int startLoaded;
         [SerializeField, Min(0)] int reserveAmmo;
         [Tooltip("Most spare rounds carried. Ammo boxes can't be picked up once this is full.")]
         [SerializeField, Min(0)] int maxReserve = 8;
