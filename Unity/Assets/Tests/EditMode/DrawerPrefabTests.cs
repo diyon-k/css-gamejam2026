@@ -45,7 +45,7 @@ namespace Blink.Tests.EditMode
         }
 
         [Test]
-        public void DrawerColliders_AreLowFrontPanelsProudOfTheBody()
+        public void ShutDrawer_ColliderIsTheWholeFrontWithAMargin_ProudOfTheBody()
         {
             var root = Prefab();
             var body = root.GetComponent<BoxCollider>();
@@ -55,14 +55,34 @@ namespace Blink.Tests.EditMode
             {
                 var c = d.GetComponent<BoxCollider>();
                 Assert.NotNull(c, d.name + " has no BoxCollider");
+                Assert.NotNull(d.GetComponent<DrawerCollider>(), d.name + " has no DrawerCollider");
+                var b = d.GetComponent<MeshFilter>().sharedMesh.bounds;
                 float front = d.localPosition.z + c.center.z + c.size.z * 0.5f;
                 Assert.GreaterOrEqual(front, bodyFront + 0.005f, d.name);
-                // only the front panel: the inside stays clear, so the look ray reaches what's in the drawer
-                Assert.LessOrEqual(c.size.z, 0.08f, d.name);
-                // and only its lower part: looking down into an open drawer from ~1 m passes over the panel's top
-                var b = d.GetComponent<MeshFilter>().sharedMesh.bounds;
-                Assert.LessOrEqual(c.center.y + c.size.y * 0.5f, b.max.y - 0.3f * b.size.y + 1e-3f, d.name);
-                Assert.That(c.center.y - c.size.y * 0.5f, Is.EqualTo(b.min.y).Within(1e-3f), d.name);
+                Assert.LessOrEqual(c.size.z, 0.08f, d.name);                 // the front panel, not the inside
+                Assert.GreaterOrEqual(c.size.y, b.size.y + 0.015f, d.name);  // its full height plus a margin: easy to hit
+                Assert.GreaterOrEqual(c.size.x, b.size.x + 0.015f, d.name);
+            }
+        }
+
+        [Test]
+        public void OpenDrawer_ColliderIsTheWholeDrawer()
+        {
+            foreach (var d in Drawers(Prefab()))
+            {
+                var probe = Object.Instantiate(d.gameObject);
+                try
+                {
+                    probe.GetComponent<DrawerCollider>().Apply(true);
+                    var c = probe.GetComponent<BoxCollider>();
+                    var b = probe.GetComponent<MeshFilter>().sharedMesh.bounds;
+                    Assert.That(Vector3.Distance(c.center, b.center), Is.LessThan(1e-3f), d.name);
+                    Assert.That(Vector3.Distance(c.size, b.size), Is.LessThan(1e-3f), d.name);
+                }
+                finally
+                {
+                    Object.DestroyImmediate(probe);
+                }
             }
         }
 

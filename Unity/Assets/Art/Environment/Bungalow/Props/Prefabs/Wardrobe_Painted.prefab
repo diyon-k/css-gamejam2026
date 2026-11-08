@@ -507,3 +507,5 @@ MonoBehaviour:
   hopHeight: 0.35
   ajarDegrees: 9
   maxYaw: 60
+  doorLoudness: 4
+  peekGap: {x: 0.14, y: 1}

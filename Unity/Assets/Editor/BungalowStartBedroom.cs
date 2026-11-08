@@ -26,7 +26,9 @@ namespace Blink.EditorTools
         public const string KeyId = "key_bedroom";
         const string KeyName = "Bedroom key";
         const string KeyPrefab = "Assets/Prefabs/Props/KeyPickup.prefab";
-        const string PaperMaterial = "Assets/Art/Story/Materials/Paper.mat";
+        // The bungalow's own paper (same values as Art/Story's Paper.mat, which a sparse checkout without Art/Story lacks:
+        // the note came out pink there). Created on first use.
+        const string PaperMaterial = "Assets/Art/Environment/Bungalow/Materials/M_NotePaper.mat";
         const int NotPlayer = ~(1 << 9); // the Player capsule's layer
 
         // Chest of drawers (1.20 x 0.58 m, top 1.21 m) moved up against the nightstand (x 4.31-4.89), beside the bed.
@@ -118,9 +120,32 @@ namespace Blink.EditorTools
             go.transform.SetParent(root, false);
             go.transform.SetPositionAndRotation(at + Vector3.up * 0.002f, Quaternion.Euler(0f, NoteYaw, 0f));
             go.transform.localScale = new Vector3(0.21f, 0.004f, 0.28f);
-            var paper = AssetDatabase.LoadAssetAtPath<Material>(PaperMaterial);
-            if (paper != null) go.GetComponent<Renderer>().sharedMaterial = paper;
+            go.GetComponent<Renderer>().sharedMaterial = Paper();
             go.AddComponent<Readable>().Setup("Read", NoteTitle, NoteText);
+        }
+
+        /// <summary>The note paper (URP Lit, aged off-white, matte), created if it isn't there yet.</summary>
+        public static Material Paper()
+        {
+            var paper = AssetDatabase.LoadAssetAtPath<Material>(PaperMaterial);
+            if (paper != null) return paper;
+            paper = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "M_NotePaper" };
+            paper.SetColor("_BaseColor", new Color(0.82f, 0.78f, 0.66f, 1f));
+            paper.SetFloat("_Smoothness", 0.15f);
+            paper.SetFloat("_Metallic", 0f);
+            AssetDatabase.CreateAsset(paper, PaperMaterial);
+            return paper;
+        }
+
+        /// <summary>Gives the start-bedroom note the bungalow paper (it was pink where Art/Story isn't checked out).</summary>
+        public static string FixNotePaper(Scene scene)
+        {
+            var note = Find(scene, "Note_" + NoteTitle.Replace(' ', '_'));
+            if (note == null) return "no note; ";
+            var r = note.GetComponent<Renderer>();
+            Undo.RecordObject(r, "Note paper");
+            r.sharedMaterial = Paper();
+            return "note paper set; ";
         }
 
         /// <summary>

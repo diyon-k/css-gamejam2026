@@ -283,16 +283,16 @@ namespace Blink.EditorTools
         const float DrawerPull = 0.30f;      // metres out of the front (+Z) at most...
         const float DrawerPullDepth = 0.6f;  // ...and at most this share of the drawer's depth, so it never leaves the carcass
         const float DrawerSeconds = 0.3f;
-        const float DrawerProud = 0.01f;     // the drawer collider sticks out past the body box, so the look ray finds it
-        const float DrawerPanel = 0.05f;     // collider depth: the front panel only, so the look ray reaches what's inside
-        // collider height: the lower 65% of the front, so looking down into an open drawer from ~1 m passes over it
-        const float DrawerPanelHeight = 0.65f;
+        const float DrawerProud = 0.01f;     // the shut collider sticks out past the body box, so the look ray finds it
+        const float DrawerPanel = 0.05f;     // shut collider depth: the front panel
+        const float DrawerMargin = 0.01f;    // shut collider: this much bigger than the front on every side, easy to aim at
 
         /// <summary>
         /// Every "&lt;Model&gt;_Drawer&lt;N&gt;" child (split out by the Blender build, ph(split=...)) becomes a sliding
-        /// <see cref="Blink.Interaction.Openable"/> with a box collider over the lower part of its front panel only (a box
-        /// over the whole drawer, or the panel's top edge, would catch the look ray before anything lying inside, e.g. the
-        /// bedroom key). Drawers aren't static and are lit by light probes, so they can move. Returns how many it set up.
+        /// <see cref="Blink.Interaction.Openable"/> with a <see cref="Blink.Interaction.DrawerCollider"/>: shut, its box is
+        /// the whole front plus a margin, proud of the body; open, it is the whole drawer (easy to close again; anything
+        /// lying inside still wins the look ray). Drawers aren't static and are lit by light probes, so they can move.
+        /// Returns how many it set up.
         /// </summary>
         static int SetupDrawers(GameObject go, Model m)
         {
@@ -310,12 +310,13 @@ namespace Blink.EditorTools
                 }
                 var mf = t.GetComponent<MeshFilter>();
                 var b = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.one * 0.2f);
-                var bc = t.gameObject.AddComponent<BoxCollider>();
-                // the lower part of the front panel, pushed out to stand proud of the body box
+                t.gameObject.AddComponent<BoxCollider>();
+                // shut: the front panel plus a margin, pushed out to stand proud of the body box; open: the whole drawer
                 float front = Mathf.Max(b.max.z, bodyFront + DrawerProud - t.localPosition.z);
-                float h = b.size.y * DrawerPanelHeight;
-                bc.center = new Vector3(b.center.x, b.min.y + h * 0.5f, front - DrawerPanel * 0.5f);
-                bc.size = new Vector3(b.size.x, h, DrawerPanel);
+                t.gameObject.AddComponent<Blink.Interaction.DrawerCollider>().Configure(
+                    new Vector3(b.center.x, b.center.y, front - DrawerPanel * 0.5f),
+                    new Vector3(b.size.x + 2f * DrawerMargin, b.size.y + 2f * DrawerMargin, DrawerPanel),
+                    b.center, b.size);
                 var o = t.gameObject.AddComponent<Blink.Interaction.Openable>();
                 o.motion = Blink.Interaction.Openable.Motion.Sliding;
                 o.noun = "drawer";

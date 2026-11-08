@@ -10,7 +10,9 @@ namespace Blink.Interaction
     /// <summary>
     /// On the Player. Looks along the camera for an <see cref="IInteractable"/> within reach, shows its
     /// prompt (in the <see cref="BlinkPrompts"/> stack) and calls it on an Interact press. Solid colliders block the look; trigger colliders without
-    /// an interactable are looked through. Idle while <see cref="PlayerController.InputEnabled"/> is off.
+    /// an interactable are looked through; something lying inside the thing in focus (a key in an open drawer) wins; a near
+    /// miss on something small is caught by a thin aim-assist sphere (<see cref="FindTarget(Vector3, Vector3, float, Transform, RaycastHit[], float)"/>).
+    /// The target is outlined by <see cref="InteractHighlight"/>. Idle while <see cref="PlayerController.InputEnabled"/> is off.
     /// While a note is held up it stays the target, so Interact always puts it down, wherever you look.
     ///
     /// On a gamepad, X (West) is both Interact and Reload, as in most shooters: it interacts when something usable is in
@@ -46,6 +48,7 @@ namespace Blink.Interaction
             _eye = GetComponentInChildren<Camera>() is { } cam ? cam.transform : transform;
             _interact = InputSystem.actions?.FindAction("Player/Interact");
             gameObject.AddComponent<PickupGlint>();
+            gameObject.AddComponent<InteractHighlight>();
             Hand = GetComponent<Hand>();
             if (Hand == null) Hand = gameObject.AddComponent<Hand>();
         }
@@ -111,18 +114,75 @@ namespace Blink.Interaction
             ShowPrompt();
         }
 
-        IInteractable FindTarget()
+        IInteractable FindTarget() => FindTarget(_eye.position, _eye.forward, reach, transform, _hits, AssistRadius);
+
+        /// <summary>Radius of the aim assist: a look that just misses something small (a key) still finds it.</summary>
+        public const float AssistRadius = 0.06f;
+        /// <summary>How far past the first thing hit the look ray still looks for something lying inside it.</summary>
+        const float ContentsDepth = 0.8f;
+
+        /// <summary>
+        /// What a look along <paramref name="direction"/> lands on. The first interactable along the ray, unless something
+        /// interactable inside it is also on the ray with nothing solid between (a key lying in an open drawer: the key).
+        /// Solid colliders block the look; triggers without an interactable are looked through. With nothing on the ray, a
+        /// thin sphere (<paramref name="assistRadius"/>) catches a near miss nearer than the solid thing the look landed on,
+        /// if nothing solid stands between it and the eye.
+        /// <paramref name="ignore"/>'s colliders (the player's own) are skipped.
+        /// </summary>
+        public static IInteractable FindTarget(Vector3 origin, Vector3 direction, float reach, Transform ignore, RaycastHit[] buffer, float assistRadius)
         {
-            int n = Physics.RaycastNonAlloc(_eye.position, _eye.forward, _hits, reach, ~0, QueryTriggerInteraction.Collide);
-            System.Array.Sort(_hits, 0, n, ByDistance);
+            int n = Physics.RaycastNonAlloc(origin, direction, buffer, reach, ~0, QueryTriggerInteraction.Collide);
+            System.Array.Sort(buffer, 0, n, ByDistance);
+            IInteractable first = null;
+            float firstAt = 0f, solidAt = reach;
             for (int i = 0; i < n; i++)
             {
-                var col = _hits[i].collider;
-                if (col.transform.IsChildOf(transform)) continue; // our own capsule / gun
-                if (col.GetComponentInParent<IInteractable>() is { } it) return it;
-                if (!col.isTrigger) return null;
+                var col = buffer[i].collider;
+                if (ignore != null && col.transform.IsChildOf(ignore)) continue; // our own capsule / gun
+                var it = col.GetComponentInParent<IInteractable>();
+                if (first == null)
+                {
+                    if (it != null) { first = it; firstAt = buffer[i].distance; continue; }
+                    if (!col.isTrigger) { solidAt = buffer[i].distance; break; }
+                    continue;
+                }
+                // something already in focus: a thing inside it (its child) wins, if nothing solid came first
+                if (buffer[i].distance - firstAt > ContentsDepth) break;
+                if (it != null && !ReferenceEquals(it, first) && IsInside(it, first)) return it;
+                if (ReferenceEquals(it, first) || col.isTrigger) continue;
+                break;
             }
-            return null;
+            if (first != null || assistRadius <= 0f) return first;
+            // the assist only finds things in front of whatever solid the look landed on, never behind or around it
+            return AssistTarget(origin, direction, solidAt, ignore, buffer, assistRadius);
+        }
+
+        static bool IsInside(IInteractable inner, IInteractable outer) =>
+            inner is Component a && outer is Component b && a.transform != b.transform && a.transform.IsChildOf(b.transform);
+
+        static IInteractable AssistTarget(Vector3 origin, Vector3 direction, float reach, Transform ignore, RaycastHit[] buffer, float radius)
+        {
+            int n = Physics.SphereCastNonAlloc(origin, radius, direction, buffer, reach, ~0, QueryTriggerInteraction.Collide);
+            System.Array.Sort(buffer, 0, n, ByDistance);
+            IInteractable found = null;
+            Vector3 at = default;
+            for (int i = 0; i < n; i++)
+            {
+                var col = buffer[i].collider;
+                if (buffer[i].distance <= 0f || (ignore != null && col.transform.IsChildOf(ignore))) continue;
+                if (col.GetComponentInParent<IInteractable>() is { } it) { found = it; at = buffer[i].point; break; }
+            }
+            if (found == null) return null;
+            // only if the eye can see that point: nothing solid (other than the thing itself) in between
+            var to = at - origin;
+            int m = Physics.RaycastNonAlloc(origin, to.normalized, buffer, Mathf.Max(0f, to.magnitude - 0.01f), ~0, QueryTriggerInteraction.Ignore);
+            for (int i = 0; i < m; i++)
+            {
+                var col = buffer[i].collider;
+                if (ignore != null && col.transform.IsChildOf(ignore)) continue;
+                if (!ReferenceEquals(col.GetComponentInParent<IInteractable>(), found)) return null;
+            }
+            return found;
         }
 
         /// <summary>The target's prompt, bottom-right: "[E] open door", or just the words when it can't be used.</summary>

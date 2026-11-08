@@ -509,10 +509,17 @@ The emitters in `fixtures.json` are authoritative for the lighting pass. The two
 - The Blender build keeps the Poly Haven drawer objects as child meshes `GothicCommode_01_Drawer1`–`3` (top first, each pivoted at its own centre): `ph(..., split=("GothicCommode_01_door",))`. The model's triangle budget is shared by triangle count.
 - `BungalowPropsPlacer.SetupDrawers` (prefab build) gives every `<Model>_Drawer<N>` child:
   - a sliding `Openable` ("drawer", out of the front by 0.30 m or 60% of the drawer's depth, whichever is less, over 0.3 s);
-  - a box collider over the **lower 65% of the front panel only**, 5 cm deep and 1 cm proud of the body's box. The look ray finds the drawer rather than the body, and looking down into an open drawer from up to ~1 m passes over the panel to whatever lies inside;
+  - a `DrawerCollider` that swaps its box when the drawer opens or shuts:
+    - **shut:** the whole front plus 1 cm on every side, 5 cm deep, 1 cm proud of the body's box, so it's easy to aim at and the look ray finds the drawer rather than the body;
+    - **open:** the whole drawer, so it's easy to close again;
   - no static flags and light-probe lighting, so it can move.
-- **The bedroom key (`key_bedroom`) is in `Bed_Dresser`'s top drawer.** It's parented to the drawer, 0.22 m behind the front, so it slides out with it; `BungalowStartBedroom.PlaceKeyInDrawer`, also run by Set Up Start Bedroom. While the drawer is shut, the body blocks the look ray; once it's open, the key can be taken from 0.35–0.9 m and twinkles like other pickups.
-- Covered by `Tests/EditMode/DrawerPrefabTests.cs`. Design: `docs/superpowers/specs/2026-11-07-openable-drawers-design.md`.
+- **Looking at things** (`Interactor.FindTarget`):
+  - Something lying inside the thing in focus (the key in an open drawer) wins the look, if nothing solid comes between.
+  - A look that misses everything gets a 6 cm aim-assist sphere. It only finds things nearer than the solid surface the look landed on, and only where the eye can see them.
+- **Highlight:** `InteractHighlight` (added by the `Interactor`) outlines the current target with a warm outline and rim, `Blink/InteractHighlight` (`Art/VFX/InteractHighlight`, material `Resources/InteractHighlight`). It draws an overlay copy of each of the target's meshes, leaving out things inside it. Nothing is outlined while a prop is carried or a note is held up.
+- **The bedroom key (`key_bedroom`) is in `Bed_Dresser`'s top drawer.** It's parented to the drawer, 0.22 m behind the front, so it slides out with it; `BungalowStartBedroom.PlaceKeyInDrawer`, also run by Set Up Start Bedroom. While the drawer is shut, the body blocks the look ray; once it's open, the key is the target from 0.35–0.9 m and twinkles like other pickups.
+- **The start-bedroom note** uses the bungalow's own `Materials/M_NotePaper` (created by Set Up Start Bedroom). `Art/Story/Materials/Paper.mat` isn't in every checkout, and without it the note rendered pink.
+- Covered by `Tests/EditMode/DrawerPrefabTests.cs` and `InteractTargetingTests.cs`. Design: `docs/superpowers/specs/2026-11-07-openable-drawers-design.md`.
 
 **Placement data:** `tools/blender/bungalow_props.py` → `Props/bungalow_props.json`, 143 instances of 84 models.
 - Each instance has a room, position, euler and scale.
