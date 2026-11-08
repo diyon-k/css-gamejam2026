@@ -162,6 +162,7 @@ namespace Blink.Puzzles
                 _cameraFeel = _player.GetComponentInChildren<CameraFeel>();
                 _haptics = _player.GetComponentInChildren<GamepadHaptics>();
             }
+            if (doll != null) StartMusic(); // first, so a missing piece below can't silence her
             if (doll == null || face == null || roomBounds == null || _cam == null)
             {
                 Debug.LogWarning($"[LilysDoll] '{name}' is missing its doll, face, room bounds or the player camera; the puzzle is off.", this);
@@ -175,7 +176,6 @@ namespace Blink.Puzzles
             foreach (var vent in FindObjectsByType<Vent>())
                 for (int k = 0; k < vent.exit.Length && k < vent.lookAt.Length; k++)
                     if (roomBounds.bounds.Contains(vent.exit[k] + Vector3.up * 0.5f)) vent.lookAt[k] = face;
-            StartMusic();
         }
 
         // ------------------------------------------------------------------ every frame
@@ -184,6 +184,7 @@ namespace Blink.Puzzles
         {
             var state = State;
             if (state == DollState.Killing || state == DollState.Done) return;
+            if (!IsPlaying(_music)) StartMusic(); // the music box never goes quiet while she's live (e.g. no audio yet at Start)
             if (WakeUpSequence.Asleep || (_health != null && _health.IsDead)) return;
 
             bool watched = IsWatched();
