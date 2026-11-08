@@ -20,7 +20,8 @@ namespace Blink.EditorTools
     ///      whose position changed (the cellar crate), without re-placing the rest (that would drop the start-bedroom setup);
     ///   2. ducts: the shell's new Vent_*_Duct children get the shell's static flags (lightmapped like the rest of it);
     ///   3. a "Vents" root with one <see cref="Vent"/> per route and a trigger box per end (at the scene root, not under the
-    ///      NavMeshSurface, so the boxes stay out of the navmesh);
+    ///      NavMeshSurface, so the boxes stay out of the navmesh), and an iron ladder up each vertical shaft (looks only: no
+    ///      colliders, no Ladder component, the crawl is scripted);
     /// The duct light probes come from BungalowLightingBuilder (layout.ducts). Then bake the navmesh and the lighting as usual (BLINK/Bungalow/Build Lighting, bake, normalise, bake).
     /// </summary>
     public static class BungalowVents
@@ -31,11 +32,13 @@ namespace Blink.EditorTools
         const string PrefabDir = Root + "Props/Prefabs/";
         const string ScenePath = "Assets/Scenes/House_Bungalow.unity";
         const string RootName = "Vents";
+        const string IronMat = "Assets/Art/Props/Materials/House/CastIron.mat";
 
 #pragma warning disable 0649 // filled by JsonUtility
         [Serializable] class End { public string room; public float[] peek, exit, min, max; }
         [Serializable] class VentData { public string id; public float[] path; public End[] ends; }
-        [Serializable] class Layout { public VentData[] vents; }
+        [Serializable] class Duct { public string id; public float[] min, max; }
+        [Serializable] class Layout { public VentData[] vents; public Duct[] ducts; }
         [Serializable] class Prop { public string id, prefab, room, fixture; public float[] pos, rot, scale; }
         [Serializable] class PropFile { public Prop[] props; }
 #pragma warning restore 0649
@@ -110,6 +113,7 @@ namespace Blink.EditorTools
                     box.isTrigger = true;
                     box.size = mx - mn;
                 }
+                ShaftLadders(go.transform, vent.path, layout.ducts.Where(d => d.id.StartsWith(v.id + "_Duct", StringComparison.Ordinal)).ToArray());
             }
             report.AppendLine($"{layout.vents.Length} vents under {RootName}");
 
@@ -159,6 +163,51 @@ namespace Blink.EditorTools
                 added++;
             }
             return $"props: {added} added, {moved} moved, {removed} stale vent grates removed";
+        }
+
+        /// <summary>Two rails and 0.3 m rungs (Ladder's spacing) up each vertical leg of the path, on the shaft wall facing
+        /// the way you crawl in, from the lowest duct floor to the shaft top; 0.2 m clear of the camera line.</summary>
+        static void ShaftLadders(Transform parent, Vector3[] path, Duct[] ducts)
+        {
+            var iron = AssetDatabase.LoadAssetAtPath<Material>(IronMat);
+            for (int i = 0; i + 1 < path.Length; i++)
+            {
+                Vector3 a = path[i], b = path[i + 1];
+                if (Mathf.Abs(b.y - a.y) < 1f) continue;
+                // the horizontal leg into the shaft gives the wall the ladder hangs on (the far one)
+                var lean = i > 0 ? a - path[i - 1] : path.Length > i + 2 ? b - path[i + 2] : Vector3.forward;
+                lean.y = 0f;
+                var fwd = Mathf.Abs(lean.x) > Mathf.Abs(lean.z) ? new Vector3(Mathf.Sign(lean.x), 0f, 0f) : new Vector3(0f, 0f, Mathf.Sign(lean.z));
+                var boxes = ducts.Where(d => a.x > d.min[0] && a.x < d.max[0] && a.z > d.min[2] && a.z < d.max[2]).ToArray();
+                if (boxes.Length == 0) continue;
+                float lo = boxes.Min(d => d.min[1]), hi = boxes.Max(d => d.max[1]);
+                var shaft = boxes.OrderByDescending(d => d.max[1] - d.min[1]).First();
+                float wall = fwd.x != 0f ? (fwd.x > 0f ? shaft.max[0] : shaft.min[0]) : (fwd.z > 0f ? shaft.max[2] : shaft.min[2]);
+                var foot = new Vector3(a.x, lo, a.z);
+                if (fwd.x != 0f) foot.x = wall; else foot.z = wall;
+
+                var ladder = new GameObject("ShaftLadder");
+                ladder.transform.SetParent(parent, false);
+                ladder.transform.SetPositionAndRotation(foot, Quaternion.LookRotation(fwd));
+                foreach (float s in new[] { -0.2f, 0.2f })
+                    Bar(ladder.transform, PrimitiveType.Cube, "Rail", new Vector3(s, (hi - lo) * 0.5f, -0.04f), Quaternion.identity,
+                        new Vector3(0.03f, hi - lo, 0.08f), iron);
+                for (float y = 0.3f; y < hi - lo - 0.05f; y += 0.3f)
+                    Bar(ladder.transform, PrimitiveType.Cylinder, "Rung", new Vector3(0f, y, -0.06f), Quaternion.Euler(0f, 0f, 90f),
+                        new Vector3(0.024f, 0.2f, 0.024f), iron);
+            }
+        }
+
+        static void Bar(Transform parent, PrimitiveType type, string name, Vector3 local, Quaternion rot, Vector3 scale, Material mat)
+        {
+            var go = GameObject.CreatePrimitive(type);
+            go.name = name;
+            Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = local;
+            go.transform.localRotation = rot;
+            go.transform.localScale = scale;
+            if (mat != null) go.GetComponent<MeshRenderer>().sharedMaterial = mat;
         }
 
         static Vector3 V(float[] a) => new Vector3(a[0], a[1], a[2]);
