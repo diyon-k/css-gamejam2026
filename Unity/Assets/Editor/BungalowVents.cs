@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -122,7 +123,15 @@ namespace Blink.EditorTools
             var propsRoot = scene.GetRootGameObjects().SelectMany(g => g.GetComponentsInChildren<Transform>(true))
                                  .FirstOrDefault(t => t.name == "Props" && t.Find("Bedroom") != null);
             if (propsRoot == null) return "no Props root: run BLINK/Bungalow/Place Props first";
-            int added = 0, moved = 0;
+            int added = 0, moved = 0, removed = 0;
+            // vent grates the layout no longer has (an end moved to another room or went away)
+            var want = new HashSet<string>(data.props.Select(p => (string.IsNullOrEmpty(p.room) ? "Misc" : p.room) + "/" + p.id));
+            foreach (var t in propsRoot.GetComponentsInChildren<Transform>(true).Where(t => t.parent != null && t.parent.parent == propsRoot
+                         && t.name.StartsWith("Vent_", StringComparison.Ordinal) && !want.Contains(t.parent.name + "/" + t.name)).ToArray())
+            {
+                Object.DestroyImmediate(t.gameObject);
+                removed++;
+            }
             foreach (var p in data.props)
             {
                 string group = string.IsNullOrEmpty(p.fixture) ? (string.IsNullOrEmpty(p.room) ? "Misc" : p.room) : "Fixtures";
@@ -149,7 +158,7 @@ namespace Blink.EditorTools
                 if (p.scale != null && p.scale.Length == 3) go.transform.localScale = V(p.scale);
                 added++;
             }
-            return $"props: {added} added, {moved} moved";
+            return $"props: {added} added, {moved} moved, {removed} stale vent grates removed";
         }
 
         static Vector3 V(float[] a) => new Vector3(a[0], a[1], a[2]);
