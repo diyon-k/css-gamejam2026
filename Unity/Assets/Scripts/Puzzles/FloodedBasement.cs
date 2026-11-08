@@ -47,6 +47,8 @@ namespace Blink.Puzzles
         [Tooltip("Where the crowbar lies in each spot (a child of the drawer, so it slides out with it). Same order as Search Spots.")]
         public Transform[] searchAnchors;
         public Pickup crowbar;
+        [Tooltip("The Search Spot the crowbar always lies in, there from the start. -1 = a random spot each attempt, hidden until the flood starts.")]
+        public int crowbarSpot = -1;
         public DrainCover drain;
         [Tooltip("key_workshop, in the drain's grate basket under the cover. Can be picked up once the water's gone.")]
         public Pickup rewardKey;
@@ -331,14 +333,19 @@ namespace Blink.Puzzles
             onFloodStarted.Invoke();
         }
 
-        /// <summary>The crowbar goes in a random spot, never the last attempt's, so it slides out with the drawer.</summary>
+        bool FixedCrowbar => crowbarSpot >= 0 && crowbarSpot < searchSpots.Length;
+
+        /// <summary>
+        /// The crowbar goes in its fixed spot (<see cref="crowbarSpot"/>), or a random one that isn't the last attempt's,
+        /// so it slides out with the drawer.
+        /// </summary>
         void HideCrowbar()
         {
             if (Hand.Instance != null && Hand.Instance.Item == crowbar) return; // somehow already in hand: leave it
             if (crowbar.Taken) crowbar.ReturnHome(); // used up on the drain before a death elsewhere: back in play
 
-            int n = searchSpots.Length, pick = Random.Range(0, n);
-            if (n > 1 && pick == _lastSpot) pick = (pick + 1 + Random.Range(0, n - 1)) % n;
+            int n = searchSpots.Length, pick = FixedCrowbar ? crowbarSpot : Random.Range(0, n);
+            if (!FixedCrowbar && n > 1 && pick == _lastSpot) pick = (pick + 1 + Random.Range(0, n - 1)) % n;
             _lastSpot = pick;
             var anchor = searchAnchors != null && pick < searchAnchors.Length && searchAnchors[pick] != null
                 ? searchAnchors[pick] : searchSpots[pick].transform;
@@ -522,7 +529,8 @@ namespace Blink.Puzzles
             if (whirlpoolFoam != null) whirlpoolFoam.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             drain.PutBack();
             SetKeyTakeable(false);
-            if (!(Hand.Instance != null && Hand.Instance.Item == crowbar))
+            if (FixedCrowbar) HideCrowbar(); // always there, waiting in its spot
+            else if (!(Hand.Instance != null && Hand.Instance.Item == crowbar))
             {
                 if (crowbar.Taken) crowbar.ReturnHome();
                 crowbar.gameObject.SetActive(false); // placed when the next flood starts

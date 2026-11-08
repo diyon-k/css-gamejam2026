@@ -44,7 +44,7 @@ Idle ──player fully inside──▶ Flooding ──cover levered off──�
 - **Flooding** starts when the player is `slamDepth` (1.5 m) inside the doorway:
   - The door **slams** shut and locks (see Door). Bang, dust, gamepad jolt.
   - The tap goes from a drip to running. The water starts rising.
-  - The crowbar is placed in a **random search spot** (re-rolled on every attempt).
+  - The crowbar is placed in a **random search spot** (re-rolled on every attempt). **As built in the bungalow:** it always lies in the big chest on the doorway wall (on a tray under the rim), there from the start (`FloodedBasement.crowbarSpot`; -1 brings back the random spot).
 - **Drowned:** the water surface reaches the camera (eye) height → drowning death (below).
 - **Draining:** the cover's off. The water drains, the tap is turned off (it splutters and stops), blinks now *help*.
 - **Solved:** water at 0, door unlocks and swings open a little on its own (a creak), `key_workshop` can be picked up. Permanent: later deaths elsewhere don't reset it (`WakeUpSequence` keeps world progress).
