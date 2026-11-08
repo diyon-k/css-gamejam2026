@@ -101,8 +101,6 @@ Tuning and troubleshooting: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#try-it).
 | Content pipeline | Blender Python scripts for props, the house layout, decals and lighting data (`tools/blender/`), plus Unity editor menus that rebuild and dress the scene |
 | Audio | CC0 / CC-BY libraries, plus procedurally synthesised SFX in Python (`tools/audio/`): the doll's music box, the flood |
 | Art | Poly Haven and ambientCG PBR textures, Sketchfab and Mixamo models, generated family photos (`Art/Story/Photos/`) |
-| Tooling | [MCP for Unity](https://github.com/CoplayDev/unity-mcp) to drive the editor from Claude Code |
-
 ## How it works
 
 ```mermaid
