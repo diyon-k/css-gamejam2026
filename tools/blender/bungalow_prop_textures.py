@@ -101,7 +101,7 @@ ATLASES = {
         dict(key="vintage_suitcase_02", w=128, h=128, kind="ph", args=("vintage_suitcase", "02", "aged")),
         dict(key="small_wooden_table_01", w=192, h=192, kind="ph", args=("small_wooden_table_01", "", "darken")),
         dict(key="painted_wooden_bench", w=192, h=192, kind="ph", args=("painted_wooden_bench", "", "dusty")),
-        dict(key="cardboard_box_01", w=256, h=256, kind="ph", args=("cardboard_box_01", "", "dusty")),
+        dict(key="cardboard_box", w=256, h=256, kind="gen", args=("cardboard_box",)),
         dict(key="ceramic_vase_01", w=128, h=128, kind="ph", args=("ceramic_vase_01", "", "dusty")),
         dict(key="ceramic_vase_03", w=128, h=128, kind="ph", args=("ceramic_vase_03", "", "dusty")),
         dict(key="wall_clock", w=128, h=128, kind="ph", args=("wall_clock", "", "aged")),
@@ -827,6 +827,63 @@ def g_cardboard(w, h):
     tape = np.abs(v - 0.5) < 0.06
     b[tape] = to_srgb(to_lin(b[tape]) * np.array([1.1, 1.0, 0.85]))
     return b, n, m, a
+
+
+@gen
+def g_cardboard_box(w, h):
+    """The faces of bungalow_prop_models._carton (0.39 x 0.51 x 0.34 m), UV V up: left half the top (flaps meeting
+    down the middle under brown tape, half peeled), top right a long side (faded arrows, a paper label), bottom right
+    a short side (the tape's end tab). Kraft brown, dirty edges, water stains, dust on the top."""
+    u, v = _uv(h, w)
+    V = 1 - v
+    top, long_ = u < 0.5, (u >= 0.5) & (V >= 0.5)
+    s = np.where(top, u * 2, u * 2 - 1)                       # across the face, 0..1
+    t = np.where(top, V, np.where(long_, V * 2 - 1, V * 2))   # up the face (along y on the top), 0..1
+    fw = np.where(long_, 0.51, 0.39)                          # face size in metres
+    fh = np.where(top, 0.51, 0.34)
+    x, y = s * fw, t * fh
+    edge = np.minimum(np.minimum(x, fw - x), np.minimum(y, fh - y))
+    grit = noise(h, w, 40, 208, 2)
+    lin = to_lin(np.array([0.47, 0.35, 0.22], np.float32)) * \
+        (0.75 + 0.3 * noise(h, w, 6, 201, 4) + 0.15 * grit)[..., None]
+    lin *= (0.6 + 0.4 * smooth(edge, 0.0, 0.03 + 0.03 * grit))[..., None]    # scuffed, dirty edges and corners
+    rings = noise(h, w, 4, 202, 3)
+    stain = smooth(rings, 0.62, 0.66) * (1 - smooth(rings, 0.7, 0.76))      # dried water-stain tide lines
+    lin *= (1 - 0.35 * stain - 0.25 * smooth(rings, 0.66, 0.8))[..., None]
+    # long side: faded "this way up" arrows and a torn paper label
+    ink = Image.new("L", (w, h), 0)
+    d = ImageDraw.Draw(ink)
+    for k in (0, 1):
+        cx, base, tip = w * (0.62 + 0.05 * k), h * 0.36, h * 0.18
+        d.polygon([(cx - w * 0.018, tip + h * 0.04), (cx, tip), (cx + w * 0.018, tip + h * 0.04)], fill=255)
+        d.rectangle([cx - w * 0.006, tip + h * 0.03, cx + w * 0.006, base], fill=255)
+    d.rectangle([w * 0.6, h * 0.385, w * 0.71, h * 0.392], fill=255)
+    ink = np.asarray(ink.filter(ImageFilter.GaussianBlur(0.6)), np.float32) / 255 * (0.5 + 0.4 * noise(h, w, 20, 203, 2))
+    lin *= (1 - 0.7 * ink)[..., None]
+    label = long_ & (s > 0.55) & (s < 0.9) & (t > 0.35) & (t < 0.62)
+    lin[label] = to_lin(np.array([0.62, 0.58, 0.47], np.float32)) * (0.75 + 0.3 * noise(h, w, 10, 204, 3))[label, None]
+    scrawl = label & (np.abs(t - 0.5 - 0.025 * np.sin(s * 90) * np.sin(s * 23)) < 0.012) & (s < 0.84)
+    lin[scrawl] *= 0.3
+    # packing tape over the flap seam (top) running down onto the short sides; peeled off along part of the top
+    mid = np.abs(x - fw / 2)
+    rag = 0.02 * noise(h, w, 30, 205, 2)
+    peel = top & (y > 0.15 + rag) & (y < 0.31 + rag)
+    tape = (mid < 0.025) & (top | ((~long_) & (fh - y < 0.06 + rag))) & ~peel
+    torn = top & (mid < 0.025) & peel & (noise(h, w, 16, 209, 3) > 0.55)    # paper fibre the tape ripped up
+    seam = top & (mid < 0.0025)
+    lin[tape] = lin[tape] * 0.3 + to_lin(np.array([0.66, 0.48, 0.24], np.float32)) * \
+        (0.6 + 0.25 * noise(h, w, 30, 210, 2))[tape, None]
+    lin[tape & (mid > 0.022)] *= 0.6                                         # the tape's lifted edges
+    lin[torn] = lin[torn] * 0.4 + to_lin(np.array([0.62, 0.54, 0.42], np.float32)) * 0.6
+    lin[seam & ~tape] *= 0.15
+    lin[seam & tape] *= 0.75
+    lin[top] = lin[top] * 0.85 + to_lin(np.array([0.36, 0.34, 0.31], np.float32)) * 0.15 * \
+        smooth(noise(h, w, 8, 206, 4), 0.3, 0.7)[top, None]                 # dust settled on the top
+    hgt = -0.6 * seam - 0.15 * (1 - smooth(edge, 0.0, 0.01)) + 0.25 * tape + 0.08 * noise(h, w, 24, 207, 2)
+    sm = np.where(tape, 0.45, 0.12).astype(np.float32) * (1 - 0.5 * stain)
+    ao = 0.75 + 0.25 * smooth(edge, 0.0, 0.03)
+    return to_srgb(np.clip(lin, 0.004, 0.85)), normal_from_height(hgt.astype(np.float32), 2.0), \
+        mask(h, w, 0, ao.astype(np.float32), sm), None
 
 
 @gen

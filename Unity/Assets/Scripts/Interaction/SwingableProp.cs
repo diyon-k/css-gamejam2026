@@ -128,6 +128,15 @@ namespace Blink.Interaction
             Body.angularVelocity = Random.insideUnitSphere * 3f;
         }
 
+        /// <summary>Moved (once released) to just above <paramref name="floorPoint"/>, still, to settle there.</summary>
+        public void PlaceAt(Vector3 floorPoint)
+        {
+            transform.position = floorPoint;
+            if (GetComponentInChildren<Renderer>() is { } r) transform.position += Vector3.up * (floorPoint.y - r.bounds.min.y + 0.05f);
+            Body.position = transform.position; // interpolated: move the body too, or it snaps back
+            Body.linearVelocity = Vector3.zero;
+        }
+
         /// <summary>
         /// Turns a view model's built-in weapon mesh (the axe) into an item, held where it already sits, so it can
         /// be dropped and picked up like any other.
