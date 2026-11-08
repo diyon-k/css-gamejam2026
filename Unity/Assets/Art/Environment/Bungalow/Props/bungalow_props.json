@@ -4373,11 +4373,35 @@
   {
    "id": "Vent_B_Grate0",
    "prefab": "FloorGrate",
-   "room": "Kitchen",
+   "room": "B1",
    "pos": [
-    12.9,
+    9.0,
+    -2.505,
+    14.7
+   ],
+   "rot": [
+    -90.0,
     0.0,
-    13.1
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 748,
+   "fixture": "",
+   "note": "vent end: Editor/BungalowVents.cs"
+  },
+  {
+   "id": "Vent_B_Grate1",
+   "prefab": "FloorGrate",
+   "room": "Parlour",
+   "pos": [
+    9.0,
+    0.0,
+    18.7
    ],
    "rot": [
     0.0,
