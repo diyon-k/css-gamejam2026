@@ -1,6 +1,6 @@
 # BLINK: Feel Kit
 
-Sound, music, controller haptics and VFX for BLINK: what to use, where to get it, its licence, and the event in the code it hangs off. Researched 7 Nov 2026; links were opened and licences read on the source page. Prefer **CC0** (no credit). Anything **CC-BY** needs a line in [CREDITS.md](../CREDITS.md).
+Sound, music, controller haptics and VFX for BLINK: what to use, where to get it, its licence, and the event in the code it hangs off. Researched 7 Nov 2026; links were opened and licences read on the source page. Prefer **CC0** (no credit). Anything **CC-BY** needs a line in [the README credits](../README.md#credits).
 
 Hooks refer to the contracts in [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -213,7 +213,7 @@ VFX Graph isn't installed, so use Shuriken particles plus URP Volumes. Size: S i
 
 | Effect | How | Asset | Hook | Size |
 |---|---|---|---|---|
-| **Blood burst** | **Done** (PR #7): `BloodImpactSpawner` with Vefects blood | see CREDITS.md | `Gun.Fired` | — |
+| **Blood burst** | **Done** (PR #7): `BloodImpactSpawner` with Vefects blood | see the README credits | `Gun.Fired` | — |
 | **Blood decal** | URP Decal Projector, raycast ~2 m past the zombie to the wall or floor. Cap at 40, recycle oldest | [Blood Overlay](https://opengameart.org/content/blood-overlay) CC0 | `Gun.Fired` | S |
 | **Death pool + drips** | Decal under the hips growing 0.2 → 1.2 m over 3 s, plus small dripping particles. Unparented so it outlives the corpse | CC0 blood textures | `Health.Died` | S |
 | **Muzzle flash** | 1–2 Kenney muzzle sprites for 0.05 s, pooled point light for 0.04 s with no shadows, 3-particle smoke puff. Unscaled | [Kenney Smoke](https://kenney.nl/assets/smoke-particles) CC0 | `Gun.Fired` | S |

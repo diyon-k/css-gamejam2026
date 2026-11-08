@@ -10,7 +10,7 @@ namespace Blink.UI
     [CreateAssetMenu(menuName = "Blink/UI Theme", fileName = "BlinkTheme")]
     public sealed class BlinkThemeAsset : ScriptableObject
     {
-        [Header("Fonts (SIL OFL, see CREDITS.md)")]
+        [Header("Fonts (SIL OFL, see README credits)")]
         [Tooltip("Titles and headings: letterspaced small caps. Cormorant SC Medium.")]
         public Font display;
         [Tooltip("HUD labels and prompts: small caps with a little more weight. Cormorant SC SemiBold.")]

@@ -347,7 +347,7 @@ FIXTURE_TUNING = {
     "E1": dict(glow=2.0, col="#F5E8CC", i=1.4, cone=150), "H1": dict(glow=1.2, col="#FFE4C0", i=1.6),
     "H2": dict(glow=1.5, col="#FFDDB0", i=0.45), "H3": dict(glow=1.5, col="#FFDDB0", i=0.45),
     "H4": dict(glow=1.8, col="#FFD9A8", i=1.1), "H5": dict(glow=0.0), "H6": dict(glow=1.5, col="#FFDDB0", i=0.35),
-    "L1": dict(glow=3.0, col="#FFE6C4", i=1.5, cone=150), "L2": dict(glow=2.5, col="#FFEED8", i=1.6),
+    "L1": dict(glow=3.0, col="#FFE6C4", i=1.5, cone=150), "L2": dict(glow=1.0, col="#FFEED8", i=1.0),
     "L3": dict(glow=2.0, col="#FFDDB4", i=0.6), "L4": dict(glow=1.2, col="#FFDDB4", i=0.4),
     "K1": dict(glow=2.0, cone=150), "K2": dict(glow=2.0, cone=150), "R1": dict(glow=1.6, col="#F5E6C8", i=1.4),
     "R2": dict(glow=1.0, i=0.8), "RW1": dict(col="#B8BCB0", i=3.0), "KW1": dict(i=1.2),
@@ -355,7 +355,7 @@ FIXTURE_TUNING = {
     "C1": dict(glow=6.0), "C2": dict(glow=6.0, i=1.4),
     # revision 3: copied from the matching ground-floor fixture (dome E1, chandelier H1, lamp L2 / R2, fan L1, RW1)
     "CO1": dict(glow=2.0, col="#F5E8CC"), "CO2": dict(glow=1.6, col="#F5E8CC"), "CO3": dict(glow=0.0),
-    "P1": dict(glow=1.2, col="#FFE4C0", i=1.6), "P2": dict(glow=2.5, col="#FFEED8", i=2.4),
+    "P1": dict(glow=1.2, col="#FFE4C0", i=1.6), "P2": dict(glow=1.0, col="#FFEED8", i=0.8),
     "M1": dict(glow=3.0, col="#FFE6C4", i=1.3), "M2": dict(glow=1.0, i=0.8),
     "MW1": dict(col="#B8BCB0", i=2.2), "MW2": dict(col="#B8BCB0", i=1.7), "PW1": dict(i=0.9),
     "CW3": dict(i=0.8), "CW4": dict(i=0.8),

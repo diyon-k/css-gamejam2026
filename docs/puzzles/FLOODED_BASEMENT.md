@@ -178,7 +178,7 @@ Slowing the player in deep water adds pressure (`walkSpeed` × ~0.7 above waist 
 
 ### Audio
 
-`SoundCue` assets in `Assets/Art/Audio/Cues/` (empty cue = silent placeholder): `Flood_Drip`, `Flood_TapRun` (loop), `Flood_DoorSlam`, `Flood_Surge` (on each blink jump, the slosh), `Flood_Gurgle` (drain loop), `Flood_CoverClang`, `Flood_Drown`. Use `AudioService.PlayLoop` / `PlayAt`. Third-party clips go in `CREDITS.md`.
+`SoundCue` assets in `Assets/Art/Audio/Cues/` (empty cue = silent placeholder): `Flood_Drip`, `Flood_TapRun` (loop), `Flood_DoorSlam`, `Flood_Surge` (on each blink jump, the slosh), `Flood_Gurgle` (drain loop), `Flood_CoverClang`, `Flood_Drown`. Use `AudioService.PlayLoop` / `PlayAt`. CC-BY clips go in the README credits.
 
 ---
 

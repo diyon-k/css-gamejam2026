@@ -314,7 +314,7 @@ Built by script, re-runnable:
 - **Import:** max 1024, mipmaps on, trilinear, aniso 8 (decals 2), Standalone override **BC7**, CompressedHQ. Repeat wrap; the decal atlas uses Clamp.
 - **Grading:** done in linear (per-channel gain to a target mean, then saturation and contrast about the mean). Albedo is clamped to sRGB ≈ 0.1–0.94.
 
-**Sources (all CC0 1.0; Poly Haven and ambientCG need no credit, but the coordinator lists them in CREDITS.md):**
+**Sources (all CC0 1.0; Poly Haven and ambientCG need no credit, so they are not listed):**
 - Poly Haven: dark_wooden_planks (Amal Kumar), herringbone_parquet (Jenelle van Heerden, Sergej Majboroda), old_linoleum_flooring_01 (Charlotte Baglioni), concrete_floor_damaged_01 (Rob Tuytel), decrepit_wallpaper (Rob Tuytel), white_plaster_02 (Rob Tuytel), whitewashed_brick (Charlotte Baglioni).
 - ambientCG: Wallpaper002C, Tiles133D, Fabric032, Leaking013A, Leaking017B.
 - The decal atlas, the three wallpaper patterns, the glass smudge and the water ripple are self-authored (seeded numpy and PIL).
@@ -393,7 +393,7 @@ The renders are in the session scratch folder `bungalow/phase4/`.
 
 ### 3.1 Reuse from `Unity/Assets/Art/Mansion/PolyHaven/`
 
-Triangle counts were read by importing every FBX in headless Blender 5.1.2. The folder's LICENSE.txt confirms CC0 with Poly Haven links; these assets are **not yet in CREDITS.md** and will be added.
+Triangle counts were read by importing every FBX in headless Blender 5.1.2. The folder's LICENSE.txt confirms CC0 with Poly Haven links; these assets need no credit.
 
 | Asset | Tris (file) | Use | Target tris |
 |---|---|---|---|
