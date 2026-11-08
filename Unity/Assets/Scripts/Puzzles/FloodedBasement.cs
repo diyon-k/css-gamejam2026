@@ -194,6 +194,7 @@ namespace Blink.Puzzles
             TimeSkipController.Register(this);
             WakeUpSequence.Respawned += OnRespawned;
             if (drain != null) drain.Levered += OnDrainLevered;
+            PuzzleRooms.Add(roomBounds);
         }
 
         void OnDisable()
@@ -201,6 +202,7 @@ namespace Blink.Puzzles
             TimeSkipController.Unregister(this);
             WakeUpSequence.Respawned -= OnRespawned;
             if (drain != null) drain.Levered -= OnDrainLevered;
+            PuzzleRooms.Remove(roomBounds);
             StopSound(ref _tapLoop, 0f);
             StopSound(ref _gurgle, 0f);
             SetMuffle(0f);
