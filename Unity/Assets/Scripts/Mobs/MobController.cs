@@ -14,8 +14,8 @@ namespace Blink.Mobs
     /// - Loses sight for <see cref="loseSightTime"/> => walks to where it last saw you and searches.
     /// - Hears a <see cref="Noise"/> within range (walking distance, so walls muffle it) while it can't
     ///   see you => walks over to the noise and searches. Noise can lure it off a chase.
-    /// - You hide (<see cref="Interaction.HidingSpot"/>) => blind to you, searches where it last saw you. Unless it was
-    ///   watching as you got in: then it walks to the spot and drags you out into the grab.
+    /// - You hide (<see cref="Interaction.HidingSpot"/>) => blind to you, searches where it last saw you (the spot itself
+    ///   if it watched you get in). It never pulls you out, grabs or hurts you while you're inside.
     /// - Search over => back to the nearest waypoint. No patrol route => stands guard (Idle).
     /// Attacks in range, dies when its Health runs out.
     /// On a blink skip it jumps along its current navmesh path by speed x seconds x skipDistanceMultiplier,
@@ -275,11 +275,10 @@ namespace Blink.Mobs
             if (!targetAlive) _seesTarget = false;
             else if (hide != null || Interaction.Vent.Inside != null)
             {
-                if (hide == null || _hidingIn != hide) // in a vent nobody follows you: under the floor, off the navmesh
-                {
-                    _seesTarget = false;
-                    _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
-                }
+                // Hidden (or in a vent): it can't get you. Watched you get in => it searches right at the spot.
+                if (_hidingIn != null) _lastSeen = _hidingIn.ExitPoint;
+                _seesTarget = false;
+                _lostTimer = 0f; // stop homing on you: go search where it last saw you instead
             }
             else if ((_senseTimer -= dt) <= 0f)
             {
@@ -610,20 +609,13 @@ namespace Blink.Mobs
         void Attack(bool grabbed = false)
         {
             if (GrabQte.Active) return; // world is frozen mid-QTE; another zombie already has you
+            if (Interaction.HidingSpot.Occupant != null) return; // hidden: no grab, no damage, no pulling you out
 
             // A zombie reaching you while your eyes are shut snaps time back to normal.
             var timeSkip = TimeSkipController.Instance;
             if (timeSkip != null && timeSkip.IsFastForwarding)
             {
                 timeSkip.InterruptFastForward();
-                grabbed = true;
-            }
-
-            // Found you hiding: haul you out and grab you.
-            if (_hidingIn != null && Interaction.HidingSpot.Occupant == _hidingIn)
-            {
-                _hidingIn.DragOut(transform.position);
-                _hidingIn = null;
                 grabbed = true;
             }
 
