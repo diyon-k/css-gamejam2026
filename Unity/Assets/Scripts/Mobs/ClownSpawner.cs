@@ -29,12 +29,18 @@ namespace Blink.Mobs
         [SerializeField] string agentType = "BungalowZombie";
         [Tooltip("bungalow_layout.json: clowns wander between its rooms. Empty = they walk their Route_ loops instead.")]
         [SerializeField] TextAsset layout;
+        [Tooltip("Layout room ids that each get one clown scriptedDelay world seconds in. Replaces the random spawning; empty = random.")]
+        [SerializeField] string[] scriptedRooms = { "Corridor", "Kitchen" };
+        [SerializeField, Min(0f)] float scriptedDelay = 30f;
 
         [System.Serializable] class Layout { public Room[] rooms; }
-        [System.Serializable] class Room { public float[] min, max; }
+        [System.Serializable] class Room { public string id; public float[] min, max; }
 
         readonly List<Health> _alive = new();
         Bounds[] _rooms;
+        string[] _roomIds;
+        bool _scriptedDone;
+        bool Scripted => scriptedRooms.Length > 0 && _rooms != null;
         Transform _holder;
         readonly Dictionary<Transform, Transform> _routes = new();
         float _timer;
@@ -54,13 +60,16 @@ namespace Blink.Mobs
             if (layout != null && JsonUtility.FromJson<Layout>(layout.text)?.rooms is { Length: > 0 } rooms)
             {
                 _rooms = new Bounds[rooms.Length];
+                _roomIds = new string[rooms.Length];
                 for (int i = 0; i < rooms.Length; i++)
                 {
                     _rooms[i] = new Bounds();
+                _roomIds[i] = rooms[i].id;
                     _rooms[i].SetMinMax(new Vector3(rooms[i].min[0], rooms[i].min[1], rooms[i].min[2]),
                                         new Vector3(rooms[i].max[0], rooms[i].max[1], rooms[i].max[2]));
                 }
             }
+            if (Scripted) _timer = scriptedDelay;
         }
 
         void OnEnable() => TimeSkipController.Register(this);
@@ -71,6 +80,13 @@ namespace Blink.Mobs
 
         void Tick(float seconds)
         {
+            if (Scripted)
+            {
+                if (_scriptedDone || (_timer -= seconds) > 0f) return;
+                _scriptedDone = true;
+                SpawnScripted();
+                return;
+            }
             _alive.RemoveAll(h => h == null || h.IsDead);
             if (_alive.Count >= maxAlive) { _timer = spawnDelay; return; } // full: a death starts a fresh wait
             _timer -= seconds;
@@ -84,7 +100,22 @@ namespace Blink.Mobs
         {
             foreach (var h in _alive) if (h != null) Destroy(h.gameObject);
             _alive.Clear();
-            _timer = 0f;
+            _timer = Scripted ? scriptedDelay : 0f;
+            _scriptedDone = false;
+        }
+
+        void SpawnScripted()
+        {
+            int? typeId = AgentTypeId(agentType);
+            var filter = new NavMeshQueryFilter { agentTypeID = typeId ?? 0, areaMask = NavMesh.AllAreas };
+            foreach (var id in scriptedRooms)
+            {
+                int i = System.Array.IndexOf(_roomIds, id);
+                if (i < 0) { Debug.LogWarning($"ClownSpawner: no layout room '{id}'", this); continue; }
+                var floor = new Vector3(_rooms[i].center.x, _rooms[i].min.y, _rooms[i].center.z);
+                if (NavMesh.SamplePosition(floor, out var hit, 2.5f, filter))
+                    SpawnAt(hit.position, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), null, typeId);
+            }
         }
 
         void Spawn()
@@ -95,6 +126,12 @@ namespace Blink.Mobs
             candidates.RemoveAll(c => c.pos.y < minSpawnY); // no basement spawns
             if (candidates.Count == 0) return;
             var (position, rotation, marker) = PickPoint(candidates);
+            SpawnAt(position, rotation, marker, typeId);
+        }
+
+        void SpawnAt(Vector3 position, Quaternion rotation, Transform marker, int? typeId)
+        {
+            if (clownPrefab == null) return;
             // built under an inactive holder so the agent type and route are set before its Awake / OnEnable
             if (_holder == null) { _holder = new GameObject("ClownSpawnHolder").transform; _holder.gameObject.SetActive(false); }
             var clown = Instantiate(clownPrefab, position, rotation, _holder);

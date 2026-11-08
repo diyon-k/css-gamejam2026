@@ -2379,30 +2379,6 @@
    "note": ""
   },
   {
-   "id": "B1_Crate",
-   "prefab": "wooden_crate_01",
-   "room": "B1",
-   "pos": [
-    12.6,
-    -2.85,
-    4.6
-   ],
-   "rot": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 700,
-   "fixture": "",
-   "note": ""
-  },
-  {
    "id": "B1_Barrel",
    "prefab": "barrel_03",
    "room": "B1",
@@ -2425,30 +2401,6 @@
    "tris": 900,
    "fixture": "",
    "note": ""
-  },
-  {
-   "id": "B1_CrateLong",
-   "prefab": "wooden_crate_02",
-   "room": "B1",
-   "pos": [
-    12.9,
-    -2.85,
-    13.1
-   ],
-   "rot": [
-    0.0,
-    270.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 800,
-   "fixture": "",
-   "note": "under the Vent_B kitchen hole: the step up into it (its 0.46 top is in bungalow_layout.VENTS path); hiding chest, front west so you climb out by the vent exit"
   },
   {
    "id": "B1_Trash",
@@ -2807,30 +2759,6 @@
    ],
    "kind": "furniture",
    "tris": 900,
-   "fixture": "",
-   "note": ""
-  },
-  {
-   "id": "B2_Crate",
-   "prefab": "wooden_crate_01",
-   "room": "B2",
-   "pos": [
-    16.3,
-    -2.85,
-    4.35
-   ],
-   "rot": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 700,
    "fixture": "",
    "note": ""
   },

@@ -226,8 +226,8 @@ VENTS = {
                               exit=(6.3, 0.0, 7.05)),
                          dict(room="Bathroom", grate=(6.3, 10.40), hole=dict(x=(6.0, 6.6), z=(10.10, 10.70)),
                               exit=(6.3, 0.0, 11.25))]),
-    # kitchen -> B1 cellar (not B2: the flooded-basement puzzle room), a drop onto a crate between two joists
-    # (z 12.8 / 13.4), skipping the hall stair. Climb back up from the crate.
+    # kitchen -> B1 cellar (not B2: the flooded-basement puzzle room), a drop to the floor between two joists
+    # (z 12.8 / 13.4), skipping the hall stair. Reach the grate from the floor to climb back up (the crate that stood under it blocked D5).
     "Vent_B": dict(duct=None,
                    path=[(12.9, -0.40, 13.1), (12.9, BASEMENT + 0.46 + 1.55, 13.1)],
                    ends=[dict(room="Kitchen", grate=(12.9, 13.1), hole=dict(x=(12.6, 13.2), z=(12.85, 13.35)),

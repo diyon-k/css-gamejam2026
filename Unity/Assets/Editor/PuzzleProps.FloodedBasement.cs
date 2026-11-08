@@ -94,10 +94,13 @@ namespace Blink.EditorTools
             BuildChestOfDrawers(root.transform, frame, mats, spots, anchors);
             BuildTallCupboard(root.transform, frame, mats, spots, anchors);
             BuildToolLocker(root.transform, frame, mats, spots, anchors);
+            int crate = spots.Count;
             BuildCrate(root.transform, frame, mats, spots, anchors);
             room.searchSpots = spots.ToArray();
             room.searchAnchors = anchors.ToArray();
-            room.crowbar = BuildCrowbar(anchors[0], mats);
+            // Always in the crate, there from the start (the other spots are just furniture to rummage through).
+            room.crowbarSpot = crate;
+            room.crowbar = BuildCrowbar(anchors[crate], mats);
 
             room.water = BuildWaterPlane(root.transform, interior, mats);
             var (whirl, foam) = BuildWhirlpool(root.transform, drainPos, mats);
@@ -618,22 +621,32 @@ namespace Blink.EditorTools
             Junk(g, new Vector3(0.05f, 0.1f, 0f), m, rag: true);
         }
 
-        /// <summary>A wooden crate with a hinged lid, low on the doorway wall: the first place to go under.</summary>
+        /// <summary>Size of the crate against the first 0.8 x 0.5 x 0.5 m one.</summary>
+        const float CrateScale = 2.5f;
+
+        /// <summary>
+        /// A big wooden chest with a hinged lid on the doorway wall, the crowbar on a tray just under its rim (on the floor
+        /// of a chest this deep the front would hide it from the look ray).
+        /// </summary>
         static void BuildCrate(Transform root, Frame frame, FloodMaterials m, List<Openable> spots, List<Transform> anchors)
         {
-            const float w = 0.8f, d = 0.5f, h = 0.5f;
-            float z = Mathf.Max(0.6f, frame.DoorZ - 6.3f);
-            if (frame.DoorZ < frame.Width * 0.5f) z = Mathf.Min(frame.Width - 0.6f, frame.DoorZ + 6.3f);
+            const float s = CrateScale, w = 0.8f * s, d = 0.5f * s, h = 0.5f * s, board = 0.03f * s;
+            float z = Mathf.Max(w * 0.5f + 0.2f, frame.DoorZ - 6.3f);
+            if (frame.DoorZ < frame.Width * 0.5f) z = Mathf.Min(frame.Width - w * 0.5f - 0.2f, frame.DoorZ + 6.3f);
             var g = new GameObject("Crate").transform;
             g.SetParent(root, false);
             g.SetPositionAndRotation(frame.P(d * 0.5f + 0.02f, z), frame.Facing(1f, 0f));
-            Part(g, PrimitiveType.Cube, "Base", new Vector3(0f, 0.03f, 0f), Vector3.zero, new Vector3(w, 0.06f, d), m.Wood, keepCollider: true);
-            Part(g, PrimitiveType.Cube, "Front", new Vector3(0f, h * 0.5f, d * 0.5f - 0.015f), Vector3.zero, new Vector3(w, h, 0.03f), m.Wood, keepCollider: true);
-            Part(g, PrimitiveType.Cube, "Back", new Vector3(0f, h * 0.5f, -d * 0.5f + 0.015f), Vector3.zero, new Vector3(w, h, 0.03f), m.Wood, keepCollider: true);
-            Part(g, PrimitiveType.Cube, "SideL", new Vector3(-w * 0.5f + 0.015f, h * 0.5f, 0f), Vector3.zero, new Vector3(0.03f, h, d), m.Wood, keepCollider: true);
-            Part(g, PrimitiveType.Cube, "SideR", new Vector3(w * 0.5f - 0.015f, h * 0.5f, 0f), Vector3.zero, new Vector3(0.03f, h, d), m.Wood, keepCollider: true);
-            foreach (float y in new[] { 0.12f, 0.38f })
-                Part(g, PrimitiveType.Cube, "Slat", new Vector3(0f, y, d * 0.5f + 0.005f), Vector3.zero, new Vector3(w + 0.01f, 0.06f, 0.012f), m.DarkWood);
+            Part(g, PrimitiveType.Cube, "Base", new Vector3(0f, board, 0f), Vector3.zero, new Vector3(w, board * 2f, d), m.Wood, keepCollider: true);
+            Part(g, PrimitiveType.Cube, "Front", new Vector3(0f, h * 0.5f, d * 0.5f - board * 0.5f), Vector3.zero, new Vector3(w, h, board), m.Wood, keepCollider: true);
+            Part(g, PrimitiveType.Cube, "Back", new Vector3(0f, h * 0.5f, -d * 0.5f + board * 0.5f), Vector3.zero, new Vector3(w, h, board), m.Wood, keepCollider: true);
+            Part(g, PrimitiveType.Cube, "SideL", new Vector3(-w * 0.5f + board * 0.5f, h * 0.5f, 0f), Vector3.zero, new Vector3(board, h, d), m.Wood, keepCollider: true);
+            Part(g, PrimitiveType.Cube, "SideR", new Vector3(w * 0.5f - board * 0.5f, h * 0.5f, 0f), Vector3.zero, new Vector3(board, h, d), m.Wood, keepCollider: true);
+            foreach (float y in new[] { 0.12f * s, 0.38f * s })
+                Part(g, PrimitiveType.Cube, "Slat", new Vector3(0f, y, d * 0.5f + 0.005f * s), Vector3.zero, new Vector3(w + 0.01f * s, 0.06f * s, 0.012f * s), m.DarkWood);
+
+            // A tray resting on cleats just under the rim, front half only: what you see when the lid goes up.
+            float trayY = h - 0.18f, trayD = d * 0.5f;
+            Part(g, PrimitiveType.Cube, "Tray", new Vector3(0f, trayY, d * 0.5f - board - trayD * 0.5f), Vector3.zero, new Vector3(w - board * 2f, 0.025f, trayD), m.DarkWood, keepCollider: true);
 
             // Openable turns about its own local up, so the hinge pivot's up is laid along the crate's width (local x).
             var hinge = new GameObject("Lid").transform;
@@ -641,14 +654,15 @@ namespace Blink.EditorTools
             hinge.SetLocalPositionAndRotation(new Vector3(0f, h, -d * 0.5f), Quaternion.Euler(0f, 0f, -90f));
             var lid = Part(hinge, PrimitiveType.Cube, "Boards", Vector3.zero, Vector3.zero, Vector3.one, m.Wood, keepCollider: true);
             // Placed in the crate's own axes (same rotation as the crate), so its scale reads as the crate's width/height/depth.
-            lid.transform.SetPositionAndRotation(g.TransformPoint(new Vector3(0f, h + 0.015f, 0f)), g.rotation);
-            lid.transform.localScale = new Vector3(w + 0.02f, 0.03f, d + 0.02f);
+            lid.transform.SetPositionAndRotation(g.TransformPoint(new Vector3(0f, h + board * 0.5f, 0f)), g.rotation);
+            lid.transform.localScale = new Vector3(w + 0.02f * s, board, d + 0.02f * s);
             var o = hinge.gameObject.AddComponent<Openable>();
-            o.noun = "crate";
-            o.openAngle = -85f; // swings up and back against the wall
+            o.noun = "chest";
+            o.openAngle = -80f; // swings up, just short of the wall (at -85 the big lid's back edge went into it)
             spots.Add(o);
-            anchors.Add(Anchor(g, new Vector3(0f, 0.07f, 0.05f), 0f));
-            Junk(g, new Vector3(0.25f, 0.07f, -0.1f), m, bottle: true);
+            anchors.Add(Anchor(g, new Vector3(0f, trayY + 0.0125f, d * 0.5f - board - trayD * 0.5f), 0f));
+            Junk(g, new Vector3(0.6f, board * 2f, -0.3f), m, bottle: true);
+            Junk(g, new Vector3(-0.55f, trayY + 0.0125f, d * 0.5f - board - trayD * 0.5f), m, rag: true);
         }
 
         /// <summary>A hollow carcass: back, sides, top, base and shelves. Local +z is the front, origin on the floor.</summary>
@@ -717,7 +731,6 @@ namespace Blink.EditorTools
             pickup.displayName = "Crowbar";
             pickup.holdEuler = new Vector3(0f, -70f, -35f);
             pickup.holdScale = 0.75f;
-            bar.SetActive(false); // FloodedBasement puts it in a random spot when the flood starts
             return pickup;
         }
 
