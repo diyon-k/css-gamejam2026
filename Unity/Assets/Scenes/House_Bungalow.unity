@@ -19463,8 +19463,6 @@ MonoBehaviour:
   underwaterTint: {r: 0.16, g: 0.2, b: 0.12, a: 0.72}
   wadeDepth: 0.9
   wadeSpeed: 0.7
-  useCheckpoint: 1
-  checkpointBack: 1.2
   waterScroll: {x: 0.015, y: 0.01}
   whirlpoolSpin: 220
   dripCue: {fileID: 11400000, guid: acaa2f3e43f3a40faab857d3eddd5e72, type: 2}

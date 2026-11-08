@@ -104,9 +104,9 @@ Level = metres of water above the room floor. Drive it from a pure `FloodLevel` 
   Clear it in a `SubsystemRegistration` reset like the other statics.
 - Reset while the screen is black, never in view.
 
-### Respawn distance (recommended)
+### Respawn distance
 
-Death respawns you in the start bedroom on the second floor. From there to `PuzzleRoom_5` is a long walk through most of the house, and this puzzle *will* kill people. Recommended: a checkpoint. Add `WakeUpSequence.SetCheckpoint(Vector3 pos, Quaternion rot)` and have this puzzle set it to `Basement_Passage` just outside the door, facing it, when Flooding starts. Wake-up there instead of the bed (keep the same eyelid animation; skip the lying-in-bed pose or lie on the floor). Clear it on Solved. If that's too much for the jam, flag it as a follow-up, don't silently skip it.
+Death in the basement (drowning, or clowns) respawns you in bed like any other death, not at a checkpoint outside the door. The room still resets on `WakeUpSequence.Respawned`.
 
 ---
 
