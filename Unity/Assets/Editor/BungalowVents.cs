@@ -60,8 +60,7 @@ namespace Blink.EditorTools
             if (surface != null) log.AppendLine(BungalowGreyboxBuilder.Bake(surface));
             log.AppendLine(BungalowLightingBuilder.Build(scene, false));
             EditorSceneManager.SaveScene(scene);
-            Lightmapping.Bake();
-            log.AppendLine(BungalowLightingBuilder.NormalizeLightmapDensity(scene));
+            // ponytail: one bake, not SPEC 5.4's bake / normalise / bake; run NormalizeLightmapDensity + a second bake if the duct or grates look off-density.
             Lightmapping.Bake();
             EditorSceneManager.SaveScene(scene);
             Debug.Log("[BungalowVents] " + log);
