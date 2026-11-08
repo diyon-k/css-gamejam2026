@@ -24,17 +24,24 @@ namespace Blink.Effects
         [SerializeField, Min(0f)] float burstStrength = 2.5f;
         [Tooltip("Audible range of the break, metres (glass smashing draws zombies).")]
         [SerializeField, Min(0f)] float breakLoudness = 12f;
+        [Tooltip("Only a blade (the axe) counts as a hit: bullets and blunt items just mark it (boarded-up planks).")]
+        [SerializeField] bool bladeOnly;
 
         int _hits;
 
         public bool Broken { get; private set; }
         public int HitsToBreak => hitsToBreak;
+        public bool BladeOnly => bladeOnly;
+
+        /// <summary>Raised once, when it breaks.</summary>
+        public event Action Smashed;
 
         /// <summary>Set up one added at runtime.</summary>
-        public void Configure(int hits, Light[] lightsToKill)
+        public void Configure(int hits, Light[] lightsToKill, bool blade = false)
         {
             hitsToBreak = Mathf.Max(1, hits);
             lights = lightsToKill ?? Array.Empty<Light>();
+            bladeOnly = blade;
         }
 
         /// <summary>Hits a material takes to break when auto-attached: glass 1, porcelain 2, anything else 0 (not breakable).</summary>
@@ -60,6 +67,7 @@ namespace Blink.Effects
             ImpactParticles.Burst(hasLights ? SurfaceKind.Glass : OwnSurface(), point, normal, burstStrength);
             if (breakCue != null && AudioService.Instance != null) AudioService.Instance.PlayAt(breakCue, point);
             Noise.Make(point, breakLoudness);
+            Smashed?.Invoke();
 
             if (hasLights) PutOut();
             if (TryGetComponent(out Rigidbody body) && body.isKinematic)
