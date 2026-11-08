@@ -35,7 +35,9 @@ namespace Blink.Combat
 
         [Header("Ammo")]
         [SerializeField, Min(1)] int magazineSize = 8;
-        [SerializeField, Min(0)] int reserveAmmo = 8;
+        [Tooltip("Rounds loaded when the gun is found (capped at the magazine size).")]
+        [SerializeField, Min(0)] int startLoaded = 4;
+        [SerializeField, Min(0)] int reserveAmmo;
         [Tooltip("Most spare rounds carried. Ammo boxes can't be picked up once this is full.")]
         [SerializeField, Min(0)] int maxReserve = 8;
         [Tooltip("World seconds to reload with rounds still in the magazine. Matches the Reload clip (2.33 s).")]
@@ -78,7 +80,7 @@ namespace Blink.Combat
 
         void Awake()
         {
-            AmmoInMagazine = magazineSize;
+            AmmoInMagazine = Mathf.Min(startLoaded, magazineSize);
             reserveAmmo = Mathf.Min(reserveAmmo, maxReserve);
             if (aimCamera == null) aimCamera = GetComponentInParent<Camera>();
             _owner = GetComponentInParent<IDamageable>();
