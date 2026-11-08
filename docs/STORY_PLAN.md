@@ -54,7 +54,7 @@ Notes **hint** at the story; none of them explains it outright. Read with E, tim
 | Child's drawing (Lily) | Bathroom floor, by the doll's chair | P2: "Dolly only plays when nobody is looking... Tom blinked." |
 | Torn diary page (E.) | Master bedroom, on the dresser | P4: faces turned to him. P3: "he keeps his cabinet for the moon... never slow while you're watching" |
 | Kitchen list (Mrs Pell) | Kitchen table | P5: "a watched pot never does"; valve: "left loosens, right binds" |
-| Workshop scrap | B2 Workshop workbench | P6: "the water only rises while no one minds it"; P7: "two short of midnight" (11:58) |
+| Workshop scrap | B2 Workshop workbench | P6: "it comes up every time you close your eyes"; P7: "two short of midnight" (11:58) |
 | Newspaper clipping | Entrance hall floor, by the front door | Kerr's auction, the watch marked 'A. H.', an anonymous buyer |
 
 **Puzzle-hint notes:** not written yet. They will use the same `Readable` component once the puzzles are decided.
@@ -113,7 +113,7 @@ Seven puzzles, one per room, placed in the blockout's empty puzzle rooms (`Puzzl
 | P3 | `PuzzleRoom_2` | Attic | Moonlight through the roof | **Speed time up** | `key_servants`: opens the servants' stair door down |
 | P4 | `PuzzleRoom_3` | First | The watching portraits | **Blinks as information** | `wrench` |
 | P5 | `PuzzleRoom_4` (dressed as the scullery) | Ground | Fire and pipes | Eyes shut gets work done | `key_basement`: opens the basement stair door in the `Kitchen` |
-| P6 | `PuzzleRoom_5` | Basement | The flood | **Don't blink** | `key_workshop`: opens `PuzzleRoom_6` |
+| P6 | Bungalow `B2` workshop (was `PuzzleRoom_5`) | Basement | The flooded basement | **Don't blink**, then blinks help | `key_workshop`: one of D1's three keys (was `PuzzleRoom_6`) |
 | P7 | `PuzzleRoom_6` + `GeneratorRoom` | Basement | Burning note and generator | Don't blink, then eyes shut | Exit gate opens. End of Act 1 |
 
 **Mix:** 3 reward closing your eyes (P1, P3, P5), 2 punish it (P2, P6), 1 reads blinks (P4), and the finale does both (P7).
@@ -209,23 +209,30 @@ Full brief: [puzzles/LILYS_DOLL_ROOM.md](puzzles/LILYS_DOLL_ROOM.md). **Blink ru
   - The fire is a particle system, a point light and a damage trigger, switched off when the valve completes.
   - The water is a particle system turned on at the same time.
 
-### P6. The flood (`PuzzleRoom_5`, basement)
+### P6. The flooded basement (bungalow `B2` workshop)
 
-- **Setup:**
-  - Water is pouring in from the burst pipe upstairs.
-  - `key_workshop` hangs on a hook on the far wall, just above the water line, next to a floor drain.
-- **Clue card** by the drain: *"Drain grate. Do not let anything fall in."* The rising water is the real clue.
-- **Solve:** walk through the water and take the key (about 6 s of wading). Don't blink on the way.
-- **The catch:**
-  - Each blink raises the water one stage. On stage 3 the key washes off the hook and down the drain.
-  - Eyes held shut raises it faster.
-  - This comes straight after P5, where you had to shut your eyes, so it flips the rule.
-- **Fail:** the key goes down the drain. The water drains back to stage 0 over a couple of seconds and the key reappears on the hook. Try again.
-- **Build:**
-  - `FloodRoom` (new, small). `ISkippable` that counts unwatched seconds (same maths as `StaringDoll.TakeSteps`).
-  - It raises a water plane one stage per step. On the last stage it hides the key `Pickup` and resets.
-  - Optional: slow the player in deep water.
-- **Tuning:** natural blinks come every 3-5 s, so the wade must be short enough to make with 2 blinks spare.
+Full brief: [puzzles/FLOODED_BASEMENT.md](puzzles/FLOODED_BASEMENT.md). **Blink rule: don't blink (each blink is a big jump in the water). Once the drain is open, blinking helps.**
+
+- **Setup:** a bath stands against the far wall of the workshop, facing door D5, its tap dripping. A rusted cover sits over a drain in the middle of the floor. Around the walls: a chest of three drawers, a tall cupboard, a green tool locker and a crate with a hinged lid.
+- **Clue card** (nailed to a stake by the drain, only useful once you're in trouble): *"Drain blocked AGAIN. The cover's rusted solid, you'll need a bar to shift it. — Groundsman"*
+- **Solve:**
+  1. Walk 1.5 m in: the tap runs and the bath spills over. The water creeps up (0.012 m/s, about 2 min to the eyes with no blinks).
+  2. Search the six spots for the `crowbar` (a different one every attempt, never the last one).
+  3. Crowbar in hand, E on the drain: the cover flips off with a clang, the tap splutters out and the water spirals away (0.35 m/s, 3-5 s). Blinks now drain it faster.
+  4. `key_workshop` (*"Workshop key"*) was snagged in the drain basket. Take it once the water's gone.
+- **Fail:**
+  - **Each blink** is a 0.32 m surge (hidden behind the eyelids, eased up over 0.25 s as they open, with a slosh). **Eyes held shut:** one surge every 0.5 s. About 5 blinks from dry is death.
+  - **Water at eye height** (read live, so crouching drowns you sooner): green-brown underwater tint, bubbles, 1.2 s, then *"You drowned"*. The world muffles as the water closes in on the eyes, and you wade at 70 % speed once it's past 0.9 m.
+  - **Respawn** is at a checkpoint just outside the door (`WakeUpSequence.SetCheckpoint`), not the bed. The room resets: dry, tap dripping, cover back on, crowbar put away until the next attempt.
+- **Solved** is permanent: a later death elsewhere doesn't reset it (the checkpoint is cleared).
+- **Why it works:** it flips the rule twice: blinking is what drowns you, then once the drain is open it's what saves time.
+- **Build:** done, except the door.
+  - `Scripts/Puzzles/FloodLevel.cs` (pure rules, `Tests/EditMode/FloodLevelTests.cs`), `FloodedBasement.cs` (trigger, crowbar, surface and surge, tap, whirlpool, drowning, reset on `WakeUpSequence.Respawned`) and `DrainCover.cs`.
+  - **The door slam and lock aren't built** (someone else has the door). `FloodedBasement` raises `FloodStarted` / `onFloodStarted` (slam and lock D5), `Solved` / `onSolved` (unlock and swing it open) and `WasReset` / `onReset` (open and unlocked again after a drowning). Until the door exists you can walk out; the water can't drown you outside the room.
+  - **BLINK > Place Puzzle: Flooded Basement** (`Editor/PuzzleProps.FloodedBasement.cs`) builds it in the room named by `FloodRoom` (`B2`, found by `Floor_B2`), with the doorway from `FloodDoor` (`D5`). Run it before Setup Doors so D1 counts the real `key_workshop`.
+  - Cues `Flood_Drip`, `Flood_TapRun`, `Flood_TapStop`, `Flood_Surge`, `Flood_Gurgle`, `Flood_CoverClang`, `Flood_Drown`. Clips from `tools/audio/flood_sounds.py`.
+  - `PlayerController.SpeedMultiplier` (wading).
+- **Tuning:** search to drain-open should take 15-25 s and survive about 3 blinks. If it's near-certain death: lower `blinkJump`, then fewer search spots, then lower `riseRate`. Don't remove the blink jump.
 
 ### P7. Burning note and generator (`PuzzleRoom_6` + `GeneratorRoom`, the finale)
 
@@ -257,14 +264,15 @@ Full brief: [puzzles/LILYS_DOLL_ROOM.md](puzzles/LILYS_DOLL_ROOM.md). **Blink ru
 | `key_servants` | Moonlight cabinet (P3) | Servants' stair door |
 | `wrench` | Portrait safe (P4) | The valve in P5 |
 | `key_basement` | Mrs. Pell's desk (P5) | Basement stair door in the `Kitchen` |
-| `key_workshop` | Hook over the drain (P6) | `PuzzleRoom_6` door |
+| `crowbar` | A random drawer or cupboard in the flooded basement (P6), re-hidden each attempt | Levers the drain cover off (used up) |
+| `key_workshop` | Drain basket, once the water's gone (P6) | Front door D1 (one of three keys; was `PuzzleRoom_6`) |
 
 Existing ids (`candle`, `key_brass`, `key_iron`, cutlery) are unchanged. `key_brass` and `key_iron` aren't used by any puzzle yet: either give them a door or drop them.
 
 ### Build order
 
 1. **P2 and P7** first: they're the strongest moments. P2 is built (bungalow bathroom); P7's scripts are drafted.
-2. **P5 and P6** next: they chain (the burst pipe floods the basement) and reuse `JammedDoor` and the step maths.
+2. **P5 and P6** next. P6 is built (bungalow basement, all but its door); the bath tap is the flood's source now, so it no longer chains from P5's burst pipe.
 3. **P3:** needs the ceiling and roof hole from the mansion session.
 4. **P4** last: needs portrait art, and it's first on the cut list.
 
