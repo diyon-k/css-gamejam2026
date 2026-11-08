@@ -47,7 +47,7 @@ namespace Blink.Detection
         Phase _phase = Phase.Open;
         float _closedAt;
 
-        public BlinkClassifier(float holdThreshold = 0.35f, float minClosedTime = 0.03f)
+        public BlinkClassifier(float holdThreshold = 0.2f, float minClosedTime = 0.03f)
         {
             HoldThreshold = holdThreshold;
             MinClosedTime = minClosedTime;

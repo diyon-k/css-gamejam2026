@@ -87,7 +87,7 @@ Unity/Assets/
 ### Detection (`Blink.Detection`)
 - **`IEyeStateSource`**: `IsActive`, `Current` (`EyeState { Present, Closed }`), `SourceName`. Put any component implementing it on the same GameObject as `BlinkDetector` and it's used automatically. Eyes count as closed if *any* active source with a face in view says so. The only source in the game is `UdpEyeStateSource` (the webcam); the keyboard source was removed because `Space` is Jump.
 - **`BlinkDetector`** (singleton: `BlinkDetector.Instance`)
-  - Events: `Blinked` (quick blink, fired on reopen), `EyesShutBegan` (closed past 0.35 s), `EyesShutEnded(float closedSeconds)`.
+  - Events: `Blinked` (quick blink, fired on reopen), `EyesShutBegan` (closed past 0.2 s), `EyesShutEnded(float closedSeconds)`.
   - State: `EyesClosed`, `EyesShut`, `BlinkCount`, `SecondsSinceLastBlink` (for stare effects), `ActiveSourceName`.
   - Inspector: hold threshold, noise filter, "treat missing face as closed" (**off** by default).
   - **Looking away = eyes open.** No face in view (`present: false`) counts as open, whatever `closed` says: no blink, no eyes-shut, no fast-forward. If the face goes while the eyes are closed (`EyeStateMerger` notices the source that saw them closed lost the face, then `BlinkClassifier.LoseFace`):
