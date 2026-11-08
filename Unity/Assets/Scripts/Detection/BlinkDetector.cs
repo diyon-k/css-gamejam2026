@@ -49,6 +49,12 @@ namespace Blink.Detection
         /// <summary>Name of the source currently reporting closed eyes, or the first active one, or "none" (no webcam packets).</summary>
         public string ActiveSourceName { get; private set; } = "none";
 
+        /// <summary>At least one source is reporting (the webcam sidecar is up and sending). False while it starts.</summary>
+        public bool CameraRunning { get; private set; }
+
+        /// <summary>A reporting source can see a face, so blinks can register.</summary>
+        public bool FaceInView { get; private set; }
+
         IEyeStateSource[] _sources = Array.Empty<IEyeStateSource>();
         BlinkClassifier _classifier;
         EyeStateMerger _merger;
@@ -92,6 +98,16 @@ namespace Blink.Detection
         void Update()
         {
             float now = Time.unscaledTime;
+            bool running = false, face = false;
+            foreach (var source in _sources)
+            {
+                if (source == null || !source.IsActive) continue;
+                running = true;
+                face |= source.Current.Present;
+            }
+            CameraRunning = running;
+            FaceInView = face;
+
             var reading = _merger.Read(_sources);
             ActiveSourceName = reading.SourceName;
             var e = reading.FaceLost ? _classifier.LoseFace(now) : _classifier.Update(reading.Closed, now);

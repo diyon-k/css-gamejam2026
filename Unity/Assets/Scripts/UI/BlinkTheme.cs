@@ -304,6 +304,44 @@ namespace Blink.UI
             return width;
         }
 
+        /// <summary>
+        /// <see cref="SpacedText"/> revealed a letter at a time, left to right: at <paramref name="reveal"/> 0 nothing shows,
+        /// at 1 it's all there. Each letter fades in while rising <paramref name="rise"/> screen pixels into place.
+        /// </summary>
+        public static float SpacedTextReveal(Rect r, string text, GUIStyle style, Color color, float tracking, float reveal,
+            float rise, float shadow = 1f)
+        {
+            if (reveal >= 1f) return SpacedText(r, text, style, color, tracking, shadow);
+            if (string.IsNullOrEmpty(text)) return 0f;
+            float width = MeasureSpaced(text, style, tracking);
+            if (color.a <= 0.003f || reveal <= 0f) return width;
+
+            var anchor = style.alignment;
+            int col = (int)anchor % 3;
+            float x = col == 0 ? r.x : col == 1 ? r.x + (r.width - width) * 0.5f : r.xMax - width;
+            var leftAnchor = (TextAnchor)((int)anchor - col);
+            float gap = tracking * style.fontSize;
+            const float window = 0.4f; // share of the reveal each letter takes to arrive
+            int last = Mathf.Max(1, text.Length - 1);
+
+            var old = GUI.color;
+            GUI.color = Color.white;
+            style.alignment = leftAnchor;
+            for (int i = 0; i < text.Length; i++)
+            {
+                char ch = text[i];
+                float cw = CharWidth(ch, style);
+                float a = EaseOut((reveal - (1f - window) * i / last) / window);
+                if (ch != ' ' && a > 0f)
+                    DrawShadowed(new Rect(x, r.y + rise * (1f - a), cw + 2f, r.height), CharString(ch), style,
+                        Fade(color, a), shadow);
+                x += cw + gap;
+            }
+            style.alignment = anchor;
+            GUI.color = old;
+            return width;
+        }
+
         // ---------------------------------------------------------------- flat shapes (IMGUI)
 
         public static void Fill(Rect r, Color color)
