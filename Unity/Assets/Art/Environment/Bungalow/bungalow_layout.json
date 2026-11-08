@@ -1290,7 +1290,7 @@
   },
   {
    "id": "D8",
-   "locked": false,
+   "locked": true,
    "keys": 0,
    "key": "key_front",
    "also": [],

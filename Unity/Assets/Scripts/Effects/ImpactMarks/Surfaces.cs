@@ -53,7 +53,7 @@ namespace Blink.Effects
             ("iron", SurfaceKind.Metal), ("brass", SurfaceKind.Metal), ("rust", SurfaceKind.Metal), ("silver", SurfaceKind.Metal),
             ("steel", SurfaceKind.Metal), ("cutlery", SurfaceKind.Metal), ("metal", SurfaceKind.Metal), ("chandelier", SurfaceKind.Metal), ("candelabra", SurfaceKind.Metal),
             ("stone", SurfaceKind.Stone), ("concrete", SurfaceKind.Stone), ("brick", SurfaceKind.Stone), ("marble", SurfaceKind.Stone),
-            ("wood", SurfaceKind.Wood), ("lacquer", SurfaceKind.Wood), ("table", SurfaceKind.Wood), ("chair", SurfaceKind.Wood),
+            ("wood", SurfaceKind.Wood), ("plank", SurfaceKind.Wood), ("lacquer", SurfaceKind.Wood), ("table", SurfaceKind.Wood), ("chair", SurfaceKind.Wood),
             ("shelf", SurfaceKind.Wood), ("shelves", SurfaceKind.Wood), ("cabinet", SurfaceKind.Wood), ("commode", SurfaceKind.Wood),
             ("nightstand", SurfaceKind.Wood), ("crate", SurfaceKind.Wood), ("barrel", SurfaceKind.Wood), ("clock", SurfaceKind.Wood),
             ("door", SurfaceKind.Wood), ("wardrobe", SurfaceKind.Wood), ("drawers", SurfaceKind.Wood), ("piano", SurfaceKind.Wood),
