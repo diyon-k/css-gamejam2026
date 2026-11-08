@@ -21,6 +21,8 @@ namespace Blink.Mobs
         [SerializeField, Min(0f)] float spawnDelay = 15f;
         [Tooltip("Never spawn closer to the player than this.")]
         [SerializeField, Min(0f)] float minPlayerDistance = 12f;
+        [Tooltip("Never spawn below this world y. The basement floor is -2.85, the ground floor 0.")]
+        [SerializeField] float minSpawnY = -1f;
         [Tooltip("Empty = every Markers/Spawns/Spawn_Z* marker, with the Markers/Routes/Route_<id> in its name as patrol.")]
         [SerializeField] List<Transform> spawnPoints = new();
         [Tooltip("NavMesh agent type the scene is baked for (the prefab's own type is used if not found).")]
@@ -90,6 +92,7 @@ namespace Blink.Mobs
             if (clownPrefab == null) return;
             int? typeId = AgentTypeId(agentType);
             var candidates = Candidates(typeId);
+            candidates.RemoveAll(c => c.pos.y < minSpawnY); // no basement spawns
             if (candidates.Count == 0) return;
             var (position, rotation, marker) = PickPoint(candidates);
             // built under an inactive holder so the agent type and route are set before its Awake / OnEnable
