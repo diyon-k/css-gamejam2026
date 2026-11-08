@@ -1,6 +1,6 @@
 # BLINK: Audio
 
-How the game makes sound, how to add a sound, and which event plays what. Sound picks and mixing guidance come from [FEEL_KIT.md](FEEL_KIT.md); credits are in [CREDITS.md](../CREDITS.md).
+How the game makes sound, how to add a sound, and which event plays what. Sound picks and mixing guidance come from [FEEL_KIT.md](FEEL_KIT.md); credits are in [the README credits](../README.md#credits).
 
 ## How it fits together
 
@@ -97,7 +97,7 @@ Master
    - Force To Mono, unless it must be stereo.
 3. Open the cue in `Assets/Art/Audio/Cues/` and add the clip to **Clips** (or replace one). That's it: every listener already uses the cue.
 4. New kind of sound? Create a cue (Create > BLINK > Sound Cue) and pick its mixer group. In the component that listens to the right event, add a `[SerializeField] SoundCue` and call `AudioService.Instance.Play/PlayAt(cue)`.
-5. Add a row to [CREDITS.md](../CREDITS.md) (required for CC-BY / OGA-BY). Only CC0, CC-BY and OGA-BY: no NC, SA or editorial licences.
+5. Add a row to [the README credits](../README.md#credits) (required for CC-BY / OGA-BY). Only CC0, CC-BY and OGA-BY: no NC, SA or editorial licences.
 
 ## Gunshot and shutter sources
 

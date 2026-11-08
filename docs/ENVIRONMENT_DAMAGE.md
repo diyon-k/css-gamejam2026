@@ -59,7 +59,7 @@ Every hit on the house leaves something behind: bullet holes, axe gashes, crowba
 
 - Albedo with alpha plus a normal map (the normal is what makes a hole look deep under the flashlight).
 - Cells: bullet hole wood, plaster, stone, metal; axe gash wood, plaster; blunt dent, scrape; crack spider; glass crack star; fabric tear; paper hole; blood splatter x2; blood pool; scorch (spare).
-- **Source:** CC0 textures (ambientCG / Poly Haven, matching the PolyHaven licence already in the project) where they have a fitting decal, or generate with Unity MCP `generate_image` then fix the alpha by hand. Record each in `CREDITS.md`.
+- **Source:** CC0 textures (ambientCG / Poly Haven, matching the PolyHaven licence already in the project) where they have a fitting decal, or generate with Unity MCP `generate_image` then fix the alpha by hand. CC-BY ones go in the README credits.
 - **Material:** `Shader Graphs/Decal` with the atlas, Base Color + Normal + alpha, `affectsNormal` on.
 
 ## Phases (each one shippable, commit after each)
