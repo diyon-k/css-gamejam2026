@@ -45,17 +45,17 @@ This follows the current house blockout: bedroom → landing / side room → bro
 
 ## Story notes
 
-Notes **hint** at the story; none of them explains it outright. Read with E, time keeps running while you read. The text lives in `Editor/StoryProps.cs` (menu **BLINK > Place Story Props**), which places them in the House scene.
+Notes **hint** at the story; none of them explains it outright. Read with E, time keeps running while you read. The text lives in `Editor/StoryProps.cs` (menu **BLINK > Bungalow > Place Story Props**), which places them in `House_Bungalow.unity`. (`House.unity` still has its own copies from the old blockout spots.)
 
-| Note | Where | Hints at (cryptically) |
+| Note | Where (bungalow) | Hints at (cryptically) |
 |---|---|---|
-| Delivery docket | Bedroom nightstand | Why you came: a courier job, Kerr's pocket watch, "before midnight", the van clock stopping at the gate |
-| Read this first (A.) | Bedroom floor | First note. You won't remember arriving; time moves strangely here; "keep your eyes open". P1: "if a thing will not move for you, stop watching it" |
-| Child's drawing (Lily) | Nursery floor | P2: "Dolly only plays when nobody is looking... Tom blinked." |
-| Torn diary page (E.) | Hallway floor | P4: faces turned to him. P3: "he keeps his cabinet for the moon... never slow while you're watching" |
-| Kitchen list (Mrs Pell) | Kitchen floor | P5: "a watched pot never does"; valve: "left loosens, right binds" |
-| Workshop scrap | On the generator | P6: "the water only rises while no one minds it"; P7: "two short of midnight" (11:58) |
-| Newspaper clipping | By the exit gate | Kerr's auction, the watch marked 'A. H.', an anonymous buyer |
+| Delivery docket | Bedroom floor, in view as you wake | Why you came: a courier job, Kerr's pocket watch, "before midnight", the van clock stopping at the gate |
+| Folded note (A.) | Bedroom, on the chest of drawers (`BungalowStartBedroom`) | First note. Replaces "Read this first": stay awake, time runs when you look away, the key opens the door |
+| Child's drawing (Lily) | Bathroom floor, by the doll's chair | P2: "Dolly only plays when nobody is looking... Tom blinked." |
+| Torn diary page (E.) | Master bedroom, on the dresser | P4: faces turned to him. P3: "he keeps his cabinet for the moon... never slow while you're watching" |
+| Kitchen list (Mrs Pell) | Kitchen table | P5: "a watched pot never does"; valve: "left loosens, right binds" |
+| Workshop scrap | B2 Workshop workbench | P6: "the water only rises while no one minds it"; P7: "two short of midnight" (11:58) |
+| Newspaper clipping | Entrance hall floor, by the front door | Kerr's auction, the watch marked 'A. H.', an anonymous buyer |
 
 **Puzzle-hint notes:** not written yet. They will use the same `Readable` component once the puzzles are decided.
 
@@ -63,10 +63,16 @@ Notes **hint** at the story; none of them explains it outright. Read with E, tim
 
 ## Family photos
 
-Generated with Kie (Nano Banana 2), in `Unity/Assets/Art/Story/Photos/`, each with a clean and a `_decayed` version. They hang in frames and can be inspected (E) for a caption that hints at the story.
+Generated with Kie (Nano Banana 2), in `Unity/Assets/Art/Story/Photos/`, each with a clean and a `_decayed` version. In the bungalow they hang in the `Picture_Landscape` frame prop (the photo laid over its canvas, centre-cropped) and can be inspected (E) for a caption that hints at the story.
 
-| Photo | Hung where | Version | Caption hints at |
+| Photo | Hung where (bungalow) | Version | Caption hints at |
 |---|---|---|---|
+| Wedding | Master bedroom, E wall over the dresser | Clean | "Forever is a promise I intend to keep" |
+| The children | Corridor, N wall by the master bedroom door | Decayed (faces run) | Tom and Lily |
+| Family portrait | Central hall walkway, E wall, facing the grandfather clock (1.6x size) | Decayed (faces scratched out) | Something went wrong with the Hales |
+| The staff | Kitchen, S wall by the stove | Clean | The apprentice, circled in ink: Samuel |
+
+---|---|---|---|
 | Wedding | Bedroom, above the nightstand | Clean | "Forever is a promise I intend to keep" |
 | The children | Nursery, north wall | Decayed (faces run) | Tom and Lily |
 | Family portrait | Stairwell wall | Decayed (faces scratched out) | Something went wrong with the Hales |
@@ -276,6 +282,6 @@ Existing ids (`candle`, `key_brass`, `key_iron`, cutlery) are unchanged. `key_br
 |---|---|
 | Wake-up (`WakeUpSequence`) | Done, needs a play test |
 | `Readable` (notes and photos) | Done, needs a play test. Depends on the uncommitted Interaction folder (`IInteractable`, `Interactor`) |
-| Story props placement (`StoryProps` menu) | Done. Run **BLINK > Place Story Props** in House.unity and check positions |
+| Story props placement (`StoryProps` menu) | Moved to the bungalow. Run **BLINK > Bungalow > Place Story Props** in House_Bungalow.unity, check positions, save |
 | Heirlooms | Not started |
 | Puzzles, puzzle notes, keys | P2 (Lily's doll) built in the bungalow bathroom: **BLINK > Place Puzzle: Lily's Doll**. P7 scripts drafted, not in the repo yet. The rest planned (see **Puzzles and keys**) |
