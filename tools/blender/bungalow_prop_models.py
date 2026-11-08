@@ -1274,18 +1274,47 @@ def KnockedChair():
     return o
 
 
+def _carton(name):
+    """A taped cardboard carton 0.39 x 0.51 x 0.34, floor-centred, each face filling its part of cell "cardboard_box"
+    (top and bottom: the taped flaps, x faces: the long sides, y faces: the short sides with the tape's end tab)."""
+    X, Y, Z = 0.194, 0.256, 0.339
+    c = CELLS["cardboard_box"]["uv"]
+    bm = bmesh.new()
+    uvl = bm.loops.layers.uv.verify()
+
+    def quad(pts, r):
+        f = bm.faces.new([bm.verts.new(p) for p in pts])
+        for lp, (a, b) in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
+            u, v = r[0] + a * (r[2] - r[0]), r[1] + b * (r[3] - r[1])
+            lp[uvl].uv = (c[0] + u * (c[2] - c[0]), c[1] + v * (c[3] - c[1]))
+    TOP, LONG, SHORT = (0, 0, 0.5, 1), (0.5, 0.5, 1, 1), (0.5, 0, 1, 0.5)
+    quad([(-X, -Y, Z), (X, -Y, Z), (X, Y, Z), (-X, Y, Z)], TOP)
+    quad([(-X, Y, 0), (X, Y, 0), (X, -Y, 0), (-X, -Y, 0)], TOP)
+    quad([(-X, -Y, 0), (X, -Y, 0), (X, -Y, Z), (-X, -Y, Z)], SHORT)
+    quad([(X, Y, 0), (-X, Y, 0), (-X, Y, Z), (X, Y, Z)], SHORT)
+    quad([(X, -Y, 0), (X, Y, 0), (X, Y, Z), (X, -Y, Z)], LONG)
+    quad([(-X, Y, 0), (-X, -Y, 0), (-X, -Y, Z), (-X, Y, Z)], LONG)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name, me)
+    bpy.context.scene.collection.objects.link(o)
+    me.materials.append(lib.mat(CELLS["cardboard_box"]["atlas"]))
+    return o
+
+
 def BoxStack():
     """Living-room boxes (ref 2): 3 cardboard boxes stacked, slightly askew. Pivot = floor."""
-    a = ph("cardboard_box_01", 300, name="BoxA")
-    b = ph("cardboard_box_01", 300, name="BoxB")
-    c = ph("cardboard_box_01", 300, name="BoxC")
+    a = _carton("BoxA")
+    b = _carton("BoxB")
+    c = _carton("BoxC")
     xf(b, (0.05, 0.03, 0.34), (0, 0, 12), (0.9, 0.9, 0.85))
     xf(c, (0.55, -0.05, 0), (0, 0, 80), (1.1, 1.0, 1.0))
     return join([a, b, c], "BoxStack")
 
 
 def BoxFallen():
-    o = ph("cardboard_box_01", 300, name="BoxFallen")
+    o = _carton("BoxFallen")
     rot_mesh(o, 25, 0, 100)
     centre_floor(o)
     return o
