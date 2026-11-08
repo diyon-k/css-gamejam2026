@@ -128,10 +128,8 @@ namespace Blink.EditorTools
                 door.SnapToStart();
                 foreach (var leaf in kv.Value)
                 {
-                    // One interactable per leaf: an Openable from an older setup (e.g. the start bedroom's D2), or a
-                    // FrontDoorPart from BLINK/Bungalow/Set Up Front Door (D1 is this Door's), would fight the Door.
+                    // One interactable per leaf: an Openable from an older setup (e.g. the start bedroom's D2) would fight the Door.
                     if (leaf.TryGetComponent<Openable>(out var stale)) UnityEngine.Object.DestroyImmediate(stale);
-                    if (leaf.TryGetComponent<FrontDoorPart>(out var part)) UnityEngine.Object.DestroyImmediate(part);
                     if (leaf.GetComponent<DoorLeaf>() is { } link) { link.door = door; EditorUtility.SetDirty(link); }
                 }
                 EditorUtility.SetDirty(door);

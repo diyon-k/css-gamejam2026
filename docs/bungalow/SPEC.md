@@ -13,7 +13,7 @@ Target scene `Assets/Scenes/House_Bungalow.unity`, art in `Assets/Art/Environmen
 - Exterior walls are 0.30 m thick. Their outer faces sit on the 0.5 m grid, so the inner faces are x = 0.3 / 19.7 and z = 0.3 / 14.7.
 - Interior partitions are 0.15 m thick and centred on grid lines: x = 7.0, x = 11.5, z = 4.0, z = 7.0 and z = 9.5. The basement partition is x = 13.5.
 
-**References (the images were followed, per the image correction):**
+**References (the images were followed, per the image correction; the image files have since been removed from the repo):**
 - Ref 1 `ref1_stair_landing.png`: stairwell with a balustrade, arches, pale wallpaper, 3-arm chandelier, sconces.
 - Ref 2 `ref2_red_living_room.png`: red damask wallpaper, herringbone parquet, ceiling fan, shaded lamp, tulip sconce.
 - Ref 3 `ref3_green_farmhouse_room.png`: green floral wallpaper, whitewashed brick fireplace, rocking chair, plaid sofa.
@@ -283,7 +283,6 @@ Built by script, re-runnable:
 2. `python -I tools/textures/bungalow_surfaces.py build <cache>` repacks, grades and authors everything into `Art/Environment/Bungalow/Textures/<MaterialName>/` (1024² PNG).
 3. `python -I tools/textures/bungalow_shadergraph.py` writes `Shaders/SG_BungalowLit.shadergraph`.
 4. Unity menu **BLINK/Bungalow/Build Surface Materials** (`Materials/Editor/BungalowMaterialsBuilder.cs`) applies the import settings and creates or updates `Materials/M_*.mat` in place. It also wires `Textures/Trim/` and `Textures/KitWear/` as soon as Phase 3 delivers them.
-5. **BLINK/Bungalow/Build Material Preview Scene** (`BungalowMatPreview.cs`) builds the throwaway `Scenes/House_Bungalow_MatPreview.unity`.
 
 #### 3.0.1 Material table (as built)
 
@@ -349,7 +348,7 @@ Built by script, re-runnable:
 #### 3.0.3 Checkpoint renders (Phase 4)
 
 The renders are in the session scratch folder `bungalow/phase4/`.
-- **Blender 5.1 Cycles vs Unity URP** on the same wall-and-floor sample under matched neutral light (`tools/blender/bungalow_materials_compare.py` vs `BungalowMatPreview.RenderCompare`). Mean sRGB deltas: wall / floor −6 / −9 (Damask), −2 / −5 (FloorPlank), −11 / −12 (BrickWhite). Unity is slightly darker because URP applies the mask AO to ambient light; Cycles adds wall-to-floor bounce.
+- **Blender 5.1 Cycles vs Unity URP** on the same wall-and-floor sample under matched neutral light (a one-off Blender vs Unity comparison; the scripts and preview scene have since been removed). Mean sRGB deltas: wall / floor −6 / −9 (Damask), −2 / −5 (FloorPlank), −11 / −12 (BrickWhite). Unity is slightly darker because URP applies the mask AO to ambient light; Cycles adds wall-to-floor bounce.
 - **Swatch sheet** of all 15 materials.
 - **CAM-1/2/3 grey-box previews** with these materials (preview point lights at the §5.1 positions, no GI, no post) next to refs 1–3.
 
@@ -480,7 +479,7 @@ Sources: **R** = reuse Mansion/PolyHaven, **N** = new Poly Haven CC0, **S** = se
 | Exterior: ground, steps, light wells | 218 |
 | **Shell total** | **84,196** |
 
-- `Kit/Bungalow_Kit.fbx` is the piece library: one copy of each type (walls, floors, ceiling, mouldings, door frame, three leaf styles, arch, A4, O1, window, glass, hopper, stair, rail, balustrade, gate, joists, radiator, pipes, fireplace, mantel), 44.6k tris, re-centred at the origin and laid out along +X. The pieces keep the shell's UV2, so they share the wear atlas. The library is not placed in the level.
+- `Kit/Bungalow_Kit.fbx` (not committed; rebuild with `build_all.py` if needed) is the piece library: one copy of each type (walls, floors, ceiling, mouldings, door frame, three leaf styles, arch, A4, O1, window, glass, hopper, stair, rail, balustrade, gate, joists, radiator, pipes, fireplace, mantel), 44.6k tris, re-centred at the origin and laid out along +X. The pieces keep the shell's UV2, so they share the wear atlas. The library is not placed in the level.
 - The heaviest items are the radiators (15k) and the balustrade (12k). Both can be halved (6-sided columns, 6-segment balusters) if the batch / tris budget needs it in Phase 7.
 - Colliders: `Kit/Bungalow_Shell_colliders.json` carries the **grey-box boxes unchanged** (146 boxes, taken from `bungalow_greybox` at build time, keyed to the same object names), so the navmesh sources are identical. The only additions are one nav-ignored box per door leaf. `check()` passes, including the new kit checks: every room has a finish, every door has a leaf, the radiators are on their walls, and the basement headroom under the pipes is 2.21 m.
 - Visual clearances vs the grey-box: the stringers stand 3–5 cm above the treads (clear width between them 1.18 m, capsule 0.70), the radiators stand 0.17 m off their walls, and the casings stand 2.4 cm proud of the walls. Board sag is ≤ 24 mm below the collider top (by the well).
@@ -534,7 +533,7 @@ The emitters in `fixtures.json` are authoritative for the lighting pass. The two
 - **The bedroom key (`key_bedroom`) is in `Bed_Dresser`'s top drawer.** It's parented to the drawer, 0.22 m behind the front, so it slides out with it; `BungalowStartBedroom.PlaceKeyInDrawer`, also run by Set Up Start Bedroom. While the drawer is shut, the body blocks the look ray; once it's open, the key is the target from 0.35–0.9 m and twinkles like other pickups.
 - **The pistol and its ammo are found, not carried in** (`BLINK/Bungalow/Place Pickups`, `Editor/BungalowPickups.cs`, which also turns the Player's `startsWithPistol` off). The pistol lies on the parlour sideboard. Four `AmmoBox`es of 4 rounds each (the reserve holds 8) are on the cellar barrel `B1_Barrel` and in drawers they slide out with: `Kit_Cabinet2`'s left drawer, `Liv_Sideboard`'s bottom drawer and `Mbr_Dresser`'s top drawer, behind the axe barricade. None are in the puzzle rooms (Bathroom, B2).
 - **The start-bedroom note** uses the bungalow's own `Materials/M_NotePaper` (created by Set Up Start Bedroom). `Art/Story/Materials/Paper.mat` isn't in every checkout, and without it the note rendered pink.
-- Covered by `Tests/EditMode/DrawerPrefabTests.cs` and `InteractTargetingTests.cs`. Design: `docs/superpowers/specs/2026-11-07-openable-drawers-design.md`.
+- Covered by `Tests/EditMode/DrawerPrefabTests.cs` and `InteractTargetingTests.cs`.
 
 **Placement data:** `tools/blender/bungalow_props.py` → `Props/bungalow_props.json`, 143 instances of 84 models.
 - Each instance has a room, position, euler and scale.
@@ -1156,7 +1155,6 @@ All three use the player camera's eye height and FOV (vertical 60; CAM-3 55), cr
 11. **Mansion PolyHaven props each carry their own URP material**. Reused as is, they'd cost one material each, so they get re-baked into the 4 atlases. Most exceed 3k tris and need decimation.
 12. **`unity_setup.materials()` template and `Art/Mansion/Blender`** are hidden by sparse-checkout here, so there's no template `.mat` to copy.
 13. **Fog is global** in Unity, so per-room values need a script (Q8).
-14. **`docs/reference/`** (the three refs) is untracked in git. It should be committed with this spec.
 
 ### 6.4 BlenderMCP (blender_bridge) status
 
@@ -1180,7 +1178,7 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 - `bungalow_greybox.py`: builds every piece from the tables (walls cut by their openings with no internal faces, per-room floor and ceiling slabs cut by their holes, arches, casings, windows, stair, balustrade, G1, beams, fireplace, exterior), UV0 box mapping, UV2 lightmap layout, and `Greybox/Bungalow_Greybox_colliders.json` (box colliders, Unity space).
 - `bungalow_floorplan.py`: regenerates `docs/bungalow/floorplan.png` from the same data.
 - `build_all.py --target bungalow`, `unity_setup.py --target bungalow` (importer settings), `lib.uv_lightmap` and the `GB_*` grey-box colours in `lib.MATERIALS`. The mansion target is unchanged.
-- `Assets/Editor/BungalowGreyboxBuilder.cs` (menu **BLINK/Bungalow/Build Grey-box Scene**): builds `House_Bungalow.unity` from the FBX and the two JSON files and bakes the navmesh with the BungalowZombie agent.
+- `Assets/Editor/BungalowGreyboxBuilder.cs` (menu **BLINK/Bungalow/Build Shell Scene**; the grey-box mode has since been removed): builds `House_Bungalow.unity` from the shell FBX and the two JSON files and bakes the navmesh with the BungalowZombie agent.
 
 **Phase 3 (implemented): modular kit, trim sheet, wear bakes**
 - `bungalow_layout.py`: new kit tables. `SURFACE_TILE_M` (also in the JSON as `surfaceTiles`), `FLOOR_PLANK_SEAMS_PX`, `TRIM_STYLE`, `ROOM_FINISH` (floor / wall / ceiling materials, board direction, trim style, mouldings, wall bands), `MOULDING_Y`, `DOOR_LEAVES`, `RADIATORS`, `PIPES`, `DECAY` (sag zones, missing balusters, cracked newel, chip rate, water level). `check()` validates them. A new room needs a `ROOM_FINISH` row; new radiators, pipes, leaves and decay spots are rows too.
@@ -1189,7 +1187,6 @@ The add-on is **not installed or connected**; headless Blender 5.1.2 works.
 - `bungalow_wear.py`: the UV2 atlas packing and the four-channel wear bake (§3.0.4), plus `preview_materials()` for Blender before / after renders.
 - `build_all.py --target bungalow [Bungalow_Shell] [Bungalow_Kit] [--no-wear]`; the mansion target is unchanged.
 - `unity_setup.py --target bungalow` adds `kit_textures()` (Trim / KitWear importers: 1024, mips, BC7 Standalone override, normal flagged, masks and the atlas linear, the atlas clamped) and `kit_remaps()` (Kit FBX material names → `Materials/M_*.mat`). The FBX importer has no cameras or lights, and Generate Lightmap UVs is off.
-- Unity: `Scenes/House_Bungalow_KitPreview.unity` is the shell with preview copies of the Phase 4 materials (`Kit/Preview/PV_*.mat`, wear atlas wired) and preview point lights. `House_Bungalow.unity` is untouched; swapping the grey-box for `Bungalow_Shell.fbx` and its colliders JSON is a builder change (`ModelPath` / `CollidersPath`).
 - Known limits: the 1K atlas spread over ~1,500 m² gives 2.5–5 cm wear texels, so the wear reads as broad AO, grime and traffic patterns rather than crisp chips; the chips themselves are geometry. The UV2 rect-per-mesh layout assumes Unity packs lightmaps by each mesh's UV2 bounds; verify the lightmap texel density at the Phase 6 bake.
 
 **Phase 6 (done: Stage A + Stage B)**

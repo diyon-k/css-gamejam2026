@@ -1,6 +1,6 @@
 # BLINK: Architecture
 
-How the code is split, how the pieces talk to each other, and who owns what. Read [GAME_PLAN.md](GAME_PLAN.md) for the design.
+How the code is split, how the pieces talk to each other, and who owns what. The [README](../README.md) covers the design.
 
 The core is already working end to end: the webcam sidecar's UDP messages drive the blink detector, which drives time skips, which move the zombies and finish reloads. Every workstream below plugs into that core through **events and interfaces**, so people can build in parallel without editing each other's files.
 
@@ -66,7 +66,7 @@ flowchart LR
 
 ```
 blink_server/                  Python webcam sidecar (send_test_blinks.py = fake sender)
-docs/                          GAME_PLAN.md, ARCHITECTURE.md, FEEL_KIT.md (sounds, music, haptics, VFX to use)
+docs/                          ARCHITECTURE.md, FEEL_KIT.md (sounds, music, haptics, VFX to use)
 Unity/Assets/
   Scripts/                     Blink.Runtime assembly (namespace Blink.*)
     Detection/                 eye-state sources, BlinkDetector, BlinkClassifier, debug overlay
@@ -144,8 +144,6 @@ Unity/Assets/
 - **Placeholder feedback** (IMGUI, no Canvas; replace freely, they only listen to the events above):
   - `GunHud` (on Player): crosshair with a hit marker (red on a kill) from any weapon, the active gun's name, ammo and reload bar (nothing for the hands and the axe), player HP.
   - `BulletTracer` (GameSystems) draws a tracer per `RayFired` ray (one smoke wisp per shot); `BloodImpactSpawner` (Effects) bursts blood per damaging ray and per axe `MeleeHit`. Headshots get a much stronger burst (bigger, denser, extra fanned bursts, bigger exit spray, always a floor splat; `HeadshotBlood` settings).
-  - `DamageFlash` (on Zombie): tints the renderers red for a moment on `Health.Damaged` via a MaterialPropertyBlock (`_BaseColor`).
-  - `HealthBar` (on Zombie): bar above the head once hurt; hidden when dead, far away or behind a wall.
 
 ### Player (`Blink.Player`)
 - **`PlayerController`**: CharacterController movement driven by the project-wide input actions (`Player/Move`, `Player/Look`, `Player/Sprint`). Does **not** move during time skips: it isn't an `ISkippable` (a blink leaves it in place) and movement runs on real time (`PlayerController.RealDeltaTime`), so fast-forward doesn't speed it up. `Velocity`, `IsSprinting`, `InputEnabled` (turned off on death), `SpeedMultiplier` (1 = normal; the flooded basement sets 0.7 while wading).
@@ -154,7 +152,6 @@ Unity/Assets/
 - **`GrabQte`** (creates itself): the grab when a zombie reaches you because you blinked. Freezes the world (timeScale 0), yanks the camera onto the zombie's face (`PlayerController.TurnTowards`) and jolts it on every bite (`CameraFeel.AddJolt`), under a dark vignette. After a 0.6 s scare, a white ring closes onto a red target somewhere on screen with a key in its middle; press that key as they meet (±0.15 s, ring meets the target 1.2 s after appearing). Keys go by position: W/A/S/D on the keyboard, Y/X/A/B on the gamepad's face buttons (`GrabKey` Up/Left/Down/Right), never the same twice running; the label follows the device you last pressed. Each hit shoves the zombie back and the next ring jumps elsewhere with a new key. The wrong key (several at once counts as the wrong one), bad timing or a ring left to pass is a bite: the zombie's `attackDamage` off your HP with a red flash (the only red flash), then the next ring. Being grabbed drops whatever you're carrying (`Carryable.DropHeld`) and `PlayerWeapons` swaps to the hands, which brace against it and shove on every hit; the weapon comes back 0.4 s after you break free. 3 hits escape: a two-handed shove (`BrokeFree`) flings it back a few metres as a ragdoll 0.08 s later, while the world is still frozen, then time eases through slow motion back to full speed before you get control back. It isn't hurt: it lies stunned and gets up to come for you again. Die from the bites and time eases back over your body. Timing is the pure `GrabRing` (unit tested). The grabber implements `IGrabber` (`GrabFacePoint`, `GrabBite(hurts)`, `GrabShoved(final)`, `GrabThrown(away)`, `GrabResolved`). `BlocksInput` keeps the presses from counting as blinks or shots; static events `Began`, `Bit(hurts)` (each bite lunge), `Beat` (each hit), `BrokeFree` (the last hit) and `Resolved(escaped)` for the hands, audio and rumble.
 - **`GamepadHaptics`** (on Player): controller rumble for blinks, shots, axe hits, dry fire, reload, damage, the grab QTE (biggest jolt when `GrabQte.Active` turns on, then a thump on every `GrabQte.Bit` and a heavy one on `GrabQte.BrokeFree`), forcing and bursting the jammed door, and **continuous rumble for the whole eyes-shut fast-forward** (`EyesShutRumble`: a low drone plus a lub-dub on every beat of `PlayerAudio`'s heartbeat, so you feel exactly the beats you hear; a grab interrupting fast-forward gives a hard jolt, then stops). It is the only thing that sets the motors: layers and one-shot pulses mix by per-motor max. Unscaled time. **Strength** (0–2) scales everything. Motors are reset on disable, pause, focus loss, quit and pad change. DualSense/DS4 rumble only over USB. Patterns: [FEEL_KIT.md](FEEL_KIT.md#controller-haptics).
 - **`JammedDoor`** (World): hold Interact to force it on a `WorldTimer`. Exposes `IsForcing`, `Progress01` and an `Opened` event for sound, rumble and dust.
-- **`FrontDoor`** (World): **superseded on D1 by `Door`** (below), which now takes the same three puzzle keys; Setup Doors strips `FrontDoorPart` off the D1 leaves. Kept for reference. It was the bungalow's way out, the double front door (D1). Locked by three keys, one per lock (`key_dorm` from Lily's doll room, `key_workshop` from the flooded basement, `key_front_3` for the third puzzle room). The player holds one thing at a time, so keys go in one by one: Interact while carrying a fitting key puts it in its keyhole, where it shows and turns. Trying it otherwise rattles it and puts a line in the prompt stack ("Locked. Three keyholes, all empty.", "The bedroom key doesn't fit any of the locks."). When the last key turns both leaves swing open; events `KeyInserted(index)`, `Unlocked`, `Opened`. `FrontDoorPart` on the leaves and plates passes looks and presses to it. Lock state is the pure `KeySlots` (unit tested). Set up by BLINK/Bungalow/Set Up Front Door (`BungalowFrontDoor`, which also holds the key ids).
 
 ### Mobs (`Blink.Mobs`)
 - **`MobController`**: Idle → Chase → Attack → Dead on a NavMeshAgent.

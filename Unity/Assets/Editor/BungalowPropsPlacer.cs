@@ -393,7 +393,7 @@ namespace Blink.EditorTools
         {
             var before = SceneManager.GetActiveScene().path;
             var log = new System.Text.StringBuilder();
-            log.AppendLine(BungalowGreyboxBuilder.Build(false, true, PreviewScene));
+            log.AppendLine(BungalowGreyboxBuilder.Build(false, PreviewScene));
             var scene = EditorSceneManager.OpenScene(PreviewScene, OpenSceneMode.Single);
             log.AppendLine(Place(scene));
             log.AppendLine(PreviewLights(scene));

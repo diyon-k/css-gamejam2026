@@ -203,12 +203,12 @@ namespace Blink.EditorTools
             return false;
         }
 
-        /// <summary>Matched by component name (Door, DoorLeaf, FrontDoor...) so this editor script needs no door types.</summary>
+        /// <summary>Matched by component name (Door, DoorLeaf...) so this editor script needs no door types.</summary>
         static bool IsDoor(Collider c)
         {
             for (var t = c.transform; t != null; t = t.parent)
                 foreach (var m in t.GetComponents<MonoBehaviour>())
-                    if (m != null && (m.GetType().Name.StartsWith("Door") || m.GetType().Name.StartsWith("FrontDoor"))) return true;
+                    if (m != null && m.GetType().Name.StartsWith("Door")) return true;
             return false;
         }
 

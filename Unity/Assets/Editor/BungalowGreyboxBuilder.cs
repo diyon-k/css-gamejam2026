@@ -22,8 +22,6 @@ namespace Blink.EditorTools
     {
         const string ScenePath = "Assets/Scenes/House_Bungalow.unity";
         const string ArtRoot = "Assets/Art/Environment/Bungalow/";
-        const string ModelPath = ArtRoot + "Greybox/Bungalow_Greybox.fbx";
-        const string CollidersPath = ArtRoot + "Greybox/Bungalow_Greybox_colliders.json";
         const string ShellModelPath = ArtRoot + "Kit/Bungalow_Shell.fbx";                 // Phase 3 modular-kit shell
         const string ShellCollidersPath = ArtRoot + "Kit/Bungalow_Shell_colliders.json";
         const string LayoutPath = ArtRoot + "bungalow_layout.json";
@@ -47,21 +45,18 @@ namespace Blink.EditorTools
         [Serializable] class Layout { public Spawn[] spawns; public Route[] routes; public Cam[] cameras; public Agent agent; public Opening[] openings; }
 #pragma warning restore 0649
 
-        [MenuItem("BLINK/Bungalow/Build Grey-box Scene")]
-        static void BuildMenu() => Debug.Log(Build(true));
-
         [MenuItem("BLINK/Bungalow/Build Shell Scene")]
-        static void BuildShellMenu() => Debug.Log(Build(true, true));
+        static void BuildShellMenu() => Debug.Log(Build(true));
 
         /// <summary>
-        /// Creates (or replaces) House_Bungalow.unity (or <paramref name="scenePath"/>) from the grey-box, or from the
-        /// Phase 3 kit shell when <paramref name="shell"/> is set (same object names and colliders, plus door leaves).
+        /// Creates (or replaces) House_Bungalow.unity (or <paramref name="scenePath"/>) from the Phase 3 kit shell
+        /// (object names and colliders, plus door leaves).
         /// The navmesh is only baked into Assets/Scenes/House_Bungalow/ for the main scene. Returns a short report.
         /// </summary>
-        public static string Build(bool bakeNavMesh, bool shell = false, string scenePath = null)
+        public static string Build(bool bakeNavMesh, string scenePath = null)
         {
             if (string.IsNullOrEmpty(scenePath)) scenePath = ScenePath;
-            string modelPath = shell ? ShellModelPath : ModelPath, collidersPath = shell ? ShellCollidersPath : CollidersPath;
+            const string modelPath = ShellModelPath, collidersPath = ShellCollidersPath;
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 throw new InvalidOperationException("Leave Play mode first.");
             var active = SceneManager.GetActiveScene();
@@ -80,7 +75,7 @@ namespace Blink.EditorTools
             var level = new GameObject("Bungalow");
             GameObjectUtility.SetStaticEditorFlags(level, StaticFlags);
             var grey = (GameObject)PrefabUtility.InstantiatePrefab(model, scene);
-            grey.name = shell ? "Shell" : "Greybox";
+            grey.name = "Shell";
             grey.transform.SetParent(level.transform, false);
             var byName = new Dictionary<string, Transform>();
             foreach (var t in grey.GetComponentsInChildren<Transform>(true)) byName[t.name] = t;
@@ -117,17 +112,14 @@ namespace Blink.EditorTools
                     boxes++;
                 }
                 // door leaves stay in the navmesh build (zombies must not path through a leaf); others as the JSON says
-                bool leaf = shell && o.name.Contains("_Leaf");
+                bool leaf = o.name.Contains("_Leaf");
                 if (o.navIgnore && !leaf) t.gameObject.AddComponent<NavMeshModifier>().ignoreFromBuild = true;
             }
             report.AppendLine($"objects {cols.objects.Length}, box colliders {boxes}, missing {missing}");
-            if (shell)
-            {
-                // keys first: Setup Doors only locks a keyed door whose keys are in the scene
-                Physics.SyncTransforms();
-                report.AppendLine(BungalowDoorSetup.PlaceKeys(scene, false));
-                report.AppendLine(BungalowDoorSetup.Setup(scene, false)); // doors: leaves leave the bake; each Door carves instead
-            }
+            // keys first: Setup Doors only locks a keyed door whose keys are in the scene
+            Physics.SyncTransforms();
+            report.AppendLine(BungalowDoorSetup.PlaceKeys(scene, false));
+            report.AppendLine(BungalowDoorSetup.Setup(scene, false)); // doors: leaves leave the bake; each Door carves instead
 
             // ---- markers: spawns, patrol routes, reference-match cameras
             var markers = new GameObject("Markers");

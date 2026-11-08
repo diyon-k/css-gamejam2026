@@ -123,7 +123,7 @@ flowchart LR
 | `Unity/` | The game. Code in `Assets/Scripts/` (Detection, TimeSkip, Player, Combat, Mobs, Puzzles, Effects, Audio…), tests in `Assets/Tests/` |
 | `blink_server/` | The Python webcam sidecar, its setup scripts and the fake-blink tool |
 | `tools/` | Content generators: Blender props and house data, procedural audio, textures |
-| `docs/` | [Game plan](docs/GAME_PLAN.md), [story](docs/STORY_PLAN.md), [architecture](docs/ARCHITECTURE.md), [puzzle briefs](docs/puzzles/), [bungalow spec](docs/bungalow/SPEC.md) |
+| `docs/` | [Story](docs/STORY_PLAN.md), [architecture](docs/ARCHITECTURE.md), [puzzle briefs](docs/puzzles/), [bungalow spec](docs/bungalow/SPEC.md) |
 
 ## Team
 

@@ -67,3 +67,9 @@ CLAUDE.local.md
 .superpowers/
 
 tools/_kie_raw/
+
+# ---- misc junk ----
+*.part
+*.orig
+*.blend1
+.pytest_cache/
