@@ -177,7 +177,9 @@ namespace Blink.Combat
                         // in a drawer: held still and riding it, and a child of it so the look ray finds it inside
                         body.isKinematic = true;
                         body.interpolation = RigidbodyInterpolation.None;
+                        var size = dropped.transform.localScale; // unparented: its world size
                         dropped.transform.SetParent(axeStartsAt, true);
+                        dropped.transform.localScale = size; // so axeStartsAt's scale shrinks it to fit (back to size when held)
                     }
                 }
             }

@@ -60,17 +60,20 @@ public static class BungalowAxeAndBarricade
         var axeFrame = Quaternion.LookRotation(Axis(longest), Axis(thinnest)); // z -> long, y -> thin
         var diag = new Vector3(box.size.x, 0f, box.size.z);
         var rot = Quaternion.LookRotation(diag, Vector3.up) * Quaternion.Inverse(axeFrame);
-        var centre = box.center + Vector3.up * (-box.size.y * 0.5f + 0.03f + size[thinnest] * 0.5f);
+        // shrunk (AxeStart's scale, only while it lies here) so it fits the diagonal with a few cm to spare
+        float fit = Mathf.Min(1f, (diag.magnitude - 0.06f) / size[longest]);
+        var centre = box.center + Vector3.up * (-box.size.y * 0.5f + 0.03f + size[thinnest] * fit * 0.5f);
 
         var start = new GameObject("AxeStart").transform;
         Undo.RegisterCreatedObjectUndo(start.gameObject, "Place Axe");
         start.SetParent(drawer, false);
-        start.SetLocalPositionAndRotation(centre - rot * Vector3.Scale(b.center, axe.lossyScale), rot);
+        start.SetLocalPositionAndRotation(centre - rot * Vector3.Scale(b.center, axe.lossyScale) * fit, rot);
+        start.localScale = Vector3.one * fit;
 
         var so = new SerializedObject(weapons);
         so.FindProperty("axeStartsAt").objectReferenceValue = start;
         so.ApplyModifiedProperties();
-        Debug.Log($"[AxeAndBarricade] Axe ({size[longest]:F2} m) in {Cabinet}/{Drawer} (diagonal {diag.magnitude:F2} m).");
+        Debug.Log($"[AxeAndBarricade] Axe ({size[longest]:F2} m) in {Cabinet}/{Drawer} (diagonal {diag.magnitude:F2} m), shrunk to {fit:P0} while it lies there.");
     }
 
     /// <summary>Unity's cube with every face's v squeezed into one board of the floor texture. Saved as an asset
