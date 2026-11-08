@@ -94,7 +94,7 @@
     1.0
    ],
    "kind": "furniture",
-   "tris": 1600,
+   "tris": 1599,
    "fixture": "",
    "note": "chest of drawers beside the bed: key + note on top (Editor/BungalowStartBedroom.cs)"
   },
@@ -766,7 +766,7 @@
     1.0
    ],
    "kind": "furniture",
-   "tris": 1600,
+   "tris": 1599,
    "fixture": "",
    "note": ""
   },
@@ -1488,20 +1488,20 @@
    "kind": "furniture",
    "tris": 724,
    "fixture": "",
-   "note": "chair by the radiator"
+   "note": "north landing chair"
   },
   {
    "id": "Hal_Picture",
    "prefab": "Picture_Hall",
    "room": "CentralHall",
    "pos": [
-    9.25,
+    7.075,
     1.72,
-    14.7
+    13.85
    ],
    "rot": [
     0.0,
-    180.0,
+    90.0,
     0.0
    ],
    "scale": [
@@ -1512,7 +1512,7 @@
    "kind": "wall",
    "tris": 900,
    "fixture": "",
-   "note": "between H2 and H3 (ref 1)"
+   "note": "over the chair (ref 1); D6 took the N wall"
   },
   {
    "id": "Hal_LandingRug",
@@ -1999,7 +1999,7 @@
    "prefab": "wooden_bucket_01",
    "room": "Kitchen",
    "pos": [
-    17.9,
+    17.6,
     0.0,
     14.25
    ],
@@ -2016,7 +2016,7 @@
    "kind": "prop",
    "tris": 450,
    "fixture": "",
-   "note": ""
+   "note": "rev 3: clear of D9"
   },
   {
    "id": "Kit_Trash",
@@ -2403,30 +2403,6 @@
    "note": ""
   },
   {
-   "id": "B1_Crate2",
-   "prefab": "wooden_crate_01",
-   "room": "B1",
-   "pos": [
-    12.62,
-    -2.52,
-    4.6
-   ],
-   "rot": [
-    0.0,
-    8.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 700,
-   "fixture": "",
-   "note": ""
-  },
-  {
    "id": "B1_Barrel",
    "prefab": "barrel_03",
    "room": "B1",
@@ -2543,30 +2519,6 @@
    ],
    "kind": "furniture",
    "tris": 900,
-   "fixture": "",
-   "note": ""
-  },
-  {
-   "id": "B1_CrateLong2",
-   "prefab": "wooden_crate_02",
-   "room": "B1",
-   "pos": [
-    11.2,
-    -2.85,
-    4.4
-   ],
-   "rot": [
-    0.0,
-    0.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 800,
    "fixture": "",
    "note": ""
   },
@@ -2883,30 +2835,6 @@
    "note": ""
   },
   {
-   "id": "B2_Crate2",
-   "prefab": "wooden_crate_01",
-   "room": "B2",
-   "pos": [
-    16.32,
-    -2.52,
-    4.35
-   ],
-   "rot": [
-    0.0,
-    -6.0,
-    0.0
-   ],
-   "scale": [
-    1.0,
-    1.0,
-    1.0
-   ],
-   "kind": "furniture",
-   "tris": 700,
-   "fixture": "",
-   "note": ""
-  },
-  {
    "id": "B2_Barrel",
    "prefab": "barrel_03",
    "room": "B2",
@@ -3001,6 +2929,1398 @@
    "tris": 128,
    "fixture": "",
    "note": ""
+  },
+  {
+   "id": "Par_Rug",
+   "prefab": "Rug_Oriental",
+   "room": "Parlour",
+   "pos": [
+    13.6,
+    0.0,
+    21.0
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "rug",
+   "tris": 118,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Sofa",
+   "prefab": "Sofa_01",
+   "room": "Parlour",
+   "pos": [
+    13.6,
+    0.0,
+    22.12
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 2600,
+   "fixture": "",
+   "note": "back to CAM-2"
+  },
+  {
+   "id": "Par_Pillows",
+   "prefab": "throw_pillows_01",
+   "room": "Parlour",
+   "pos": [
+    13.62,
+    0.38,
+    22.16
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 700,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_CoffeeTable",
+   "prefab": "CoffeeTable_Glass",
+   "room": "Parlour",
+   "pos": [
+    13.6,
+    0.0,
+    21.2
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 408,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_CoffeeClutter",
+   "prefab": "Clutter_CoffeeTable",
+   "room": "Parlour",
+   "pos": [
+    13.6,
+    0.0,
+    21.2
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 768,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Armchair",
+   "prefab": "ArmChair_01",
+   "room": "Parlour",
+   "pos": [
+    15.15,
+    0.0,
+    21.0
+   ],
+   "rot": [
+    0.0,
+    270.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 2000,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_EndTable",
+   "prefab": "ClassicNightstand_01",
+   "room": "Parlour",
+   "pos": [
+    17.2,
+    0.0,
+    25.45
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 800,
+   "fixture": "",
+   "note": "P2 lamp"
+  },
+  {
+   "id": "Par_Sideboard",
+   "prefab": "ClassicConsole_01",
+   "room": "Parlour",
+   "pos": [
+    11.2,
+    0.0,
+    17.25
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 1600,
+   "fixture": "",
+   "note": "console sideboard"
+  },
+  {
+   "id": "Par_SideboardVase",
+   "prefab": "ceramic_vase_01",
+   "room": "Parlour",
+   "pos": [
+    10.8,
+    0.95,
+    17.25
+   ],
+   "rot": [
+    0.0,
+    20.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 300,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_SideboardBox",
+   "prefab": "BoxFallen",
+   "room": "Parlour",
+   "pos": [
+    11.6,
+    0.95,
+    17.27
+   ],
+   "rot": [
+    0.0,
+    85.0,
+    0.0
+   ],
+   "scale": [
+    0.7,
+    0.7,
+    0.7
+   ],
+   "kind": "debris",
+   "tris": 300,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Portrait",
+   "prefab": "Picture_Oval",
+   "room": "Parlour",
+   "pos": [
+    11.2,
+    1.88,
+    16.95
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 496,
+   "fixture": "",
+   "note": "oval portrait (ref 2)"
+  },
+  {
+   "id": "Par_SideTable",
+   "prefab": "small_wooden_table_01",
+   "room": "Parlour",
+   "pos": [
+    16.4092,
+    0.0,
+    17.2
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 999,
+   "fixture": "",
+   "note": "ref 2 foreground table"
+  },
+  {
+   "id": "Par_SideTableClutter",
+   "prefab": "Clutter_SideTable",
+   "room": "Parlour",
+   "pos": [
+    16.4092,
+    0.53,
+    17.2
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 188,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Speaker",
+   "prefab": "Speaker",
+   "room": "Parlour",
+   "pos": [
+    12.6,
+    0.0,
+    17.13
+   ],
+   "rot": [
+    0.0,
+    8.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 56,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Painting",
+   "prefab": "Picture_Wide",
+   "room": "Parlour",
+   "pos": [
+    8.075,
+    1.72,
+    24.4
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 172,
+   "fixture": "",
+   "note": "landscape (ref 2)"
+  },
+  {
+   "id": "Par_ReadChair",
+   "prefab": "painted_wooden_chair_01",
+   "room": "Parlour",
+   "pos": [
+    18.15,
+    0.0,
+    24.75
+   ],
+   "rot": [
+    0.0,
+    225.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 724,
+   "fixture": "",
+   "note": "reading corner (second grouping)"
+  },
+  {
+   "id": "Par_Paper",
+   "prefab": "Debris_Paper",
+   "room": "Parlour",
+   "pos": [
+    15.6938,
+    0.0,
+    19.5915
+   ],
+   "rot": [
+    0.0,
+    30.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 120,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Paper2",
+   "prefab": "Debris_Paper",
+   "room": "Parlour",
+   "pos": [
+    9.1,
+    0.0,
+    22.7613
+   ],
+   "rot": [
+    0.0,
+    200.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 120,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Plaster",
+   "prefab": "Debris_Plaster",
+   "room": "Parlour",
+   "pos": [
+    8.6,
+    0.0,
+    19.4
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 236,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Plaster2",
+   "prefab": "Debris_Plaster",
+   "room": "Parlour",
+   "pos": [
+    8.45,
+    0.0,
+    22.3651
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 236,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_FallenBox",
+   "prefab": "BoxFallen",
+   "room": "Parlour",
+   "pos": [
+    15.2646,
+    0.0,
+    24.525
+   ],
+   "rot": [
+    0.0,
+    40.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 300,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_Chair2",
+   "prefab": "GreenChair_01",
+   "room": "Parlour",
+   "pos": [
+    12.0,
+    0.0,
+    21.0
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 1500,
+   "fixture": "",
+   "note": "swapped for the living's second armchair"
+  },
+  {
+   "id": "Par_Curtains",
+   "prefab": "Curtains_Window",
+   "room": "Parlour",
+   "pos": [
+    11.8,
+    2.48,
+    25.7
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 848,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Par_ChairDown",
+   "prefab": "KnockedChair",
+   "room": "Parlour",
+   "pos": [
+    9.3,
+    0.0,
+    24.3
+   ],
+   "rot": [
+    0.0,
+    120.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 724,
+   "fixture": "",
+   "note": "knocked over"
+  },
+  {
+   "id": "Mbr_Bed",
+   "prefab": "GothicBed_01",
+   "room": "MasterBedroom",
+   "pos": [
+    5.95,
+    0.0,
+    24.675
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 4600,
+   "fixture": "",
+   "note": "hero; P0 wakes beside its east side"
+  },
+  {
+   "id": "Mbr_Blanket",
+   "prefab": "Bed_Blanket",
+   "room": "MasterBedroom",
+   "pos": [
+    5.95,
+    0.56,
+    24.195
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 776,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Nightstand",
+   "prefab": "ClassicNightstand_01",
+   "room": "MasterBedroom",
+   "pos": [
+    4.75,
+    0.0,
+    25.45
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 800,
+   "fixture": "",
+   "note": "M2 lamp"
+  },
+  {
+   "id": "Mbr_Dresser",
+   "prefab": "GothicCommode_01",
+   "room": "MasterBedroom",
+   "pos": [
+    7.625,
+    0.0,
+    18.75
+   ],
+   "rot": [
+    0.0,
+    270.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 1599,
+   "fixture": "",
+   "note": "chest of drawers beside the bed: key + note on top (Editor/BungalowStartBedroom.cs)"
+  },
+  {
+   "id": "Mbr_DresserVase",
+   "prefab": "ceramic_vase_01",
+   "room": "MasterBedroom",
+   "pos": [
+    7.605,
+    1.21,
+    18.4
+   ],
+   "rot": [
+    0.0,
+    160.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 300,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Wardrobe",
+   "prefab": "Wardrobe_Painted",
+   "room": "MasterBedroom",
+   "pos": [
+    0.6,
+    0.0,
+    23.1829
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 460,
+   "fixture": "",
+   "note": "second grouping"
+  },
+  {
+   "id": "Mbr_Suitcases",
+   "prefab": "vintage_suitcase",
+   "room": "MasterBedroom",
+   "pos": [
+    0.62,
+    2.0,
+    23.1829
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "prop",
+   "tris": 900,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Settee",
+   "prefab": "Settee_Plaid",
+   "room": "MasterBedroom",
+   "pos": [
+    0.72,
+    0.0,
+    21.3
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 1728,
+   "fixture": "",
+   "note": "under WR1 (ref 3)"
+  },
+  {
+   "id": "Mbr_CoffeeTable",
+   "prefab": "WoodenTable_01",
+   "room": "MasterBedroom",
+   "pos": [
+    2.0264,
+    0.0,
+    21.3
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 952,
+   "fixture": "",
+   "note": "low wooden coffee table (ref 3)"
+  },
+  {
+   "id": "Mbr_Rug",
+   "prefab": "Rug_Oriental",
+   "room": "MasterBedroom",
+   "pos": [
+    2.3,
+    0.0,
+    21.3
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "rug",
+   "tris": 118,
+   "fixture": "",
+   "note": "black-and-white rug (ref 3)"
+  },
+  {
+   "id": "Mbr_Picture",
+   "prefab": "Picture_Oval",
+   "room": "MasterBedroom",
+   "pos": [
+    1.3,
+    1.85,
+    16.95
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 496,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_ReadingChair",
+   "prefab": "GreenChair_01",
+   "room": "MasterBedroom",
+   "pos": [
+    1.2,
+    0.0,
+    24.9
+   ],
+   "rot": [
+    0.0,
+    135.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 1500,
+   "fixture": "",
+   "note": "second grouping"
+  },
+  {
+   "id": "Mbr_BedsideRug",
+   "prefab": "Rug_OrientalSmall",
+   "room": "MasterBedroom",
+   "pos": [
+    5.95,
+    0.0,
+    23.05
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "rug",
+   "tris": 88,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Shoes",
+   "prefab": "Shoes_Pair",
+   "room": "MasterBedroom",
+   "pos": [
+    4.55,
+    0.0,
+    23.5
+   ],
+   "rot": [
+    0.0,
+    30.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 472,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Paper",
+   "prefab": "Debris_Paper",
+   "room": "MasterBedroom",
+   "pos": [
+    5.7094,
+    0.0,
+    20.8815
+   ],
+   "rot": [
+    0.0,
+    15.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 120,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Plaster",
+   "prefab": "Debris_Plaster",
+   "room": "MasterBedroom",
+   "pos": [
+    7.45,
+    0.0,
+    22.6075
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 236,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Bookshelf",
+   "prefab": "wooden_bookshelf_worn",
+   "room": "MasterBedroom",
+   "pos": [
+    7.625,
+    0.0,
+    24.75
+   ],
+   "rot": [
+    0.0,
+    270.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 1499,
+   "fixture": "",
+   "note": "second grouping (E wall)"
+  },
+  {
+   "id": "Mbr_Curtains",
+   "prefab": "Curtains_Window",
+   "room": "MasterBedroom",
+   "pos": [
+    3.8,
+    2.48,
+    25.7
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 848,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_Curtains2",
+   "prefab": "Curtains_Window",
+   "room": "MasterBedroom",
+   "pos": [
+    0.3,
+    2.48,
+    21.3
+   ],
+   "rot": [
+    0.0,
+    90.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 848,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Mbr_FallenBox",
+   "prefab": "BoxFallen",
+   "room": "MasterBedroom",
+   "pos": [
+    2.6,
+    0.0,
+    24.6
+   ],
+   "rot": [
+    0.0,
+    140.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 300,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Runner",
+   "prefab": "Runner_Hall",
+   "room": "Corridor",
+   "pos": [
+    13.0,
+    0.0,
+    15.9
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "rug",
+   "tris": 196,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Bench",
+   "prefab": "painted_wooden_bench",
+   "room": "Corridor",
+   "pos": [
+    6.6,
+    0.0,
+    16.55
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 630,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Shoes",
+   "prefab": "Shoes_Pair",
+   "room": "Corridor",
+   "pos": [
+    6.25,
+    0.0,
+    16.35
+   ],
+   "rot": [
+    0.0,
+    200.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 472,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Picture",
+   "prefab": "Picture_Wide",
+   "room": "Corridor",
+   "pos": [
+    6.6,
+    1.75,
+    16.8
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 172,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Portrait",
+   "prefab": "Picture_Oval",
+   "room": "Corridor",
+   "pos": [
+    11.5,
+    1.85,
+    15.0
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 496,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Portrait2",
+   "prefab": "Picture_Oval",
+   "room": "Corridor",
+   "pos": [
+    14.6,
+    1.85,
+    16.8
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "wall",
+   "tris": 496,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Boxes",
+   "prefab": "BoxStack",
+   "room": "Corridor",
+   "pos": [
+    16.75,
+    0.0,
+    15.29
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 900,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_FallenBox",
+   "prefab": "BoxFallen",
+   "room": "Corridor",
+   "pos": [
+    11.0,
+    0.0,
+    16.3
+   ],
+   "rot": [
+    0.0,
+    30.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 300,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Paper",
+   "prefab": "Debris_Paper",
+   "room": "Corridor",
+   "pos": [
+    3.0,
+    0.0,
+    15.6
+   ],
+   "rot": [
+    0.0,
+    60.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 120,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Plaster",
+   "prefab": "Debris_Plaster",
+   "room": "Corridor",
+   "pos": [
+    12.9,
+    0.0,
+    16.45
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 236,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Paper2",
+   "prefab": "Debris_Paper",
+   "room": "Corridor",
+   "pos": [
+    17.6,
+    0.0,
+    16.0
+   ],
+   "rot": [
+    0.0,
+    200.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "debris",
+   "tris": 120,
+   "fixture": "",
+   "note": ""
+  },
+  {
+   "id": "Cor_Chest",
+   "prefab": "wooden_crate_01",
+   "room": "Corridor",
+   "pos": [
+    13.6,
+    0.0,
+    16.58
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 700,
+   "fixture": "",
+   "note": "hiding spot, was B1_Crate2"
+  },
+  {
+   "id": "Par_Chest",
+   "prefab": "wooden_crate_01",
+   "room": "Parlour",
+   "pos": [
+    14.6,
+    0.0,
+    25.48
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 700,
+   "fixture": "",
+   "note": "hiding spot under WP1/WP2 gap, was B2_Crate2"
+  },
+  {
+   "id": "Mbr_Chest",
+   "prefab": "wooden_crate_02",
+   "room": "MasterBedroom",
+   "pos": [
+    5.95,
+    0.0,
+    23.36
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 800,
+   "fixture": "",
+   "note": "blanket chest at the bed's foot, hiding spot, was B1_CrateLong2"
   },
   {
    "id": "FX_E1",
@@ -3175,7 +4495,7 @@
    "prefab": "FX_SconceBrass",
    "room": "CentralHall",
    "pos": [
-    8.45,
+    8.2,
     1.82,
     14.7
    ],
@@ -3199,7 +4519,7 @@
    "prefab": "FX_SconceBrass",
    "room": "CentralHall",
    "pos": [
-    10.05,
+    10.3,
     1.82,
     14.7
    ],
@@ -3432,6 +4752,174 @@
    "kind": "fixture",
    "tris": 688,
    "fixture": "R2",
+   "note": "lamp"
+  },
+  {
+   "id": "FX_CO1",
+   "prefab": "FX_Dome",
+   "room": "Corridor",
+   "pos": [
+    4.5,
+    3.0,
+    15.9
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 384,
+   "fixture": "CO1",
+   "note": "dome"
+  },
+  {
+   "id": "FX_CO2",
+   "prefab": "FX_Dome",
+   "room": "Corridor",
+   "pos": [
+    15.0,
+    3.0,
+    15.9
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 384,
+   "fixture": "CO2",
+   "note": "dome"
+  },
+  {
+   "id": "FX_CO3",
+   "prefab": "FX_SconceBroken",
+   "room": "Corridor",
+   "pos": [
+    12.0,
+    1.92,
+    16.8
+   ],
+   "rot": [
+    0.0,
+    180.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 428,
+   "fixture": "CO3",
+   "note": "sconce"
+  },
+  {
+   "id": "FX_P1",
+   "prefab": "FX_Chandelier3",
+   "room": "Parlour",
+   "pos": [
+    13.9,
+    3.0,
+    21.3
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 1776,
+   "fixture": "P1",
+   "note": "chand"
+  },
+  {
+   "id": "FX_P2",
+   "prefab": "FX_TableLamp",
+   "room": "Parlour",
+   "pos": [
+    17.2,
+    0.7,
+    25.45
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 688,
+   "fixture": "P2",
+   "note": "lamp"
+  },
+  {
+   "id": "FX_M1",
+   "prefab": "FX_CeilingFan",
+   "room": "MasterBedroom",
+   "pos": [
+    4.1,
+    3.0,
+    21.3
+   ],
+   "rot": [
+    0.0,
+    70.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 2076,
+   "fixture": "M1",
+   "note": "fan"
+  },
+  {
+   "id": "FX_M2",
+   "prefab": "FX_TableLampSmall",
+   "room": "MasterBedroom",
+   "pos": [
+    4.75,
+    0.7,
+    25.45
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "fixture",
+   "tris": 688,
+   "fixture": "M2",
    "note": "lamp"
   }
  ]

@@ -37,7 +37,7 @@ namespace Blink.EditorTools
         static readonly Dictionary<string, float> FallbackTileM = new Dictionary<string, float>
         {
             { "M_FloorPlank", 2.0f }, { "M_Parquet", 3.4f }, { "M_Lino", 2.0f }, { "M_Concrete", 2.5f },
-            { "M_Wall_Damask", 2.0f }, { "M_Wall_Pale", 2.0f }, { "M_Wall_Floral", 2.0f },
+            { "M_Wall_Damask", 2.0f }, { "M_Wall_Pale", 2.0f }, { "M_Wall_Floral", 2.0f }, { "M_Wall_Parlour", 2.0f },
             { "M_Plaster", 1.5f }, { "M_Plaster_Kitchen", 1.5f }, { "M_BrickWhite", 2.0f }, { "M_Tile", 1.5f },
             { "M_Glass", 1.0f }, { "M_Water", 4.0f },
         };
@@ -157,6 +157,9 @@ namespace Blink.EditorTools
                 W(paperEdge, 0.1f, C(120, 108, 90), 0f), log);
             Kit("M_Wall_Floral", sg, C(255, 255, 255), 1.0f, 1.0f, wearTex,
                 W(paperEdge, 0.2f, C(100, 100, 82), 0f), log);
+            // revision 3: Parlour (north wing), faded duck-egg Regency stripe on ambientCG Wallpaper001C
+            Kit("M_Wall_Parlour", sg, C(255, 255, 255), 1.0f, 1.0f, wearTex,
+                W(paperEdge, 0.2f, C(104, 98, 86), 0f), log);
             Kit("M_Plaster", sg, C(255, 255, 255), 1.0f, 1.0f, wearTex,
                 W(C(214, 208, 192, 0.5f), 0.2f, C(120, 110, 94), 0f), log);
             // 20th material (the spare): kitchen walls, M_Plaster's maps tinted blue-white (ceilings stay M_Plaster)

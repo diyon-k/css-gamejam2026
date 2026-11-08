@@ -101,6 +101,7 @@ namespace Blink.Interaction
         IEnumerator FlyToHold(Transform hold)
         {
             SetShadows(false); // a key held up to the face shouldn't throw a shadow across the room
+            Blink.Player.ViewmodelLighting.SetHeld(gameObject, true); // lit by the hands' fill light, not left black in the dark
             Vector3 heldScale = _homeScale * holdScale;
             for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / flySeconds)
             {
@@ -159,6 +160,7 @@ namespace Blink.Interaction
             transform.SetPositionAndRotation(position, rotation);
             transform.localScale = _homeScale;
             SetShadows(true);
+            Blink.Player.ViewmodelLighting.SetHeld(gameObject, false);
             SetColliders(true);
             _taken = false;
         }

@@ -117,10 +117,12 @@ def _ph_fbx(asset):
     raise FileNotFoundError(asset)
 
 
-def ph(asset, tris, keys=None, objects=None, drop=(), name=None, recentre=True):
+def ph(asset, tris, keys=None, objects=None, drop=(), name=None, recentre=True, split=()):
     """Import a Poly Haven FBX, join it, decimate to `tris`, remap each material's UVs into its atlas cell.
     keys: {material name substring -> cell key | "GLASS" | "SHADE" | None (delete)}; default cell = the asset.
-    objects: only keep objects whose name starts with one of these. drop: object names to delete."""
+    objects: only keep objects whose name starts with one of these. drop: object names to delete.
+    split: objects whose name starts with one of these stay separate, as child meshes <name>_Drawer1.. (top first),
+    each pivoted at its own centre so it can slide (openable drawers); the triangle budget is shared by triangle count."""
     before = set(bpy.data.objects)
     bpy.ops.import_scene.fbx(filepath=_ph_fbx(asset))
     new = [o for o in bpy.data.objects if o not in before]
@@ -140,7 +142,42 @@ def ph(asset, tris, keys=None, objects=None, drop=(), name=None, recentre=True):
     for o in new:
         if o not in meshes:
             bpy.data.objects.remove(o, do_unlink=True)
-    o = join(meshes, name or asset)
+    parts = [m for m in meshes if any(m.name.startswith(s) for s in split)]
+    body = [m for m in meshes if m not in parts]
+    count = {m: sum(len(p.vertices) - 2 for p in m.data.polygons) for m in meshes}
+    total = max(1, sum(count.values()))
+
+    def budget(objs):
+        return int(round(tris * sum(count[m] for m in objs) / total)) if tris else 0
+
+    # budgets first: joining the body invalidates every joined object but the first
+    part_budgets = [budget([p]) for p in parts]
+    body_budget = budget(body)
+    o = _ph_mesh(join(body, name or asset), asset, keys, body_budget)
+    parts = [_ph_mesh(p, asset, keys, b) for p, b in zip(parts, part_budgets)]
+    if recentre:
+        # floor-centre on the whole model (body + split parts), as centre_floor did on the joined mesh
+        lo, hi = bounds(o)
+        for p in parts:
+            plo, phi = bounds(p)
+            lo = Vector([min(lo[i], plo[i]) for i in range(3)])
+            hi = Vector([max(hi[i], phi[i]) for i in range(3)])
+        t = Matrix.Translation((-(lo.x + hi.x) / 2, -(lo.y + hi.y) / 2, -lo.z))
+        for m in [o] + parts:
+            m.data.transform(t)
+    parts.sort(key=lambda p: -sum(bounds(p)[k].z for k in (0, 1)))
+    for i, p in enumerate(parts, 1):
+        plo, phi = bounds(p)
+        c = (plo + phi) / 2
+        p.data.transform(Matrix.Translation(-c))
+        p.location = c
+        p.name = p.data.name = f"{name or asset}_Drawer{i}"
+        lib.child(p, o)
+    return o
+
+
+def _ph_mesh(o, asset, keys, tris):
+    """ph() per mesh: material cells, dropped faces, decimation to `tris`, atlas UV remap."""
     me = o.data
     # materials -> cells
     keys = keys or {}
@@ -213,8 +250,6 @@ def ph(asset, tris, keys=None, objects=None, drop=(), name=None, recentre=True):
             me.materials.append(m)
     while len(me.materials) > len(new_mats):
         me.materials.pop()
-    if recentre:
-        centre_floor(o)
     return o
 
 
@@ -1294,7 +1329,7 @@ MODELS = {
     # Poly Haven furniture
     "Sofa_01": (Sofa_01, "floor", "box", "furniture"),
     "ArmChair_01": (ArmChair_01, "floor", "box", "furniture"),
-    "GothicCommode_01": (_ph("GothicCommode_01", 1600), "floor", "box", "furniture"),
+    "GothicCommode_01": (_ph("GothicCommode_01", 1600, split=("GothicCommode_01_door",)), "floor", "box", "furniture"),
     "ClassicNightstand_01": (_ph("ClassicNightstand_01", 800), "floor", "box", "furniture"),
     "GothicBed_01": (GothicBed_01, "floor", "box", "furniture"),
     "Rockingchair_01": (Rockingchair_01, "floor", "box", "furniture"),

@@ -163,6 +163,7 @@ namespace Blink.EditorTools
             Prefab("Assets/Prefabs/Effects.prefab", scene);
             var spawner = new SerializedObject(new GameObject("ClownSpawner").AddComponent<Blink.Mobs.ClownSpawner>());
             spawner.FindProperty("clownPrefab").objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Zombie.prefab");
+            spawner.FindProperty("layout").objectReferenceValue = AssetDatabase.LoadAssetAtPath<TextAsset>("Assets/Art/Environment/Bungalow/bungalow_layout.json");
             spawner.ApplyModifiedPropertiesWithoutUndo();
 
             // ---- temporary neutral light (grey-box only; the lighting pass replaces it)

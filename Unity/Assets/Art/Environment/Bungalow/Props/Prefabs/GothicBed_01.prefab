@@ -67,6 +67,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 71bf3fb0194a1c842880ec68ac5c4e2e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4794129074779900914}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 71bf3fb0194a1c842880ec68ac5c4e2e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5862865822885716166}
   m_SourcePrefab: {fileID: 100100000, guid: 71bf3fb0194a1c842880ec68ac5c4e2e, type: 3}
 --- !u!1 &8461067893449023987 stripped
 GameObject:
@@ -94,3 +97,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.4922, y: 1.5363, z: 2.038}
   m_Center: {x: 0, y: 0.76815, z: 0}
+--- !u!114 &5862865822885716166
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8461067893449023987}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc63d0d77e11cf34890f52df13f60965, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blink.Runtime::Blink.Interaction.HidingSpot
+  noun: bed
+  verb: Hide under
+  eye: {x: 0, y: 0.2, z: 0}
+  exit: {x: 0, y: 0, z: 1.5}
+  hopSeconds: 0.45
+  hopHeight: 0
+  ajarDegrees: 9
+  maxYaw: 80

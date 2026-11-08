@@ -247,7 +247,7 @@ scatter("Living", 14, ["paper_scraps", "paper_scraps", "plaster_crumbs"], ((12.0
 # Kitchen: stained, debris-strewn lino; rust and leaks under the windows; mould at the ceiling line
 wall("Kitchen", "N", 12.6, 1.6, 0.9, 2.2, "leak_streaks")
 wall("Kitchen", "N", 16.6, 1.4, 0.7, 1.4, "rust_streaks")
-wall("Kitchen", "N", 18.8, 2.5, 1.0, 0.6, "mould_bloom")
+wall("Kitchen", "N", 17.4, 2.5, 0.9, 0.6, "mould_bloom")   # rev 3: off D9
 wall("Kitchen", "E", 8.0, 1.5, 0.9, 2.0, "leak_streaks")
 wall("Kitchen", "E", 14.2, 2.45, 0.9, 0.6, "mould_bloom")
 wall("Kitchen", "W", 12.4, 1.6, 0.8, 1.8, "leak_streaks")
@@ -287,6 +287,39 @@ ceil("Bathroom", 4.9, 11.0, 1.4, 1.4, "mould_bloom", 160)
 ceil("Bathroom", 3.4, 12.0, 1.2, 1.2, "ceiling_stain", 80)
 floor("Bathroom", 3.6, 11.6, 1.2, 1.2, "floor_stain", 0)
 
+# Revision 3 north wing. Corridor: hall-like scuffs down the D1 sightline, damp on the long walls
+wall("Corridor", "N", 6.0, 2.5, 0.8, 0.5, "mould_bloom")
+wall("Corridor", "N", 13.4, 1.6, 0.7, 1.8, "leak_streaks")
+wall("Corridor", "S", 6.0, 1.6, 0.8, 1.8, "peel_edge")
+wall("Corridor", "S", 16.9, 2.45, 0.9, 0.6, "mould_bloom")
+ceil("Corridor", 10.8, 15.9, 1.2, 1.2, "ceiling_stain", 40)
+floor("Corridor", 9.25, 15.9, 0.9, 0.9, "scuffs", 90)
+floor("Corridor", 4.0, 15.9, 0.9, 0.9, "scuffs", 270)
+scatter("Corridor", 5, ["paper_scraps", "plaster_crumbs"], ((1.0, 19.0), (15.5, 16.3)), (0.3, 0.5), 16)
+
+# Parlour (living-like): leaks round the north windows, grime band, ceiling stains, paper debris
+wall("Parlour", "N", 9.5, 1.6, 0.8, 2.0, "leak_streaks")
+wall("Parlour", "N", 14.0, 2.5, 1.0, 0.6, "mould_bloom")
+wall("Parlour", "E", 24.0, 1.5, 0.9, 2.0, "leak_streaks")
+wall("Parlour", "W", 18.8, 1.5, 0.8, 1.6, "peel_edge")
+wall("Parlour", "S", 14.5, 2.45, 1.0, 0.6, "mould_bloom")
+band("Parlour", "N", 0.45, 0.32, "grime_band", 2.0)
+ceil("Parlour", 10.5, 24.0, 1.6, 1.6, "ceiling_stain", 30)
+ceil("Parlour", 17.5, 19.0, 1.2, 1.2, "ceiling_stain", 200)
+floor("Parlour", 16.2, 18.6, 1.1, 1.1, "floor_stain", 60)
+floor("Parlour", 9.25, 18.2, 1.0, 1.0, "scuffs", 0)
+scatter("Parlour", 10, ["paper_scraps", "paper_scraps", "plaster_crumbs"], ((8.6, 19.2), (17.4, 25.2)),
+        (0.35, 0.6), 17)
+
+# Master bedroom (bedroom-like): mould at the ceiling line, damp beside WM2
+for side, along in (("N", 1.5), ("N", 6.5), ("W", 18.0), ("W", 24.0), ("E", 19.0), ("E", 24.2)):
+    wall("MasterBedroom", side, along, 2.5, 1.0, 0.6, "mould_bloom")
+wall("MasterBedroom", "W", 19.8, 1.5, 0.8, 2.0, "leak_streaks")
+ceil("MasterBedroom", 2.0, 24.0, 1.6, 1.6, "ceiling_stain", 45)
+ceil("MasterBedroom", 6.4, 18.4, 1.1, 1.1, "mould_bloom", 120)
+floor("MasterBedroom", 4.0, 18.6, 1.0, 1.0, "scuffs", 0)
+scatter("MasterBedroom", 5, ["paper_scraps", "plaster_crumbs"], ((0.9, 7.4), (17.6, 25.0)), (0.3, 0.55), 18)
+
 # Basement: flood tide-line at ~0.5 m on every wall, grime under it, leaks and rust from the slab
 for rid in ("B1", "B2"):
     for side in ("N", "S", "E", "W"):
@@ -318,8 +351,14 @@ FIXTURE_TUNING = {
     "L3": dict(glow=2.0, col="#FFDDB4", i=0.6), "L4": dict(glow=1.2, col="#FFDDB4", i=0.4),
     "K1": dict(glow=2.0, cone=150), "K2": dict(glow=2.0, cone=150), "R1": dict(glow=1.6, col="#F5E6C8", i=1.4),
     "R2": dict(glow=1.0, i=0.8), "RW1": dict(col="#B8BCB0", i=3.0), "KW1": dict(i=1.2),
-    "W1": dict(glow=1.5, fizz=0.35, i=1.0), "WW1": dict(i=0.9), "CW1": dict(i=0.8), "CW2": dict(i=0.8),
+    "W1": dict(glow=1.5, fizz=0.35, i=1.0), "WW1": dict(i=0.9), "CW2": dict(i=0.8),
     "C1": dict(glow=6.0), "C2": dict(glow=6.0, i=1.4),
+    # revision 3: copied from the matching ground-floor fixture (dome E1, chandelier H1, lamp L2 / R2, fan L1, RW1)
+    "CO1": dict(glow=2.0, col="#F5E8CC"), "CO2": dict(glow=1.6, col="#F5E8CC"), "CO3": dict(glow=0.0),
+    "P1": dict(glow=1.2, col="#FFE4C0", i=1.6), "P2": dict(glow=2.5, col="#FFEED8", i=2.4),
+    "M1": dict(glow=3.0, col="#FFE6C4", i=1.3), "M2": dict(glow=1.0, i=0.8),
+    "MW1": dict(col="#B8BCB0", i=2.2), "MW2": dict(col="#B8BCB0", i=1.7), "PW1": dict(i=0.9),
+    "CW3": dict(i=0.8), "CW4": dict(i=0.8),
 }
 # Global look (SPEC 5.2). fog: Exponential / ExponentialSquared.
 # fog 0.11 (SPEC start 0.15): a zombie must still read as a silhouette 10-15 m down the SPEC 1.6 sightlines
@@ -348,10 +387,15 @@ POST_GLOBAL = post(exposure=1.5, contrast=10, sat=-18, vignette=0.30, ca=0.06, l
 # ACES alone takes ~1.4 stops off these dark frames, so exposures are positive; the practicals are already warm, so the
 # filters / white balance pull towards the refs' fairly neutral greys instead of adding more orange.
 POST_ROOMS = {
-    "Hall": post(("EntranceHall", "CentralHall"), 1.4, "#E8E8E4", -40, 8, temp=-16, vignette=0.34),
+    "Hall": post(("EntranceHall", "CentralHall", "Corridor"), 1.4, "#E8E8E4", -40, 8, temp=-16, vignette=0.34),
     "Living": post(("Living",), 2.3, "#E6E4DE", -38, 14, temp=-16, vignette=0.36, ca=0.12, split_s="#3A2418",
                    split_h="#FFF0DC"),
     "Bedroom": post(("Bedroom",), 2.45, "#ECE8DC", -30, -6, temp=4, tint=8, vignette=0.28, lift=(1.0, 1.0, 0.98, 0.0)),
+    # revision 3: parlour = living grade a touch cooler; master = bedroom grade a touch darker
+    "Parlour": post(("Parlour",), 2.2, "#E4E4E0", -40, 14, temp=-20, vignette=0.38, ca=0.12, split_s="#30241C",
+                    split_h="#FFF0DC"),
+    "MasterBedroom": post(("MasterBedroom",), 2.3, "#E8E6DC", -32, -4, temp=0, tint=6, vignette=0.32,
+                          lift=(1.0, 1.0, 0.98, 0.0)),
     "Kitchen": post(("Kitchen",), 1.4, "#E4E9E6", -30, 0, temp=-10),
     "Bathroom": post(("Bathroom",), 1.7, "#D9E4D6", -35, 0, temp=-8, tint=-6),
     "Basement": post(("B1", "B2"), 1.6, "#D8D8C0", -40, 10, vignette=0.4),

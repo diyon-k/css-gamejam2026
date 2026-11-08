@@ -24,6 +24,10 @@ namespace Blink.Player
         [SerializeField] float acceleration = 20f;
         [SerializeField] float gravity = -20f;
         [SerializeField] float jumpHeight = 1f;
+        [Tooltip("Noise range (metres) of landing from a jump or fall.")]
+        [SerializeField, Min(0f)] float landLoudness = 6f;
+        [Tooltip("Landing slower than this (m/s down) is silent, so stepping off a stair doesn't thump. A 1 m jump lands at ~6.")]
+        [SerializeField, Min(0f)] float landNoiseSpeed = 4f;
 
         [Header("Crouch / Crawl")]
         [SerializeField] float crouchSpeed = 2.2f;
@@ -171,7 +175,10 @@ namespace Blink.Player
             if (_controller.isGrounded && !IsCrawling && !IsCrouching && _jump != null && _jump.WasPressedThisFrame())
                 vertical = Mathf.Sqrt(-2f * gravity * jumpHeight);
             _velocity = new Vector3(horizontal.x, vertical, horizontal.z);
+            bool airborne = !_controller.isGrounded;
             var flags = _controller.Move(_velocity * dt);
+            if (airborne && _controller.isGrounded && -_velocity.y >= landNoiseSpeed)
+                World.Noise.Make(transform.position, landLoudness);
             if ((flags & CollisionFlags.Above) != 0 && _velocity.y > 0f) _velocity.y = 0f; // bonk the ceiling
         }
 

@@ -18,8 +18,10 @@ import bungalow_layout as L  # noqa: E402
 
 S = 56            # px per metre
 M = 120           # panel margin
-FX, FZ = L.FOOTPRINT
-EXTRA_N = 2.6     # room above the building for FUTURE entries north of it
+FX = L.FOOTPRINT[0]
+# rev 3: the north wing runs past L.FOOTPRINT's z 15, so the plan's depth comes from the outermost x-axis wall
+FZ = max(w["t"][1] for w in L.WALLS.values() if w["axis"] == "x")
+EXTRA_N = 0.8     # margin above the building
 EXTRA_E = 6.5     # and east of it
 
 try:
@@ -40,7 +42,8 @@ COL = dict(wall=(48, 46, 44), grid=(226, 226, 220), grid5=(238, 238, 234), dim=(
 LCOL = {"fan": (255, 170, 0), "chand": (230, 120, 0), "sconce": (210, 150, 40), "lamp": (240, 90, 20),
         "dome": (200, 180, 60), "bulb": (150, 140, 40), "area": (90, 160, 200)}
 TINT = {"EntranceHall": (236, 229, 210), "CentralHall": (236, 229, 210), "Living": (238, 214, 210),
-        "Kitchen": (226, 232, 238), "Bedroom": (220, 232, 214), "Bathroom": (222, 234, 232)}
+        "Kitchen": (226, 232, 238), "Bedroom": (220, 232, 214), "Bathroom": (222, 234, 232),
+        "Corridor": (236, 229, 210), "MasterBedroom": (220, 232, 214), "Parlour": (238, 214, 210)}
 
 
 class P:
@@ -257,11 +260,12 @@ def room_label(p, rid, r):
         cx += 0.5
     w, d = r["x"][1] - r["x"][0], r["z"][1] - r["z"][0]
     c = p(cx, cz)
-    name = (r.get("name") and f"{rid} {r['name'].upper()}") or {"EntranceHall": "ENTRANCE HALL",
+    name = (r.get("name") and (rid + " " if rid != r["name"].replace(" ", "") else "") + r["name"].upper()) or {"EntranceHall": "ENTRANCE HALL",
                                                                  "CentralHall": "CENTRAL HALL"}.get(rid, rid.upper())
     text_c((c[0], c[1] - 18), name, FB)
     text_c((c[0], c[1] + 2), f"{w:.2f} x {d:.2f} = {w * d:.1f} m2", F)
-    text_c((c[0], c[1] + 20), f"{w * d / r['phase1']:.1f}x Phase 1", FS, (90, 90, 90))
+    text_c((c[0], c[1] + 20), f"{w * d / r['phase1']:.1f}x Phase 1" if r["phase1"] else "new in rev 3", FS,
+           (90, 90, 90))
 
 
 def stair_plan(p, basement):
@@ -332,7 +336,7 @@ def draw():
         if r["level"] == "ground":
             room_label(g, rid, r)
     # sightlines (direction 12): long views through aligned openings
-    SIGHT = [((9.25, -0.2), (9.25, 14.6), "D1-A2-hall 14.8 m"), ((1.0, 2.1), (19.6, 2.1), "D2-A1 18.6 m"),
+    SIGHT = [((9.25, -0.2), (9.25, 25.6), "D1-A2-D6-D7 25.8 m"), ((1.0, 2.1), (19.6, 2.1), "D2-A1 18.6 m"),
              ((15.0, 0.4), (15.0, 14.6), "O1 14.2 m")]
     for a, b, lab in SIGHT:
         dashed(g, [a, b], COL["sight"], 2, 14)
@@ -484,11 +488,11 @@ def draw():
              ("arch / cased opening (A1-A4, O1); window (W..)", COL["win"]),
              ("light fixture with ID; red ring = realtime-shadow hero; white = off/broken", LCOL["lamp"]),
              ("baked area light at a window (rectangle)", LCOL["area"]),
-             ("zombie spawn Z1-Z4 + patrol route (dashed, arrows = direction, squares = waypoints)", COL["zomb"]),
+             ("zombie spawn Z1-Z6 + patrol route (dashed, arrows = direction, squares = waypoints)", COL["zomb"]),
              ("player spawn P0 (green triangle)", COL["player"]),
              ("CAM-1/2/3 = reference match cameras (yaw arrow + FOV wedge)", COL["cam"]),
              ("long sightline through aligned openings (blink mechanic)", COL["sight"]),
-             ("FUTURE (dashed grey, not built): corridor wing, attic hatch, east wing; green = attach point",
+             ("FUTURE (dashed grey, not built): attic hatch, east wing; green = attach point",
               COL["future"]),
              ("flood water in basement (light blue)", COL["water"])]
     for i, (s_, c) in enumerate(items):

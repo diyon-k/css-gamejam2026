@@ -239,7 +239,7 @@ namespace Blink.EditorTools
         {
             if (!AssetDatabase.IsValidFolder(PrefabDir.TrimEnd('/'))) AssetDatabase.CreateFolder(PropsDir.TrimEnd('/'), "Prefabs");
             var models = LoadModels();
-            int n = 0, boxes = 0;
+            int n = 0, boxes = 0, drawers = 0, wired = 0;
             var missing = new List<string>();
             foreach (var m in models.Values)
             {
@@ -270,11 +270,60 @@ namespace Blink.EditorTools
                     bc.size = hi - lo;
                     boxes++;
                 }
+                drawers += SetupDrawers(go, m);
+                if (BungalowInteractables.Wire(go, m.name)) wired++;
                 PrefabUtility.SaveAsPrefabAsset(go, PrefabDir + m.name + ".prefab");
                 UnityEngine.Object.DestroyImmediate(go);
                 n++;
             }
-            return $"prefabs: {n} in {PrefabDir} ({boxes} with a box collider)" + (missing.Count > 0 ? "; missing fbx: " + string.Join(", ", missing.ToArray()) : "");
+            return $"prefabs: {n} in {PrefabDir} ({boxes} with a box collider, {drawers} drawers, {wired} interactive)" + (missing.Count > 0 ? "; missing fbx: " + string.Join(", ", missing.ToArray()) : "");
+        }
+
+        static readonly System.Text.RegularExpressions.Regex DrawerName = new System.Text.RegularExpressions.Regex(@"_Drawer\d+$");
+        const float DrawerPull = 0.30f;      // metres out of the front (+Z) at most...
+        const float DrawerPullDepth = 0.6f;  // ...and at most this share of the drawer's depth, so it never leaves the carcass
+        const float DrawerSeconds = 0.3f;
+        const float DrawerProud = 0.01f;     // the drawer collider sticks out past the body box, so the look ray finds it
+        const float DrawerPanel = 0.05f;     // collider depth: the front panel only, so the look ray reaches what's inside
+        // collider height: the lower 65% of the front, so looking down into an open drawer from ~1 m passes over it
+        const float DrawerPanelHeight = 0.65f;
+
+        /// <summary>
+        /// Every "&lt;Model&gt;_Drawer&lt;N&gt;" child (split out by the Blender build, ph(split=...)) becomes a sliding
+        /// <see cref="Blink.Interaction.Openable"/> with a box collider over the lower part of its front panel only (a box
+        /// over the whole drawer, or the panel's top edge, would catch the look ray before anything lying inside, e.g. the
+        /// bedroom key). Drawers aren't static and are lit by light probes, so they can move. Returns how many it set up.
+        /// </summary>
+        static int SetupDrawers(GameObject go, Model m)
+        {
+            int n = 0;
+            float bodyFront = m.hi != null && m.hi.Length == 3 ? m.hi[2] : float.NegativeInfinity;
+            foreach (var t in go.GetComponentsInChildren<Transform>(true))
+            {
+                if (!DrawerName.IsMatch(t.name)) continue;
+                GameObjectUtility.SetStaticEditorFlags(t.gameObject, 0);
+                var r = t.GetComponent<MeshRenderer>();
+                if (r != null)
+                {
+                    r.receiveGI = ReceiveGI.LightProbes;
+                    r.shadowCastingMode = ShadowCastingMode.On;
+                }
+                var mf = t.GetComponent<MeshFilter>();
+                var b = mf != null && mf.sharedMesh != null ? mf.sharedMesh.bounds : new Bounds(Vector3.zero, Vector3.one * 0.2f);
+                var bc = t.gameObject.AddComponent<BoxCollider>();
+                // the lower part of the front panel, pushed out to stand proud of the body box
+                float front = Mathf.Max(b.max.z, bodyFront + DrawerProud - t.localPosition.z);
+                float h = b.size.y * DrawerPanelHeight;
+                bc.center = new Vector3(b.center.x, b.min.y + h * 0.5f, front - DrawerPanel * 0.5f);
+                bc.size = new Vector3(b.size.x, h, DrawerPanel);
+                var o = t.gameObject.AddComponent<Blink.Interaction.Openable>();
+                o.motion = Blink.Interaction.Openable.Motion.Sliding;
+                o.noun = "drawer";
+                o.slide = new Vector3(0f, 0f, Mathf.Min(DrawerPull, DrawerPullDepth * b.size.z));
+                o.seconds = DrawerSeconds;
+                n++;
+            }
+            return n;
         }
 
         // ------------------------------------------------------------------ placement

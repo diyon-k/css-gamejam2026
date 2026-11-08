@@ -122,6 +122,10 @@ namespace Blink.EditorTools
                 go.transform.position = centre / data.Count;
                 var door = GetOrAdd<Door>(go);
                 door.Configure(id, front.Value, locked, row.open, row.keys, key, data.ToArray(), row.also);
+                // How far each side can swing before the leaf meets a wall, the jamb or furniture.
+                door.openAngle = ClearSwing(door, data, +1f);
+                door.backAngle = ClearSwing(door, data, -1f);
+                door.SnapToStart();
                 foreach (var leaf in kv.Value)
                 {
                     // One interactable per leaf: an Openable from an older setup (e.g. the start bedroom's D2), or a
@@ -131,7 +135,7 @@ namespace Blink.EditorTools
                     if (leaf.GetComponent<DoorLeaf>() is { } link) { link.door = door; EditorUtility.SetDirty(link); }
                 }
                 EditorUtility.SetDirty(door);
-                sb.Append($" {id} {(locked ? (row.keys > 0 ? $"locked({row.keys} x {KeyList(key, row.also)})" : "locked") : row.open ? "open" : "closed")}{note} x{data.Count};");
+                sb.Append($" {id} {(locked ? (row.keys > 0 ? $"locked({row.keys} x {KeyList(key, row.also)})" : "locked") : row.open ? "open" : "closed")}{note} x{data.Count} swing +{door.openAngle:0}/-{door.backAngle:0};");
             }
             EditorSceneManager.MarkSceneDirty(scene);
             if (save) EditorSceneManager.SaveScene(scene);
@@ -277,6 +281,40 @@ namespace Blink.EditorTools
             EditorSceneManager.MarkSceneDirty(scene);
             if (save) EditorSceneManager.SaveScene(scene);
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// The widest angle (5-degree steps, up to 90) the door swings toward <paramref name="sign"/> (+1 front, -1 back)
+        /// with no leaf overlapping anything solid but itself. A leaf box is tested 6 cm short at each end and edge, so
+        /// grazing the floor or its own frame doesn't count. Leaves the door posed at that angle (call SnapToStart).
+        /// </summary>
+        static float ClearSwing(Door door, List<DoorLeafData> data, float sign)
+        {
+            var own = new HashSet<Collider>();
+            foreach (var l in data) foreach (var c in l.leaf.GetComponentsInChildren<Collider>(true)) own.Add(c);
+            int mask = ~0;
+            foreach (var layer in new[] { "Player", "Zombie", "ZombieHitbox", "Corpse", "Ignore Raycast" })
+            {
+                int li = LayerMask.NameToLayer(layer);
+                if (li >= 0) mask &= ~(1 << li);
+            }
+            var hits = new Collider[16];
+            float clear = 0f;
+            for (float a = 5f; a <= 90.01f; a += 5f)
+            {
+                door.PoseAt(sign * a);
+                Physics.SyncTransforms();
+                foreach (var l in data)
+                    foreach (var box in l.leaf.GetComponentsInChildren<BoxCollider>(true))
+                    {
+                        var half = Vector3.Scale(box.size, box.transform.lossyScale) * 0.5f - new Vector3(0.06f, 0.06f, 0f);
+                        int n = Physics.OverlapBoxNonAlloc(box.transform.TransformPoint(box.center), half, hits, box.transform.rotation,
+                            mask, QueryTriggerInteraction.Ignore);
+                        for (int i = 0; i < n; i++) if (!own.Contains(hits[i])) return clear;
+                    }
+                clear = a;
+            }
+            return clear;
         }
 
         static int KeysInScene(Scene scene, string itemId, string[] also)
