@@ -537,8 +537,40 @@ namespace Blink.EditorTools
 
         // ------------------------------------------------------------------ the search spots
 
-        /// <summary>Three drawers (HouseBlockout.Drawers' shape) against the far side wall, near the door. Anchors slide out with them.</summary>
+        const string CommodePrefab = "Assets/Art/Environment/Bungalow/Props/Prefabs/GothicCommode_01.prefab";
+
+        /// <summary>
+        /// The bungalow's own chest of drawers (GothicCommode_01, drawers set up by BungalowPropsPlacer.SetupDrawers) against the
+        /// far side wall, near the door. Each drawer gets a crowbar spot on its inside floor, toward the front, so a drawer
+        /// pulled open shows it clear of the carcass collider. Falls back to a primitive chest if the prefab is missing.
+        /// </summary>
         static void BuildChestOfDrawers(Transform root, Frame frame, FloodMaterials m, List<Openable> spots, List<Transform> anchors)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CommodePrefab);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[PuzzleProps] {CommodePrefab} not found; building a primitive chest of drawers instead.");
+                BuildPrimitiveDrawers(root, frame, m, spots, anchors);
+                return;
+            }
+            var chest = (GameObject)PrefabUtility.InstantiatePrefab(prefab, root);
+            chest.name = "ChestOfDrawers";
+            float depth = chest.GetComponent<BoxCollider>() is { } body ? body.size.z : 0.58f;
+            chest.transform.SetPositionAndRotation(frame.P(2.4f, depth * 0.5f + 0.02f), frame.Facing(0f, 1f));
+            const float insideFloor = -0.085f; // drawer meshes are pivoted at their centre; measured inside floor
+            int n = 0;
+            foreach (Transform dr in chest.transform)
+            {
+                var o = dr.GetComponent<Openable>();
+                if (o == null) continue;
+                spots.Add(o);
+                anchors.Add(Anchor(dr, new Vector3(0f, insideFloor, 0.10f), 0f));
+                if (n++ == 1) Junk(dr, new Vector3(-0.3f, insideFloor, -0.1f), m, rag: true);
+            }
+        }
+
+        /// <summary>Three primitive drawers (HouseBlockout.Drawers' shape): the fallback for <see cref="BuildChestOfDrawers"/>.</summary>
+        static void BuildPrimitiveDrawers(Transform root, Frame frame, FloodMaterials m, List<Openable> spots, List<Transform> anchors)
         {
             const float w = 0.9f, d = 0.5f;
             float h = 0.08f + DrawerH * 3f + 0.04f;
