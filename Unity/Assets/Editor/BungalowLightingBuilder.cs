@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Blink.Visuals;
 using UnityEditor;
@@ -47,7 +48,7 @@ namespace Blink.EditorTools
         [Serializable] public class Fixture { public string id, kind, color, mode; public float[] pos; public float intensity, range; }
         [Serializable] public class Room { public string id, @ref; public float[] min, max; }
         [Serializable] public class Cam { public string id, @ref; public float[] pos; public float yaw, pitch, fov; public int w, h; }
-        [Serializable] public class Layout { public Room[] rooms; public Fixture[] fixtures; public Cam[] cameras; }
+        [Serializable] public class Layout { public Room[] rooms; public Fixture[] fixtures; public Cam[] cameras; public Room[] ducts; }
 
         [Serializable] public class AreaLight { public string id; public float[] size, face; }
         [Serializable] public class Box { public string id; public float[] min, max; }
@@ -385,7 +386,8 @@ namespace Blink.EditorTools
             int probes = 0, skipped = 0, groups = 0;
             Box well = atmo.stairWell;
 
-            foreach (var room in layout.rooms)
+            // rooms, plus the vent ducts under the floor (so the hands are lit like the duct, not the room above)
+            foreach (var room in layout.rooms.Concat(layout.ducts ?? new Room[0]))
             {
                 Vector3 mn = V(room.min), mx = V(room.max);
                 var pts = new List<Vector3>();
@@ -417,7 +419,7 @@ namespace Blink.EditorTools
                 Vector3 mn = V(well.min), mx = V(well.max);
                 AddReflection(rpParent, "RP_" + well.id, (mn + mx) * 0.5f, mx - mn, 2);
             }
-            return $"probes: {groups} light-probe groups, {probes} probes ({skipped} inside geometry skipped), {layout.rooms.Length + (well != null ? 1 : 0)} reflection probes";
+            return $"probes: {groups} light-probe groups, {probes} probes ({skipped} inside geometry skipped), {groups + (well != null ? 1 : 0)} reflection probes";
         }
 
         static IEnumerable<float> Steps(float a, float b)

@@ -195,6 +195,18 @@ Each room lists the ref it is based on and why. Material names are defined in §
   - CW1/CW2: baked hopper-window light.
 - **Props:** 2 × steel_frame_shelves_01 with jars and boxes, 3 wooden crates, workbench, portable_generator (hero, P7), floating paper and boxes, trash bags.
 
+### 2.8 Vents (crawl routes out of rooms a clown can trap you in)
+Data: `bungalow_layout.VENTS` (checked by `check()`); runtime `Blink.Interaction.Vent`; set up by `BLINK/Bungalow/Set Up Vents` (`Editor/BungalowVents.cs`).
+
+| Vent | End 0 | End 1 | How |
+|---|---|---|---|
+| **Vent_A** | Bedroom grate (6.3, 7.85) | Bathroom grate (6.3, 10.40) | Crawl duct x 6.0–6.6, y −0.80 to −0.30, z 7.55–10.70, under `Wall_Z9p5`. Both rooms have one door (D2 / D3), so this is the way out when a clown blocks it. |
+| **Vent_B** | Kitchen grate (12.9, 13.1) | B1 cellar, on `B1_CrateLong` | The hole (x 12.6–13.2, z 12.85–13.35) falls between the joists at z 12.8 / 13.4 and drops onto the crate. **Not B2**: B2 is the flooded-basement puzzle room. |
+
+- **Geometry:** each grate end is a 0.6 m `floor_holes` entry cut through the slab. The duct is a kit piece (`build_ducts`, `M_Concrete`, inside faces only, no collider). `FloorGrate` is a cast-iron prop (`castiron` cell, 0.68 m square, 0.025 m high, box collider), so the floor stays walkable and the navmesh is unchanged.
+- **Lighting:** the duct is lightmapped with the shell, and the lighting builder lays light probes down `layout.ducts`. Light only gets in through the grates; inside, the flashlight is the light.
+- **Play:** interacting at an end dips the screen to black and puts you in the duct. Forward / back crawls along the path. At an end, Interact peeks out through the grate and again climbs out. Getting in or out clanks the grate (`Noise`, 8 m). While you're inside, zombies lose sight of you and nobody follows.
+
 ---
 
 ## 3. Materials (21: the cap is raised to 21 for revision 3's `M_Wall_Parlour`, §8.4)

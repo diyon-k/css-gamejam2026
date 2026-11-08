@@ -128,7 +128,6 @@ public static partial class HouseBlockout
         DressRooms(house);
         AddDecay(house);
         BakeNavMesh(house);
-        StoryProps.Place(); // photos + notes (story workstream), placed by raycast against the built house
 
         EditorSceneManager.SaveScene(scene, ScenePath);
         AssetDatabase.SaveAssets();

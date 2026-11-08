@@ -49,7 +49,6 @@ namespace Blink.Interaction
         InputAction _look, _interact, _jump;
         float _eyeAboveBody, _bodyAboveFloor;
         float _dark; // 0..1 overlay fade
-        static Texture2D _edge;
 
         void Awake() => _doors = GetComponentsInChildren<Openable>();
 
@@ -195,44 +194,9 @@ namespace Blink.Interaction
             if (Occupant == this) Abandon();
         }
 
-        /// <summary>Black all round the peek gap, with soft edges. IMGUI like BlinkEyelids, so no Canvas.</summary>
         void OnGUI()
         {
-            if (_dark <= 0f || peekGap.x <= 0f || peekGap.y <= 0f || Event.current.type != EventType.Repaint) return;
-            if (_edge == null)
-            {
-                _edge = new Texture2D(32, 1, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
-                for (int i = 0; i < 32; i++) _edge.SetPixel(i, 0, new Color(0f, 0f, 0f, 1f - Mathf.SmoothStep(0f, 1f, i / 31f)));
-                _edge.Apply();
-            }
-            float w = Screen.width, h = Screen.height;
-            float gw = w * Mathf.Min(peekGap.x, 1f), gh = h * Mathf.Min(peekGap.y, 1f);
-            float x0 = (w - gw) * 0.5f, x1 = x0 + gw;
-            // A low gap (under a bed) sits at the bottom of the screen; a tall one is centred.
-            float y0 = peekGap.y >= 1f ? 0f : h * 0.62f - gh * 0.5f, y1 = y0 + gh;
-            float soft = Mathf.Min(gw, gh) * 0.35f;
-
-            var old = GUI.color;
-            var white = Texture2D.whiteTexture;
-            GUI.color = new Color(0f, 0f, 0f, _dark);
-            GUI.DrawTexture(new Rect(0f, 0f, x0, h), white);
-            GUI.DrawTexture(new Rect(x1, 0f, w - x1, h), white);
-            GUI.DrawTexture(new Rect(x0, 0f, gw, y0), white);
-            GUI.DrawTexture(new Rect(x0, y1, gw, h - y1), white);
-            GUI.color = new Color(1f, 1f, 1f, _dark);
-            // Soft inner edges: the texture fades from black (u 0) to clear (u 1).
-            GUI.DrawTextureWithTexCoords(new Rect(x0, y0, soft, gh), _edge, new Rect(0f, 0f, 1f, 1f));
-            GUI.DrawTextureWithTexCoords(new Rect(x1 - soft, y0, soft, gh), _edge, new Rect(1f, 0f, -1f, 1f));
-            if (y0 > 0f)
-            {
-                GUIUtility.RotateAroundPivot(90f, new Vector2(x0, y0));
-                GUI.DrawTexture(new Rect(x0, y0 - gw, soft, gw), _edge);
-                GUI.matrix = Matrix4x4.identity;
-                GUIUtility.RotateAroundPivot(-90f, new Vector2(x0, y1));
-                GUI.DrawTexture(new Rect(x0, y1, soft, gw), _edge);
-                GUI.matrix = Matrix4x4.identity;
-            }
-            GUI.color = old;
+            if (peekGap.x > 0f && peekGap.y > 0f) PeekOverlay.Draw(peekGap, _dark);
         }
 
         void OnDrawGizmosSelected()

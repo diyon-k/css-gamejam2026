@@ -211,6 +211,51 @@ ROUTES = {  # closed loops, waypoint order = patrol order
     "R5": [(14.0, 0.0, 15.9), (9.0, 0.0, 15.9), (18.6, 0.0, 15.9)],
     "R6": [(16.0, 0.0, 23.0), (10.5, 0.0, 23.0), (10.5, 0.0, 19.0), (16.0, 0.0, 19.0)],
 }
+# Vents: crawl routes out of rooms a clown can trap you in (Unity: Blink.Interaction.Vent, set up by
+# Editor/BungalowVents.cs). Each end with a grate gets a floor hole in its room and a FloorGrate prop
+# (bungalow_props.py) centred on it. duct = the concrete crawl box under the slab (bungalow_kit.build_ducts), None
+# where the hole opens straight into the basement. path = eye points from end 0 to end 1, crawled with forward/back.
+# peek = where the eye stops at an end to look out (just over a grate, or the last path point); exit = floor point
+# you climb out onto; box = the interact trigger (a grate's top, or under the ceiling hole from below).
+VENT_EYE = -0.52        # eye height in a duct: duct floor -0.80, top -0.30 (the slab underside is -0.25)
+VENTS = {
+    # bedroom <-> bathroom: both have one door (D2 / D3), so a clown in it traps you. Under Wall_Z9p5.
+    "Vent_A": dict(duct=dict(x=(6.0, 6.6), y=(-0.80, -0.30), z=(7.55, 10.70)),
+                   path=[(6.3, VENT_EYE, 7.85), (6.3, VENT_EYE, 10.40)],
+                   ends=[dict(room="Bedroom", grate=(6.3, 7.85), hole=dict(x=(6.0, 6.6), z=(7.55, 8.15)),
+                              exit=(6.3, 0.0, 7.05)),
+                         dict(room="Bathroom", grate=(6.3, 10.40), hole=dict(x=(6.0, 6.6), z=(10.10, 10.70)),
+                              exit=(6.3, 0.0, 11.25))]),
+    # kitchen -> B1 cellar (not B2: the flooded-basement puzzle room), a drop onto a crate between two joists
+    # (z 12.8 / 13.4), skipping the hall stair. Climb back up from the crate.
+    "Vent_B": dict(duct=None,
+                   path=[(12.9, -0.40, 13.1), (12.9, BASEMENT + 0.46 + 1.55, 13.1)],
+                   ends=[dict(room="Kitchen", grate=(12.9, 13.1), hole=dict(x=(12.6, 13.2), z=(12.85, 13.35)),
+                              exit=(12.95, 0.0, 12.3)),
+                         dict(room="B1", grate=None, box=dict(x=(12.6, 13.2), y=(-0.85, -0.30), z=(12.88, 13.32)),
+                              exit=(12.05, BASEMENT, 13.1))]),
+}
+GRATE = dict(size=0.68, h=0.025, box_h=0.12, peek=0.12)   # FloorGrate prop: square, top 0.025 over the floor
+for _vid, _v in VENTS.items():
+    for _k, _e in enumerate(_v["ends"]):
+        if _e.get("hole"):
+            ROOMS[_e["room"]].setdefault("floor_holes", []).append(dict(id=f"{_vid}_{_k}", **_e["hole"]))
+
+
+def vent_end(v, k):
+    """Resolved end k of a vent: peek eye point, exit floor point, interact box (min, max)."""
+    e = v["ends"][k]
+    if e.get("grate"):
+        gx, gz = e["grate"]
+        y = ROOMS[e["room"]]["y"]
+        s = GRATE["size"] / 2
+        return dict(room=e["room"], grate=(gx, y, gz), peek=(gx, y + GRATE["peek"], gz), exit=e["exit"],
+                    box=((gx - s, y, gz - s), (gx + s, y + GRATE["box_h"], gz + s)))
+    b = e["box"]
+    return dict(room=e["room"], grate=None, peek=v["path"][-1 if k else 0], exit=e["exit"],
+                box=((b["x"][0], b["y"][0], b["z"][0]), (b["x"][1], b["y"][1], b["z"][1])))
+
+
 CAMERAS = {  # reference-match cameras (vertical FOV); composition checks in SPEC 5.3
     "CAM-1": dict(pos=(9.4, 1.65, 4.1), yaw=352.0, pitch=-8.0, fov=60.0, ref="ref1_stair_landing.png",
                   size=(1192, 670)),
@@ -452,6 +497,13 @@ def to_json():
         "surfaceTiles": [dict(material=k, tileM=float(v)) for k, v in SURFACE_TILE_M.items()],
         "agent": dict(NAV_AGENT),
         "player": dict(PLAYER),
+        "ducts": [dict(id=k + "_Duct", min=[v["duct"]["x"][0], v["duct"]["y"][0], v["duct"]["z"][0]],
+                       max=[v["duct"]["x"][1], v["duct"]["y"][1], v["duct"]["z"][1]], ref="")
+                  for k, v in VENTS.items() if v["duct"]],
+        "vents": [dict(id=k, path=[c for p in v["path"] for c in v3(p)],
+                       ends=[dict(room=e["room"], peek=v3(e["peek"]), exit=v3(e["exit"]), min=v3(e["box"][0]),
+                                  max=v3(e["box"][1])) for e in (vent_end(v, 0), vent_end(v, 1))])
+                  for k, v in VENTS.items()],
     }
 
 
@@ -523,6 +575,29 @@ def check():
         ok = along[0] <= r["span"][0] < r["span"][1] <= along[1] and abs(r["face"] - across[0 if r["inward"] > 0
                                                                                             else 1]) < 1e-6
         out.append((f"{k} on the {r['room']} wall", ok))
+    inside = lambda p, x, z: x[0] <= p[0] <= x[1] and z[0] <= p[1] <= z[1]  # noqa: E731
+    for k, v in VENTS.items():
+        d = v["duct"]
+        for i, e in enumerate(v["ends"]):
+            rm, h = ROOMS[e["room"]], e.get("hole")
+            if h:
+                out.append((f"{k} end {i} hole inside {e['room']}", inside((h["x"][0], h["z"][0]), rm["x"], rm["z"])
+                            and inside((h["x"][1], h["z"][1]), rm["x"], rm["z"])))
+                out.append((f"{k} end {i} grate covers its hole", all(
+                    abs(c - (r[0] + r[1]) / 2) < 1e-6 and r[1] - r[0] < GRATE["size"] - 0.06
+                    for c, r in zip(e["grate"], (h["x"], h["z"])))))
+                out.append((f"{k} end {i} path end under the hole", inside(
+                    (v["path"][-1 if i else 0][0], v["path"][-1 if i else 0][2]), h["x"], h["z"])))
+                if d:
+                    out.append((f"{k} end {i} hole over the duct", d["x"][0] <= h["x"][0] and h["x"][1] <= d["x"][1]
+                                and d["z"][0] <= h["z"][0] and h["z"][1] <= d["z"][1]))
+                elif rm["level"] == "ground":   # opens into the basement: must fall between two joists
+                    zs = [JOIST["first_z"] + n * JOIST["pitch"] for n in range(40)]
+                    out.append((f"{k} end {i} hole clear of the joists", not any(
+                        h["z"][0] < z + JOIST["width"] / 2 - 1e-6 and z - JOIST["width"] / 2 + 1e-6 < h["z"][1] for z in zs)))
+            out.append((f"{k} end {i} exit inside {e['room']}", inside((e["exit"][0], e["exit"][2]), rm["x"], rm["z"])))
+        if d:
+            out.append((f"{k} duct under the slab", d["y"][1] <= -SLAB - 0.05 and d["y"][1] - d["y"][0] >= 0.45))
     low = min(p[1] for pts in PIPES.values() for p in pts if p[1] < -SLAB) - PIPE_R
     out.append((f"basement headroom under the pipes {low - BASEMENT:.2f}", low - BASEMENT >= 2.2 - 1e-6))
     return out

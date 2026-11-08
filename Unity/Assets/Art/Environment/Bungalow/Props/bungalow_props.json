@@ -2431,13 +2431,13 @@
    "prefab": "wooden_crate_02",
    "room": "B1",
    "pos": [
-    12.8,
+    12.9,
     -2.85,
-    14.2
+    13.1
    ],
    "rot": [
     0.0,
-    0.0,
+    270.0,
     0.0
    ],
    "scale": [
@@ -2448,7 +2448,7 @@
    "kind": "furniture",
    "tris": 800,
    "fixture": "",
-   "note": ""
+   "note": "under the Vent_B kitchen hole: the step up into it (its 0.46 top is in bungalow_layout.VENTS path); hiding chest, front west so you climb out by the vent exit"
   },
   {
    "id": "B1_Trash",
@@ -4321,6 +4321,78 @@
    "tris": 800,
    "fixture": "",
    "note": "blanket chest at the bed's foot, hiding spot, was B1_CrateLong2"
+  },
+  {
+   "id": "Vent_A_Grate0",
+   "prefab": "FloorGrate",
+   "room": "Bedroom",
+   "pos": [
+    6.3,
+    0.0,
+    7.85
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 748,
+   "fixture": "",
+   "note": "vent end: Editor/BungalowVents.cs"
+  },
+  {
+   "id": "Vent_A_Grate1",
+   "prefab": "FloorGrate",
+   "room": "Bathroom",
+   "pos": [
+    6.3,
+    0.0,
+    10.4
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 748,
+   "fixture": "",
+   "note": "vent end: Editor/BungalowVents.cs"
+  },
+  {
+   "id": "Vent_B_Grate0",
+   "prefab": "FloorGrate",
+   "room": "Kitchen",
+   "pos": [
+    12.9,
+    0.0,
+    13.1
+   ],
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "scale": [
+    1.0,
+    1.0,
+    1.0
+   ],
+   "kind": "furniture",
+   "tris": 748,
+   "fixture": "",
+   "note": "vent end: Editor/BungalowVents.cs"
   },
   {
    "id": "FX_E1",

@@ -1688,6 +1688,36 @@ def build_exterior():
     return out
 
 
+def build_ducts():
+    """Vent crawl ducts (L.VENTS): a concrete box under the slab, open up into each grate's floor hole. Only the faces
+    you see from inside (and the hole reveals) are kept, so the outside costs nothing in the UV2 atlas. No collider:
+    the crawl is scripted (Blink.Interaction.Vent), and the navmesh is built from colliders."""
+    out, t = [], 0.05
+    for vid, v in L.VENTS.items():
+        d = v["duct"]
+        if not d:
+            continue
+        holes = [(e["hole"]["x"], e["hole"]["z"]) for e in v["ends"] if e.get("hole")]
+        (x0, x1), (y0, y1), (z0, z1) = d["x"], d["y"], d["z"]
+
+        def seen(c, n, holes=holes, x0=x0, x1=x1, y0=y0, y1=y1, z0=z0, z1=z1):
+            q = c + n * 0.01
+            in_duct = x0 < q.x < x1 and y0 < q.y < y1 and z0 < q.z < z1
+            in_hole = y1 - 0.01 <= q.y <= -L.SLAB + 0.01 and any(
+                h[0][0] < q.x < h[0][1] and h[1][0] < q.z < h[1][1] for h in holes)
+            return not (in_duct or in_hole)
+        mb = MB(vid + "_Duct")
+        conc = lambda c, n: "M_Concrete"  # noqa: E731
+        panel_cut(mb, ((x0 - t, x1 + t), (y0 - t, y0), (z0 - t, z1 + t)), 1, [], conc, skip=seen)        # floor
+        panel_cut(mb, ((x0 - t, x1 + t), (y1, -L.SLAB), (z0 - t, z1 + t)), 1, holes, conc, skip=seen)   # top
+        panel_cut(mb, ((x0 - t, x0), (y0, y1), (z0, z1)), 1, [], conc, skip=seen)                       # W side
+        panel_cut(mb, ((x1, x1 + t), (y0, y1), (z0, z1)), 1, [], conc, skip=seen)                       # E side
+        panel_cut(mb, ((x0, x1), (y0, y1), (z0 - t, z0)), 1, [], conc, skip=seen)                       # S end
+        panel_cut(mb, ((x0, x1), (y0, y1), (z1, z1 + t)), 1, [], conc, skip=seen)                       # N end
+        out.append(emit(mb))
+    return out
+
+
 # ------------------------------------------------------------------ build
 def group(name, objs):
     e = bpy.data.objects.new(name, None)
@@ -1745,6 +1775,7 @@ def build_shell(bake=True):
     groups.append(group("Basement", build_beams() + [build_pipes()]))
     groups.append(group("Radiators", build_radiators()))
     groups.append(group("Fireplace", build_fireplace()))
+    groups.append(group("Vents", build_ducts()))
     groups.append(group("Exterior", build_exterior() + [o for o in ops if o and o.name.startswith("Ext_")]))
     # grey-box colliders, attached to the kit object of the same name (or to an empty carrying them)
     meshes = {o.name: o for o in bpy.context.scene.objects if o.type == 'MESH'}

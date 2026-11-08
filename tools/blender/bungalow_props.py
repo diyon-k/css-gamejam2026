@@ -199,7 +199,8 @@ for k, lv in enumerate((0.64, 1.65)):
     put(f"B1_Jars{k}", "Jars_Shelf", "B1", 10.0, 4.36, 0, on=("B1_Shelves", lv))
 put("B1_Crate", "wooden_crate_01", "B1", 12.6, 4.6, 0, y=B)
 put("B1_Barrel", "barrel_03", "B1", 12.9, 5.85, 0, y=B)
-put("B1_CrateLong", "wooden_crate_02", "B1", 12.8, 14.2, 0, y=B)
+put("B1_CrateLong", "wooden_crate_02", "B1", 12.9, 13.1, 270, y=B,
+    note="under the Vent_B kitchen hole: the step up into it (its 0.46 top is in bungalow_layout.VENTS path); hiding chest, front west so you climb out by the vent exit")
 put("B1_Trash", "TrashBags", "B1", 11.55, 14.3, 180, y=B)
 put("B1_Float", "Debris_PaperFloat", "B1", 10.4, 9.0, 0, y=WATER + 0.002)
 put("B1_Boxes", "BoxStack", "B1", 9.7, 14.25, 180, y=B)
@@ -284,6 +285,12 @@ put("Cor_Paper2", "Debris_Paper", "Corridor", 17.6, 16.0, 200)
 put("Cor_Chest", "wooden_crate_01", "Corridor", 13.6, Z_COR_N - 0.22, 180, note="hiding spot, was B1_Crate2")
 put("Par_Chest", "wooden_crate_01", "Parlour", 14.6, Z_WING_N - 0.22, 180, note="hiding spot under WP1/WP2 gap, was B2_Crate2")
 put("Mbr_Chest", "wooden_crate_02", "MasterBedroom", 5.95, 23.36, 180, note="blanket chest at the bed's foot, hiding spot, was B1_CrateLong2")
+
+# ------------------------------------------------------------------ VENT GRATES (bungalow_layout.VENTS)
+for _vid, _v in L.VENTS.items():
+    for _k, _e in enumerate(_v["ends"]):
+        if _e.get("grate"):
+            put(f"{_vid}_Grate{_k}", "FloorGrate", _e["room"], *_e["grate"], 0, note="vent end: Editor/BungalowVents.cs")
 
 # ------------------------------------------------------------------ FIXTURES (SPEC 5.1 / bungalow_layout.FIXTURES)
 # id: (model, mount kind, parent or wall, yaw). Ceiling: mount at the ceiling over the light. Wall: on the wall

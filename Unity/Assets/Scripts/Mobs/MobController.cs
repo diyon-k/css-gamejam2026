@@ -273,9 +273,9 @@ namespace Blink.Mobs
             bool onYourTail = _seesTarget || (CurrentState is (State.Chase or State.Attack) && _lostTimer > 0f);
             _hidingIn = KnownHidingSpot(hide, _hidingIn, onYourTail && targetAlive);
             if (!targetAlive) _seesTarget = false;
-            else if (hide != null)
+            else if (hide != null || Interaction.Vent.Inside != null)
             {
-                if (_hidingIn != hide)
+                if (hide == null || _hidingIn != hide) // in a vent nobody follows you: under the floor, off the navmesh
                 {
                     _seesTarget = false;
                     _lostTimer = 0f; // stop homing on you: go search where it last saw you instead

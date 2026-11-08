@@ -66,8 +66,8 @@ namespace Blink.Interaction
             _west = default;
         }
 
-        /// <summary>Something usable is in focus for Interact this frame (or the last), or the player is hidden and Interact gets out.</summary>
-        public static bool HasFocus => _focusFrame >= Time.frameCount - 1 || HidingSpot.Occupant != null;
+        /// <summary>Something usable is in focus for Interact this frame (or the last), or the player is hidden / in a vent and Interact gets out.</summary>
+        public static bool HasFocus => _focusFrame >= Time.frameCount - 1 || HidingSpot.Occupant != null || Vent.Inside != null;
 
         /// <summary>Call every frame something outside the look ray offers an interaction (e.g. a jammed door in reach).</summary>
         public static void ReportFocus() => _focusFrame = Time.frameCount;
