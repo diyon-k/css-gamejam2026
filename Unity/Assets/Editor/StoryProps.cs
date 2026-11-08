@@ -65,6 +65,18 @@ public static class StoryProps
         Debug.Log("[StoryProps] Placed photos and notes under 'Story'.");
     }
 
+    /// <summary>Batch mode: Unity -batchmode -quit -projectPath Unity -executeMethod StoryProps.Batch</summary>
+    public static void Batch()
+    {
+        var scene = EditorSceneManager.OpenScene("Assets/Scenes/House_Bungalow.unity");
+        Place();
+        var story = GameObject.Find("Story");
+        if (story != null)
+            foreach (Transform t in story.transform)
+                Debug.Log($"[StoryProps] placed {t.name} at {t.position.x:F2}, {t.position.y:F2}, {t.position.z:F2}");
+        EditorSceneManager.SaveScene(scene);
+    }
+
     const int NotPlayer = ~(1 << 9); // the Player capsule's layer
 
     static void Frame(Transform root, string photo, string title, float x, float z, float h, Vector3 dir, string caption, float size = 1f)
