@@ -97,7 +97,7 @@ namespace Blink.EditorTools
             return report.ToString();
         }
 
-        static Transform Find(Scene scene, string name)
+        internal static Transform Find(Scene scene, string name)
         {
             foreach (var g in scene.GetRootGameObjects())
                 foreach (var t in g.GetComponentsInChildren<Transform>(true))
@@ -191,7 +191,7 @@ namespace Blink.EditorTools
         }
 
         /// <summary>The drawer's inside bottom below <paramref name="inside"/>: a ray down against the drawer mesh only.</summary>
-        static bool DrawerFloor(Transform drawer, Mesh mesh, Vector3 inside, out Vector3 point)
+        internal static bool DrawerFloor(Transform drawer, Mesh mesh, Vector3 inside, out Vector3 point)
         {
             var probe = drawer.gameObject.AddComponent<MeshCollider>();
             try

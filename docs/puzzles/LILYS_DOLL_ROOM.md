@@ -170,7 +170,7 @@ There's no doll model in the repo. Start with a primitive placeholder built by t
 ### Audio
 
 `SoundCue` assets in `Assets/Art/Audio/Cues/` (an empty cue is a silent placeholder, so code can land before the clips):
-- `Doll_MusicBox` — looping 3D nursery-tune music box via `AudioService.PlayLoop(cue, doll)`. Short range, audible in the corridor.
+- `Doll_MusicBox` — looping 3D nursery-tune music box via `AudioService.PlayLoop(cue, doll)`, with a robotic voice ("Look at Lily... don't close your eyes") mixed in twice per loop (Windows SAPI TTS, processed in `tools/audio/doll_sounds.py`). Short range, audible in the corridor.
 - `Doll_Giggle` — on the warning lurch.
 - `Doll_Scream` — on the leap.
 - `Doll_Scratch` — loop while on your face. `Grab_Sting` can stand in for the scream until there's a real one.
