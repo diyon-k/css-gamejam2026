@@ -11,6 +11,9 @@ namespace Blink.Mobs
     /// <see cref="spawnDelay"/> world seconds (blinks skip it forward) while there's room; a death frees a slot.
     /// With a layout they spawn in a room (not the player's, not in sight, at least minPlayerDistance away); without one,
     /// at the Spawn_Z markers by the same rules. <see cref="Restart"/> (player death) removes them all.
+    /// Lurkers (or scripted rooms) replace that: each lurker stands at its spot from the start, asleep
+    /// (<see cref="DormantUntilSeen"/>) until the player looks at it. Now: the corridor's far east end (once the corridor
+    /// door is open) and the B1 cellar by the stair foot.
     /// </summary>
     public sealed class ClownSpawner : MonoBehaviour, ISkippable
     {
@@ -29,9 +32,32 @@ namespace Blink.Mobs
         [SerializeField] string agentType = "BungalowZombie";
         [Tooltip("bungalow_layout.json: clowns wander between its rooms. Empty = they walk their Route_ loops instead.")]
         [SerializeField] TextAsset layout;
-        [Tooltip("Layout room ids that each get one clown scriptedDelay world seconds in. Replaces the random spawning; empty = random.")]
-        [SerializeField] string[] scriptedRooms = { "Corridor", "Kitchen" };
+        [Tooltip("Layout room ids that each get one clown scriptedDelay world seconds in. These and the lurkers replace " +
+                 "the random spawning; both empty = random.")]
+        [SerializeField] string[] scriptedRooms = { };
         [SerializeField, Min(0f)] float scriptedDelay = 30f;
+
+        [System.Serializable]
+        class Lurker
+        {
+            public string name;
+            public Vector3 position;
+            [Tooltip("0 = facing +z (north), 90 = east, 270 = west.")]
+            public float yaw;
+            [Tooltip("It can only be noticed once one of these doors is open. Empty = any time.")]
+            public string[] wakeDoors;
+        }
+
+        [Tooltip("Clowns there from the start (and again after a death) that stand perfectly still until the player looks " +
+                 "at them (DormantUntilSeen), then hunt as normal.")]
+        [SerializeField] Lurker[] lurkers =
+        {
+            // far east end of the corridor, north side (out of D9's swing), facing back down it toward D6
+            new() { name = "Corridor", position = new(18.5f, 0f, 16.4f), yaw = 270f, wakeDoors = new[] { "D6", "D9" } },
+            // B1 cellar, south-east of the stair foot (by the barrels), facing the bottom of the stairs
+            new() { name = "Cellar", position = new(11.6f, -2.85f, 7.2f), yaw = 312f, wakeDoors = new string[0] },
+        };
+        bool _lurkersPending = true;
 
         [System.Serializable] class Layout { public Room[] rooms; }
         [System.Serializable] class Room { public string id; public float[] min, max; }
@@ -40,7 +66,7 @@ namespace Blink.Mobs
         Bounds[] _rooms;
         string[] _roomIds;
         bool _scriptedDone;
-        bool Scripted => scriptedRooms.Length > 0 && _rooms != null;
+        bool Scripted => lurkers.Length > 0 || (scriptedRooms.Length > 0 && _rooms != null);
         Transform _holder;
         readonly Dictionary<Transform, Transform> _routes = new();
         float _timer;
@@ -80,6 +106,11 @@ namespace Blink.Mobs
 
         void Tick(float seconds)
         {
+            if (_lurkersPending)
+            {
+                _lurkersPending = false;
+                foreach (var l in lurkers) SpawnLurker(l);
+            }
             if (Scripted)
             {
                 if (_scriptedDone || (_timer -= seconds) > 0f) return;
@@ -102,10 +133,21 @@ namespace Blink.Mobs
             _alive.Clear();
             _timer = Scripted ? scriptedDelay : 0f;
             _scriptedDone = false;
+            _lurkersPending = true;
+        }
+
+        void SpawnLurker(Lurker l)
+        {
+            int? typeId = AgentTypeId(agentType);
+            var filter = new NavMeshQueryFilter { agentTypeID = typeId ?? 0, areaMask = NavMesh.AllAreas };
+            if (NavMesh.SamplePosition(l.position, out var hit, 1f, filter))
+                SpawnAt(hit.position, Quaternion.Euler(0f, l.yaw, 0f), null, typeId, l.wakeDoors ?? new string[0]);
+            else Debug.LogWarning($"ClownSpawner: no navmesh near the {l.name} lurker spot {l.position}", this);
         }
 
         void SpawnScripted()
         {
+            if (_rooms == null) return;
             int? typeId = AgentTypeId(agentType);
             var filter = new NavMeshQueryFilter { agentTypeID = typeId ?? 0, areaMask = NavMesh.AllAreas };
             foreach (var id in scriptedRooms)
@@ -129,7 +171,8 @@ namespace Blink.Mobs
             SpawnAt(position, rotation, marker, typeId);
         }
 
-        void SpawnAt(Vector3 position, Quaternion rotation, Transform marker, int? typeId)
+        /// <param name="wakeDoors">Non-null = spawn asleep (<see cref="DormantUntilSeen"/>) with these wake doors.</param>
+        void SpawnAt(Vector3 position, Quaternion rotation, Transform marker, int? typeId, string[] wakeDoors = null)
         {
             if (clownPrefab == null) return;
             // built under an inactive holder so the agent type and route are set before its Awake / OnEnable
@@ -140,6 +183,11 @@ namespace Blink.Mobs
             {
                 if (_rooms != null) mob.SetPatrolRooms(_rooms);
                 else if (marker != null && _routes.TryGetValue(marker, out var route)) mob.SetPatrolRoute(route);
+                if (wakeDoors != null)
+                {
+                    mob.enabled = false; // before it's active, so it never registers for blink skips while asleep
+                    clown.AddComponent<DormantUntilSeen>().Init(wakeDoors);
+                }
             }
             if (clown.TryGetComponent<Health>(out var health)) _alive.Add(health);
             clown.transform.SetParent(null, true);
