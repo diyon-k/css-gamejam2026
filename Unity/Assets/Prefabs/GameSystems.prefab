@@ -249,8 +249,8 @@ MonoBehaviour:
   heartbeatRange: 10
   panicDistance: 2
   bpm: {x: 65, y: 170}
-  heartbeatVolume: {x: 0.45, y: 1}
-  eyesOpenHeartbeat: 0.85
+  heartbeatVolume: {x: 0.6, y: 1}
+  eyesOpenHeartbeat: 1
   intensityResponse: 2.5
   scanInterval: 0.25
 --- !u!114 &2923958057281167660
