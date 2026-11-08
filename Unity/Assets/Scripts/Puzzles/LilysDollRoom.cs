@@ -136,12 +136,14 @@ namespace Blink.Puzzles
         {
             TimeSkipController.Register(this);
             WakeUpSequence.Respawned += OnRespawned;
+            PuzzleRooms.Add(roomBounds);
         }
 
         void OnDisable()
         {
             TimeSkipController.Unregister(this);
             WakeUpSequence.Respawned -= OnRespawned;
+            PuzzleRooms.Remove(roomBounds);
             if (_detector != null) _detector.EyesShutBegan -= OnEyesShutBegan;
             _detector = null;
             StopSound(ref _music, 0f);
