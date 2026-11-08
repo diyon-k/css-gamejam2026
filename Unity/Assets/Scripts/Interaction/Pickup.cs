@@ -137,6 +137,7 @@ namespace Blink.Interaction
         public void PlaceAt(Vector3 floorPoint)
         {
             PutBack(floorPoint, _homeRot);
+            transform.SetParent(null, true); // off the floor it belongs to no drawer: opening one later mustn't drag it along
             if (TryGetBounds(out var b)) transform.position += Vector3.up * (floorPoint.y - b.min.y);
         }
 

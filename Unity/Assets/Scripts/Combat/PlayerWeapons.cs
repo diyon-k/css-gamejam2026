@@ -314,16 +314,19 @@ namespace Blink.Combat
         /// <summary>
         /// Lets go of the weapon in hand (one-hand rule): a melee item falls from the hands, the pistol goes back on the floor
         /// as its pickup (ammo kept). Then the empty hands come up. A pistol without a pickup stays (see <see cref="CanDropWeapon"/>).
+        /// <paramref name="at"/>: a floor point to leave it on (where the player died) instead of in front of the player.
         /// </summary>
-        public void DropWeapon()
+        public void DropWeapon(Vector3? at = null)
         {
-            bool dropped = axe != null && axe.Drop(GetComponent<Collider>()) != null;
+            var melee = axe != null ? axe.Drop(GetComponent<Collider>()) : null;
+            if (melee != null && at is { } floor) melee.PlaceAt(floor);
+            bool dropped = melee != null;
             if (_hasPistol && pistol != null && _pistolPickup != null)
             {
                 pistol.CancelReload();
                 _hasPistol = false;
                 var eye = aimCamera != null ? aimCamera.transform : transform;
-                _pistolPickup.PlaceAt(Interaction.Hand.DropPoint(eye));
+                _pistolPickup.PlaceAt(at ?? Interaction.Hand.DropPoint(eye));
                 _pistolPickup = null;
                 dropped = true;
             }

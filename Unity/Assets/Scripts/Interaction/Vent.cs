@@ -60,7 +60,8 @@ namespace Blink.Interaction
 
         float Dt => PlayerController.RealDeltaTime(Time.deltaTime, Time.timeScale);
 
-        int NearestEnd(Vector3 p) => (p - exit[0]).sqrMagnitude <= (p - exit[1]).sqrMagnitude ? 0 : 1;
+        /// <summary>The end (0 or 1) whose <see cref="exit"/> is closer to <paramref name="p"/>.</summary>
+        public int NearestEnd(Vector3 p) => (p - exit[0]).sqrMagnitude <= (p - exit[1]).sqrMagnitude ? 0 : 1;
 
         public string Prompt(Interactor who) => CanInteract(who) ? "Crawl into the vent" : null;
         public bool CanInteract(Interactor who) => Inside == null && HidingSpot.Occupant == null && who.Player != null && path.Length >= 2;

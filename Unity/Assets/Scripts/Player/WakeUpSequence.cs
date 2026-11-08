@@ -17,8 +17,8 @@ namespace Blink.Player
     /// over control and starts world time. Lives on GameSystems next to <see cref="BlinkEyelids"/>.
     ///
     /// Also the respawn: when the player dies they slump to the floor as the screen fades to black, then
-    /// wake in the same bed the same way. World progress (doors, dead zombies, weapons) stays; an item in
-    /// the hand is lost and goes back to where it was picked up.
+    /// wake in the same bed the same way. World progress (doors, dead zombies, weapons) stays; whatever was in
+    /// the hand is left on the floor where they died (<see cref="Hand.DropOnDeath"/>).
     /// </summary>
     public sealed class WakeUpSequence : MonoBehaviour
     {
@@ -69,7 +69,7 @@ namespace Blink.Player
 
         /// <summary>
         /// Raised once the player has been teleported back to bed and healed after a death, while the screen is black.
-        /// Carried items are already back where they were found. Puzzles reset themselves here.
+        /// What was in hand already lies where the player died. Puzzles reset themselves here.
         /// </summary>
         public static event Action Respawned;
 
@@ -177,6 +177,7 @@ namespace Blink.Player
             enabled = true;
             TimeSkipController.Locked = true;
             Carryable.DropHeld();
+            if (Hand.Instance != null) Hand.Instance.DropOnDeath(); // now, before the slump and the move back to bed
             if (_cam != null) { _diedPos = _cam.localPosition; _diedRot = _cam.localRotation; }
         }
 
@@ -207,10 +208,9 @@ namespace Blink.Player
             Sleep();
         }
 
-        /// <summary>Empties the hand and inventory and puts each item back where it was picked up.</summary>
+        /// <summary>Empties the inventory and puts each item back where it was picked up (the hand was emptied on death).</summary>
         void DropItems()
         {
-            if (Hand.Instance != null) Hand.Instance.ReturnItemHome();
             if (_inventory == null) return;
             var pickups = FindObjectsByType<Pickup>(FindObjectsInactive.Include);
             foreach (var id in new System.Collections.Generic.List<string>(_inventory.Items))
