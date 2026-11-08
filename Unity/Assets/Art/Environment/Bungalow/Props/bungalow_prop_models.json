@@ -1937,6 +1937,32 @@
     "M_Atlas_Soft"
    ]
   },
+  "FloorGrate": {
+   "tris": 748,
+   "pivot": "floor",
+   "collider": "box",
+   "kind": "furniture",
+   "lo": [
+    -0.34,
+    0.0,
+    -0.34
+   ],
+   "hi": [
+    0.34,
+    0.025,
+    0.34
+   ],
+   "size": [
+    0.68,
+    0.025,
+    0.68
+   ],
+   "top": 0.03,
+   "levels": [],
+   "materials": [
+    "M_Atlas_Utility"
+   ]
+  },
   "Speaker": {
    "tris": 56,
    "pivot": "floor",

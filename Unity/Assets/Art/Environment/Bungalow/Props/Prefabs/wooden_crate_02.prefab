@@ -358,6 +358,8 @@ MonoBehaviour:
   hopHeight: 0.25
   ajarDegrees: 9
   maxYaw: 60
+  doorLoudness: 4
+  peekGap: {x: 0.14, y: 1}
 --- !u!4 &4192780048195395633 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b33645cc7b1cae34f87b0f4171dbe447, type: 3}
