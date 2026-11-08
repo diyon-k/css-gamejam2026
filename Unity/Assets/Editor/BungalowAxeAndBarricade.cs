@@ -1,8 +1,8 @@
 // The axe and the boarded-up master bedroom (House_Bungalow). Menu: BLINK > Bungalow > Place Axe And Barricade.
 // The axe starts in the kitchen cabinet's drawer (Kit_Cabinet1 / Drawer_L): PlayerWeapons.axeStartsAt points at an
 // "AxeStart" under the drawer, so the axe rides the drawer and is picked up when it's open.
-// D8 (corridor -> MasterBedroom) gets planks nailed over its corridor side: axe only, PlankHits chops each (a plank snaps
-// in two and falls, Barricade), and the door stays locked (bungalow_layout.json D8 "locked": true) until the last plank breaks.
+// D8 (corridor -> MasterBedroom) gets planks nailed over its corridor side: axe only, BarricadeHits chops for the lot (every plank
+// snaps in two and falls, Barricade), and the door stays locked (bungalow_layout.json D8 "locked": true) until the last plank breaks.
 // Re-running replaces both. Batch: Unity -batchmode -quit -projectPath Unity -executeMethod BungalowAxeAndBarricade.Batch
 using System.Linq;
 using Blink.Combat;
@@ -16,7 +16,7 @@ public static class BungalowAxeAndBarricade
 {
     const string Cabinet = "Kit_Cabinet1", Drawer = "Drawer_L", DoorId = "D8";
     const string PlankMat = "Assets/Art/Environment/Bungalow/Materials/M_FloorPlank.mat";
-    const int PlankHits = 2;
+    const int BarricadeHits = 2;
     const string PlankMesh = "Assets/Art/Environment/Bungalow/Props/Prefabs/Meshes/Barricade_Plank.asset";
     // One board of M_FloorPlank's texture (it holds nine side by side): the planks show a single board, not stripes.
     const float BoardV0 = 0.737f, BoardV1 = 0.835f;
@@ -106,6 +106,7 @@ public static class BungalowAxeAndBarricade
         var root = new GameObject("Barricade_" + DoorId);
         Undo.RegisterCreatedObjectUndo(root, "Place Barricade");
         root.transform.SetParent(door.transform.parent, true);
+        root.AddComponent<Breakable>().Configure(BarricadeHits, null, blade: true);
         root.AddComponent<Barricade>().Configure(door);
         var mat = AssetDatabase.LoadAssetAtPath<Material>(PlankMat);
         var mesh = BoardMesh();
@@ -119,9 +120,8 @@ public static class BungalowAxeAndBarricade
             plank.transform.localScale = new Vector3(1.6f, 0.17f, 0.03f);
             plank.GetComponent<MeshFilter>().sharedMesh = mesh;
             if (mat != null) plank.GetComponent<MeshRenderer>().sharedMaterial = mat;
-            plank.AddComponent<Breakable>().Configure(PlankHits, null, blade: true);
         }
         EditorSceneManager.MarkSceneDirty(root.scene);
-        Debug.Log($"[AxeAndBarricade] {Planks.Length} planks over {DoorId} at z {face:F2}, {PlankHits} axe hits each; {DoorId} locked until they're gone.");
+        Debug.Log($"[AxeAndBarricade] {Planks.Length} planks over {DoorId} at z {face:F2}, {BarricadeHits} axe hits for the lot; {DoorId} locked until they're gone.");
     }
 }

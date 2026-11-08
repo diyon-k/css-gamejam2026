@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Blink.World
 {
     /// <summary>
-    /// Planks nailed over a doorway. Each child <see cref="Breakable"/> is one plank (axe only, a couple of chops each).
-    /// A broken plank snaps in two at the chop: both halves fall as loose physics bodies, broken ends dropping first,
-    /// knocked away from the axe. The <see cref="door"/> stays locked until the last plank is gone.
+    /// Planks nailed over a doorway: the child renderers. The <see cref="Breakable"/> on this object takes the chops for
+    /// all of them (axe only); when it breaks every plank snaps in two at the chop and both halves fall as loose physics
+    /// bodies, broken ends dropping first, knocked away from the axe, and the <see cref="door"/> unlocks.
     /// Placed by BLINK > Bungalow > Place Axe And Barricade.
     /// </summary>
     public sealed class Barricade : MonoBehaviour
@@ -19,15 +19,17 @@ namespace Blink.World
         [Tooltip("Mass of a whole plank, kg (halves get their share).")]
         [SerializeField, Min(0.1f)] float plankMass = 2f;
 
-        int _left;
-
         public void Configure(Door barred) => door = barred;
 
         void Awake()
         {
-            var planks = GetComponentsInChildren<Breakable>();
-            _left = planks.Length;
-            foreach (var p in planks) p.Smashed += (point, normal) => Snap(p.transform, point, normal);
+            if (TryGetComponent(out Breakable breakable)) breakable.Smashed += Smash;
+        }
+
+        void Smash(Vector3 point, Vector3 normal)
+        {
+            foreach (var r in GetComponentsInChildren<MeshRenderer>()) Snap(r.transform, point, normal);
+            if (door != null) door.Unlock();
         }
 
         void Snap(Transform plank, Vector3 point, Vector3 normal)
@@ -37,7 +39,6 @@ namespace Blink.World
             Vector3 push = -normal * knock + Vector3.up * 0.5f;
             Half(plank, -0.5f, at, push, -droop);
             Half(plank, at, 0.5f, push, droop);
-            if (--_left == 0 && door != null) door.Unlock();
         }
 
         /// <summary>The piece of <paramref name="plank"/> between local x <paramref name="from"/> and <paramref name="to"/>,
