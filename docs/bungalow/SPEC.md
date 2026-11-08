@@ -202,9 +202,9 @@ Data: `bungalow_layout.VENTS` (checked by `check()`); runtime `Blink.Interaction
 | Vent | End 0 | End 1 | How |
 |---|---|---|---|
 | **Vent_A** | Bedroom grate (6.3, 7.85) | Bathroom grate (6.3, 10.40) | Crawl duct x 6.0–6.6, y −0.80 to −0.30, z 7.55–10.70, under `Wall_Z9p5`. Both rooms have one door (D2 / D3), so this is the way out when a clown blocks it. |
-| **Vent_B** | Kitchen grate (12.9, 13.1) | B1 cellar floor | The hole (x 12.6–13.2, z 12.85–13.35) falls between the joists at z 12.8 / 13.4 and drops to the floor; the grate is in reach from below. (The crate that was under it stood in D5's doorway and was removed.) **Not B2**: B2 is the flooded-basement puzzle room. |
+| **Vent_B** | B1 cellar wall grate at the stair foot (9.0, 14.7) | Parlour floor grate (9.0, 18.7) | `VB1` opening low in `Wall_B_N`, a duct x 8.7–9.3, 0.5 high, north under the corridor to z 19.0, then a shaft up to the parlour floor (grate clear of D7's swing). **Not B2**: B2 is the flooded-basement puzzle room. |
 
-- **Geometry:** each grate end is a 0.6 m `floor_holes` entry cut through the slab. The duct is a kit piece (`build_ducts`, `M_Concrete`, inside faces only, no collider). `FloorGrate` is a cast-iron prop (`castiron` cell, 0.68 m square, 0.025 m high, box collider), so the floor stays walkable and the navmesh is unchanged.
+- **Geometry:** a floor end is a 0.6 m `floor_holes` entry cut through the slab; a wall end is a `kind="vent"` opening with the grate stood upright on the wall. A duct is a list of boxes, built by `build_ducts` (`M_Concrete`, inside faces only, open where boxes, openings and holes meet, no collider). `FloorGrate` is a cast-iron prop (`castiron` cell, 0.68 m square, 0.025 m high, box collider), so the floor stays walkable and the navmesh is unchanged.
 - **Lighting:** the duct is lightmapped with the shell, and the lighting builder lays light probes down `layout.ducts`. Light only gets in through the grates; inside, the flashlight is the light.
 - **Play:** interacting at an end dips the screen to black and puts you in the duct. Forward / back crawls along the path. At an end, Interact peeks out through the grate and again climbs out. Getting in or out clanks the grate (`Noise`, 8 m). While you're inside, zombies lose sight of you and nobody follows.
 
