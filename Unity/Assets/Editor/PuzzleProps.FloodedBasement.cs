@@ -32,6 +32,14 @@ namespace Blink.EditorTools
         const string KeyPrefab = "Assets/Prefabs/Props/KeyPickup.prefab";
         const float DrawerH = 0.26f;
 
+        /// <summary>Batch: Unity -batchmode -quit -projectPath Unity -executeMethod Blink.EditorTools.PuzzleProps.BatchFloodedBasement</summary>
+        public static void BatchFloodedBasement()
+        {
+            var scene = EditorSceneManager.OpenScene("Assets/Scenes/House_Bungalow.unity");
+            PlaceFloodedBasement();
+            EditorSceneManager.SaveScene(scene);
+        }
+
         [MenuItem("BLINK/Place Puzzle: Flooded Basement")]
         public static void PlaceFloodedBasement()
         {
