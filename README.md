@@ -4,6 +4,11 @@
 
 **Every time you blink, time skips forward. Use it, but only when it's safe.**
 
+### 🏆 Best Overall · CSS Game Jam 2026
+### 🏆 Trackr Award
+
+<sub>The Trackr Award comes with a fast-track to the interview stage at Trackr and Trackr Premium.</sub>
+
 *A webcam-controlled first-person horror game, made in 24 hours for the CSS Game Jam 2026 (University of Bristol). Theme: **TIME**.*
 
 ![Unity 6](https://img.shields.io/badge/Unity-6000.6-000?logo=unity)
@@ -12,6 +17,8 @@
 ![Python](https://img.shields.io/badge/Python-3.12-3776ab?logo=python&logoColor=white)
 ![MediaPipe](https://img.shields.io/badge/MediaPipe-Face%20Landmarker-0097a7)
 ![Theme: TIME](https://img.shields.io/badge/Jam%20theme-TIME-b22222)
+![Best Overall](https://img.shields.io/badge/CSS%20Game%20Jam%202026-Best%20Overall-d4af37)
+![Trackr Award](https://img.shields.io/badge/Trackr-Award-d4af37)
 
 <img src="docs/media/hero.gif" alt="Walking down the bungalow's upstairs hallway towards a clown zombie" width="720">
 
