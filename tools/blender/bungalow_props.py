@@ -288,9 +288,10 @@ put("Mbr_Chest", "wooden_crate_02", "MasterBedroom", 5.95, 23.36, 180, note="bla
 
 # ------------------------------------------------------------------ VENT GRATES (bungalow_layout.VENTS)
 for _vid, _v in L.VENTS.items():
-    for _k, _e in enumerate(_v["ends"]):
-        if _e.get("grate"):
-            put(f"{_vid}_Grate{_k}", "FloorGrate", _e["room"], *_e["grate"], 0, note="vent end: Editor/BungalowVents.cs")
+    for _k in range(2):
+        _r = L.vent_end(_v, _k)
+        gx, gy, gz = _r["grate"]
+        put(f"{_vid}_Grate{_k}", "FloorGrate", _r["room"], gx, gz, 0, y=gy, rot=_r["rot"], note="vent end: Editor/BungalowVents.cs")
 
 # ------------------------------------------------------------------ FIXTURES (SPEC 5.1 / bungalow_layout.FIXTURES)
 # id: (model, mount kind, parent or wall, yaw). Ceiling: mount at the ceiling over the light. Wall: on the wall
