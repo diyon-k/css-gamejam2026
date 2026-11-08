@@ -18865,7 +18865,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 759088665539518467, guid: 13ee709486d38014186153e0079047ad, type: 3}
       propertyPath: m_Name
-      value: Frame_photo_wedding
+      value: Frame_photo_gamejam
       objectReference: {fileID: 0}
     - target: {fileID: 759088665539518467, guid: 13ee709486d38014186153e0079047ad, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -18910,7 +18910,7 @@ MonoBehaviour:
   verb: Look at
   title: Wedding photo
   body: 'On the back, in neat ink: ''A. & E., June 1934. Forever is a promise I intend to keep.'''
-  image: {fileID: 2800000, guid: b34643e782001d74c9555a446ac01bec, type: 3}
+  image: {fileID: 2800000, guid: aa74aacdd9fe4155a22debe3a21fdcc6, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
   liftSeconds: 0.45
@@ -53243,7 +53243,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 759088665539518467, guid: 13ee709486d38014186153e0079047ad, type: 3}
       propertyPath: m_Name
-      value: Frame_photo_staff
+      value: Frame_photo_gamejam_2
       objectReference: {fileID: 0}
     - target: {fileID: 759088665539518467, guid: 13ee709486d38014186153e0079047ad, type: 3}
       propertyPath: m_StaticEditorFlags
@@ -53290,7 +53290,7 @@ MonoBehaviour:
   body: '''Household staff, 1945.''
 
     The boy on the end in the leather apron has been circled in ink, pressed hard enough to tear the paper.'
-  image: {fileID: 2800000, guid: 22db9157fb475314a9be97671807edfa, type: 3}
+  image: {fileID: 2800000, guid: 907b78b7c41e4976976c8f20f449b518, type: 3}
   maxDistance: 3
   raiseSeconds: 0.3
   liftSeconds: 0.45
