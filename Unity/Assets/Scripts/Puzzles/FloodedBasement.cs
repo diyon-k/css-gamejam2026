@@ -97,9 +97,6 @@ namespace Blink.Puzzles
         [Tooltip("Water this deep (metres) and over slows the player to Wade Speed.")]
         [SerializeField, Min(0f)] float wadeDepth = 0.9f;
         [SerializeField, Range(0.2f, 1f)] float wadeSpeed = 0.7f;
-        [Tooltip("Respawn just outside the door, this far back from it, while the flood is on.")]
-        [SerializeField] bool useCheckpoint = true;
-        [SerializeField, Min(0.3f)] float checkpointBack = 1.2f;
         [Tooltip("Surface texture drift, UV per world second.")]
         [SerializeField] Vector2 waterScroll = new(0.015f, 0.01f);
         [SerializeField, Min(0f)] float whirlpoolSpin = 220f;
@@ -153,7 +150,6 @@ namespace Blink.Puzzles
         float _tint;                     // underwater tint 0..1
         float _drownedSurface;           // where the surface sits while drowning
         bool _wading;
-        bool _ownsCheckpoint;            // the respawn checkpoint outside the door is ours
         int _lastSpot = -1;
         AudioHandle _tapLoop, _gurgle;
         Coroutine _drown, _tapStop, _stutter;
@@ -207,12 +203,6 @@ namespace Blink.Puzzles
             SetWading(false);
         }
 
-        void OnDestroy()
-        {
-            if (_health != null) _health.Died -= OnPlayerDied;
-            ReleaseCheckpoint();
-        }
-
         void Start()
         {
             _player = FindAnyObjectByType<PlayerController>();
@@ -223,7 +213,6 @@ namespace Blink.Puzzles
                 _health = _player.GetComponent<Health>();
                 _cameraFeel = _player.GetComponentInChildren<CameraFeel>();
                 _haptics = _player.GetComponentInChildren<GamepadHaptics>();
-                if (_health != null) _health.Died += OnPlayerDied;
             }
             if (roomBounds == null || doorway == null || water == null || drain == null || crowbar == null || _cam == null
                 || searchSpots == null || searchSpots.Length == 0)
@@ -320,12 +309,6 @@ namespace Blink.Puzzles
             {
                 if (_stutter != null) StopCoroutine(_stutter);
                 _stutter = StartCoroutine(StutterBulb());
-            }
-            if (useCheckpoint)
-            {
-                var into = Vector3.ProjectOnPlane(doorway.forward, Vector3.up).normalized;
-                WakeUpSequence.SetCheckpoint(doorway.position - into * checkpointBack, Quaternion.LookRotation(into, Vector3.up));
-                _ownsCheckpoint = true;
             }
             FloodStarted?.Invoke();
             onFloodStarted.Invoke();
@@ -440,27 +423,10 @@ namespace Blink.Puzzles
             StopSound(ref _gurgle, 1.2f);
             if (whirlpoolFoam != null) whirlpoolFoam.Stop(true, ParticleSystemStopBehavior.StopEmitting);
             SetKeyTakeable(true);
-            ReleaseCheckpoint();
             SetMuffle(0f);
             SetWading(false);
             Solved?.Invoke();
             onSolved.Invoke();
-        }
-
-        void ReleaseCheckpoint()
-        {
-            if (!_ownsCheckpoint) return;
-            _ownsCheckpoint = false;
-            WakeUpSequence.ClearCheckpoint();
-        }
-
-        /// <summary>
-        /// Before the respawn teleport: the checkpoint is only for retrying this room. Dying anywhere else (wandered off
-        /// mid-flood, or later) goes back to the bed.
-        /// </summary>
-        void OnPlayerDied()
-        {
-            if (!InRoom()) ReleaseCheckpoint();
         }
 
         void SetKeyTakeable(bool on)

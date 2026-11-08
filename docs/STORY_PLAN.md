@@ -223,8 +223,8 @@ Full brief: [puzzles/FLOODED_BASEMENT.md](puzzles/FLOODED_BASEMENT.md). **Blink 
 - **Fail:**
   - **Each blink** is a 0.32 m surge (hidden behind the eyelids, eased up over 0.25 s as they open, with a slosh). **Eyes held shut:** one surge every 0.5 s. About 5 blinks from dry is death.
   - **Water at eye height** (read live, so crouching drowns you sooner): green-brown underwater tint, bubbles, 1.2 s, then *"You drowned"*. The world muffles as the water closes in on the eyes, and you wade at 70 % speed once it's past 0.9 m.
-  - **Respawn** is at a checkpoint just outside the door (`WakeUpSequence.SetCheckpoint`), not the bed. The room resets: dry, tap dripping, cover back on, crowbar put away until the next attempt.
-- **Solved** is permanent: a later death elsewhere doesn't reset it (the checkpoint is cleared).
+  - **Respawn** is back in bed, like any other death (drowning or clowns). The room resets (on `WakeUpSequence.Respawned`): dry, tap dripping, cover back on, crowbar put away until the next attempt.
+- **Solved** is permanent: a later death elsewhere doesn't reset it.
 - **Why it works:** it flips the rule twice: blinking is what drowns you, then once the drain is open it's what saves time.
 - **Build:** done, except the door.
   - `Scripts/Puzzles/FloodLevel.cs` (pure rules, `Tests/EditMode/FloodLevelTests.cs`), `FloodedBasement.cs` (trigger, crowbar, surface and surge, tap, whirlpool, drowning, reset on `WakeUpSequence.Respawned`) and `DrainCover.cs`.
