@@ -33,8 +33,8 @@ namespace Blink.Effects
         public int HitsToBreak => hitsToBreak;
         public bool BladeOnly => bladeOnly;
 
-        /// <summary>Raised once, when it breaks.</summary>
-        public event Action Smashed;
+        /// <summary>Raised once, when it breaks: the hit point and surface normal.</summary>
+        public event Action<Vector3, Vector3> Smashed;
 
         /// <summary>Set up one added at runtime.</summary>
         public void Configure(int hits, Light[] lightsToKill, bool blade = false)
@@ -67,7 +67,7 @@ namespace Blink.Effects
             ImpactParticles.Burst(hasLights ? SurfaceKind.Glass : OwnSurface(), point, normal, burstStrength);
             if (breakCue != null && AudioService.Instance != null) AudioService.Instance.PlayAt(breakCue, point);
             Noise.Make(point, breakLoudness);
-            Smashed?.Invoke();
+            Smashed?.Invoke(point, normal);
 
             if (hasLights) PutOut();
             if (TryGetComponent(out Rigidbody body) && body.isKinematic)

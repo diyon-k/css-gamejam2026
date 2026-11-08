@@ -1,8 +1,8 @@
 // The axe and the boarded-up master bedroom (House_Bungalow). Menu: BLINK > Bungalow > Place Axe And Barricade.
 // The axe starts in the kitchen cabinet's drawer (Kit_Cabinet1 / Drawer_L): PlayerWeapons.axeStartsAt points at an
 // "AxeStart" under the drawer, so the axe rides the drawer and is picked up when it's open.
-// D8 (corridor -> MasterBedroom) gets planks nailed over its corridor side: axe only, PlankHits chops each, and the door
-// stays locked (bungalow_layout.json D8 "locked": true) until the last plank breaks (Barricade).
+// D8 (corridor -> MasterBedroom) gets planks nailed over its corridor side: axe only, PlankHits chops each (a plank snaps
+// in two and falls, Barricade), and the door stays locked (bungalow_layout.json D8 "locked": true) until the last plank breaks.
 // Re-running replaces both. Batch: Unity -batchmode -quit -projectPath Unity -executeMethod BungalowAxeAndBarricade.Batch
 using System.Linq;
 using Blink.Combat;
@@ -16,7 +16,10 @@ public static class BungalowAxeAndBarricade
 {
     const string Cabinet = "Kit_Cabinet1", Drawer = "Drawer_L", DoorId = "D8";
     const string PlankMat = "Assets/Art/Environment/Bungalow/Materials/M_FloorPlank.mat";
-    const int PlankHits = 3;
+    const int PlankHits = 2;
+    const string PlankMesh = "Assets/Art/Environment/Bungalow/Props/Prefabs/Meshes/Barricade_Plank.asset";
+    // One board of M_FloorPlank's texture (it holds nine side by side): the planks show a single board, not stripes.
+    const float BoardV0 = 0.737f, BoardV1 = 0.835f;
     // Doorway D8: x 3.4..4.6 on the wall at z 16.875; the corridor is the -z side.
     const float DoorX = 4.0f, WallZ = 16.875f;
     // (height, tilt in degrees) per plank: lowest to highest, crossed a little like they went up in a hurry.
@@ -70,6 +73,20 @@ public static class BungalowAxeAndBarricade
         Debug.Log($"[AxeAndBarricade] Axe ({size[longest]:F2} m) in {Cabinet}/{Drawer} (diagonal {diag.magnitude:F2} m).");
     }
 
+    /// <summary>Unity's cube with every face's v squeezed into one board of the floor texture. Saved as an asset
+    /// (replaced on re-run) so the scene can reference it.</summary>
+    static Mesh BoardMesh()
+    {
+        var mesh = Object.Instantiate(Resources.GetBuiltinResource<Mesh>("Cube.fbx"));
+        mesh.name = "Barricade_Plank";
+        var uv = mesh.uv;
+        for (int i = 0; i < uv.Length; i++) uv[i].y = Mathf.Lerp(BoardV0, BoardV1, uv[i].y);
+        mesh.uv = uv;
+        AssetDatabase.DeleteAsset(PlankMesh);
+        AssetDatabase.CreateAsset(mesh, PlankMesh);
+        return mesh;
+    }
+
     static Vector3 Axis(int i) => i == 0 ? Vector3.right : i == 1 ? Vector3.up : Vector3.forward;
 
     static void PlaceBarricade()
@@ -91,6 +108,7 @@ public static class BungalowAxeAndBarricade
         root.transform.SetParent(door.transform.parent, true);
         root.AddComponent<Barricade>().Configure(door);
         var mat = AssetDatabase.LoadAssetAtPath<Material>(PlankMat);
+        var mesh = BoardMesh();
         for (int i = 0; i < Planks.Length; i++)
         {
             var plank = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -99,6 +117,7 @@ public static class BungalowAxeAndBarricade
             // alternate depths so crossing planks don't z-fight
             plank.transform.SetPositionAndRotation(new Vector3(DoorX, Planks[i].y, face - 0.02f - (i % 2) * 0.035f), Quaternion.Euler(0f, 0f, Planks[i].tilt));
             plank.transform.localScale = new Vector3(1.6f, 0.17f, 0.03f);
+            plank.GetComponent<MeshFilter>().sharedMesh = mesh;
             if (mat != null) plank.GetComponent<MeshRenderer>().sharedMaterial = mat;
             plank.AddComponent<Breakable>().Configure(PlankHits, null, blade: true);
         }
