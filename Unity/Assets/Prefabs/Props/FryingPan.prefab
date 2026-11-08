@@ -103,7 +103,7 @@ MonoBehaviour:
   launchSpeed: 0.6875
   launchLift: 0.3125
   launchSideways: 0.15625
-  stunSeconds: 3.5
+  stunSeconds: 5
   swingCue: {fileID: 11400000, guid: c2cd3d733b3ca2340922fc6b87a5c557, type: 2}
   hitCue: {fileID: 11400000, guid: 5a5fb51907e6dd94f9ae56d7a3eca003, type: 2}
   surfaceHitCue: {fileID: 11400000, guid: 654bb9d80fb53614fbacbd9d190eb9f4, type: 2}
