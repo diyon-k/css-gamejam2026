@@ -101,11 +101,18 @@ namespace Blink.Interaction
             return true;
         }
 
-        /// <summary>Puts the held item back where it was picked up (when the player dies).</summary>
-        public void ReturnItemHome()
+        /// <summary>
+        /// The player died: what's in hand (an item, a melee item, the pistol if it can be dropped) is left on the floor where
+        /// they fell, until picked up again. Dying in a vent or hiding spot leaves it at the way out. Ammo stays in the pocket.
+        /// </summary>
+        public void DropOnDeath()
         {
+            var at = Vent.Inside is { } vent ? vent.exit[vent.NearestEnd(transform.position)]
+                : HidingSpot.Occupant is { } spot ? spot.ExitPoint
+                : DropPoint(_eye);
             var item = Release();
-            if (item != null) item.ReturnHome();
+            if (item != null) item.PlaceAt(at);
+            if (HoldsWeapon) _weapons.DropWeapon(at);
         }
 
         Pickup Release()
@@ -128,7 +135,7 @@ namespace Blink.Interaction
                 ? Mathf.Max(0f, wall.distance - Clearance)
                 : Ahead;
             var above = eye.position + flat * ahead;
-            return Physics.Raycast(above, Vector3.down, out var floor, 3f, NotPlayer, QueryTriggerInteraction.Ignore)
+            return Physics.Raycast(above, Vector3.down, out var floor, 10f, NotPlayer, QueryTriggerInteraction.Ignore) // far enough for the foot of a ladder
                 ? floor.point
                 : above + Vector3.down * 1.5f;
         }
