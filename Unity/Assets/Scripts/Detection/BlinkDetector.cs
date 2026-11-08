@@ -19,7 +19,7 @@ namespace Blink.Detection
         public static BlinkDetector Instance { get; private set; }
 
         [Tooltip("Eyes closed longer than this count as 'eyes shut' (fast-forward) instead of a blink.")]
-        [SerializeField] float holdThreshold = 0.35f;
+        [SerializeField] float holdThreshold = 0.2f;
         [Tooltip("Closures shorter than this are ignored as noise.")]
         [SerializeField] float minClosedTime = 0.03f;
         [Tooltip("Off (default): no face in view counts as eyes open, so looking away from the webcam does nothing. " +
