@@ -11,6 +11,8 @@ using Blink.Visuals;
 using Blink.World;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using Random = UnityEngine.Random;
 
 namespace Blink.Puzzles
@@ -68,6 +70,10 @@ namespace Blink.Puzzles
         [Tooltip("Spins over the drain, at the water surface, while draining.")]
         public Transform whirlpool;
         public ParticleSystem whirlpoolFoam;
+        [Tooltip("Rings where the spill off the bath meets the water: placed there, rides the surface while the tap runs.")]
+        public ParticleSystem ripples;
+        [Tooltip("Blink/FloodWetMark strips on the walls and floor: dark up to the high-water mark, drying after.")]
+        public Renderer wetMarks;
         [Tooltip("Bare bulb: stutters when the flood starts.")]
         public Light bulb;
         [Tooltip("Rubbish already floating in the room: rides up on the water (stays where it is until the water passes it).")]
@@ -88,21 +94,32 @@ namespace Blink.Puzzles
         [SerializeField, Min(0f)] float drownMargin = 0.05f;
 
         [Header("Feel")]
-        [Tooltip("Real seconds the surface takes to surge up to a jump once the eyes open.")]
-        [SerializeField, Min(0.01f)] float surgeSeconds = 0.25f;
+        [Tooltip("How fast the surface springs to a jump once the eyes open, Hz (higher = snappier).")]
+        [SerializeField, Min(0.1f)] float surgeFrequency = 2.2f;
+        [Tooltip("Spring damping: 1 = no overshoot, lower sloshes past the new level and back (0.6 ≈ 3 cm on a blink).")]
+        [SerializeField, Range(0.1f, 1f)] float surgeDamping = 0.6f;
         [Tooltip("The surge waits this long after the jump (the eyelids opening).")]
         [SerializeField, Min(0f)] float surgeDelay = 0.08f;
         [SerializeField, Min(0f)] float surgeJoltDegrees = 1.5f;
+        [Tooltip("Height of the ring wave that rolls out from the bath on each surge, metres.")]
+        [SerializeField, Min(0f)] float surgeWaveHeight = 0.05f;
+        [Tooltip("Real seconds for the surface to calm after a surge.")]
+        [SerializeField, Min(0.05f)] float chopSettle = 1.4f;
+        [Tooltip("How deep the drain pulls the surface down over it while draining, metres (never more than 60% of the water).")]
+        [SerializeField, Min(0f)] float funnelDepth = 0.28f;
+        [Tooltip("Below this depth, metres, the sheet of water breaks up into puddles.")]
+        [SerializeField, Min(0.01f)] float puddleDepth = 0.07f;
+        [Tooltip("World seconds for the walls and floor to dry once the water's gone.")]
+        [SerializeField, Min(1f)] float drySeconds = 35f;
         [Tooltip("Real seconds from water over the eyes to death.")]
         [SerializeField, Min(0f)] float drownDelay = 1.2f;
         [Tooltip("The world goes muffled once the water is this close to the eyes, metres.")]
         [SerializeField, Min(0f)] float muffleWithin = 0.25f;
-        [SerializeField] Color underwaterTint = new(0.16f, 0.2f, 0.12f, 0.72f);
+        [Tooltip("Flat overlay on top of the underwater grade (a URP volume).")]
+        [SerializeField] Color underwaterTint = new(0.16f, 0.2f, 0.12f, 0.4f);
         [Tooltip("Water this deep (metres) and over slows the player to Wade Speed.")]
         [SerializeField, Min(0f)] float wadeDepth = 0.9f;
         [SerializeField, Range(0.2f, 1f)] float wadeSpeed = 0.7f;
-        [Tooltip("Surface texture drift, UV per world second.")]
-        [SerializeField] Vector2 waterScroll = new(0.015f, 0.01f);
         [SerializeField, Min(0f)] float whirlpoolSpin = 220f;
 
         [Header("Audio (an empty cue is a silent placeholder)")]
@@ -150,8 +167,13 @@ namespace Blink.Puzzles
         AudioLowPassFilter _muffle;
 
         float _shown;                    // the surface's level on screen
-        float _surgeFrom, _surgeT = 1f, _surgeWait;
+        float _shownVel;                 // its spring's velocity, m/s
+        float _surgeWait, _holdLevel;    // after a jump the surface holds at the old level till the eyes are open
         float _lastLevel;
+        float _chop, _drainFlow, _funnel; // surface roughness, swirl and dip over the drain, 0..1 / metres
+        float _waveAge = 100f, _waveAmp; // the ring wave after a surge
+        float _wet, _wetTop;              // walls and floor: wetness 0..1 and the high-water mark (world y)
+        Vector3 _spill;                   // where the bath spills into the room: ripples and ring waves start here
         int _lastJumps;
         float _dripIn;
         float _tint;                     // underwater tint 0..1
@@ -161,26 +183,61 @@ namespace Blink.Puzzles
         AudioHandle _tapLoop, _gurgle;
         Coroutine _drown, _tapStop, _stutter;
         float[] _floatHome;              // each floater's resting height above the floor
+        Quaternion[] _floatTurn;         // and its resting rotation
         Renderer[] _waterRenderers;
-        MaterialPropertyBlock _mpb;
-        Vector4 _waterST = new(1f, 1f, 0f, 0f);
-        static readonly int BaseMapST = Shader.PropertyToID("_BaseMap_ST");
-        static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        MaterialPropertyBlock _mpb, _wetMpb;
+        Volume _underwater;
+        VolumeProfile _underwaterProfile;
+        LensDistortion _underwaterWobble;
+
+        static readonly int LevelId = Shader.PropertyToID("_Level");
+        static readonly int DrainPosId = Shader.PropertyToID("_DrainPos");
+        static readonly int DrainFlowId = Shader.PropertyToID("_DrainFlow");
+        static readonly int FunnelId = Shader.PropertyToID("_Funnel");
+        static readonly int ChopId = Shader.PropertyToID("_Chop");
+        static readonly int WaveOriginId = Shader.PropertyToID("_WaveOrigin");
+        static readonly int WaveTimeId = Shader.PropertyToID("_WaveTime");
+        static readonly int WaveAmpId = Shader.PropertyToID("_WaveAmp");
+        static readonly int BreakupId = Shader.PropertyToID("_Breakup");
+        static readonly int WetTopId = Shader.PropertyToID("_WetTop");
+        static readonly int WetId = Shader.PropertyToID("_Wet");
 
         void Awake()
         {
             _flood = new FloodLevel(riseRate, blinkJump, shutJumpInterval, drainRate);
             if (roomBounds != null) _flood.MaxLevel = Mathf.Max(0.1f, roomBounds.bounds.size.y - 0.15f);
-            if (water != null)
-            {
-                _waterRenderers = water.GetComponentsInChildren<Renderer>(true);
-                _mpb = new MaterialPropertyBlock();
-                if (_waterRenderers.Length > 0 && _waterRenderers[0].sharedMaterial is { } m && m.HasProperty(BaseMapId))
-                {
-                    var s = m.GetTextureScale(BaseMapId);
-                    _waterST = new Vector4(s.x, s.y, 0f, 0f);
-                }
-            }
+            _mpb = new MaterialPropertyBlock();
+            _wetMpb = new MaterialPropertyBlock();
+            if (water != null) _waterRenderers = water.GetComponentsInChildren<Renderer>(true);
+            BuildUnderwaterVolume();
+        }
+
+        void OnDestroy()
+        {
+            if (_underwaterProfile != null) Destroy(_underwaterProfile);
+        }
+
+        /// <summary>A global grade for under the surface (murky green, dark edges, a slow wobble); its weight follows the tint.</summary>
+        void BuildUnderwaterVolume()
+        {
+            _underwaterProfile = ScriptableObject.CreateInstance<VolumeProfile>();
+            var grade = _underwaterProfile.Add<ColorAdjustments>();
+            grade.colorFilter.Override(new Color(0.55f, 0.72f, 0.45f));
+            grade.saturation.Override(-35f);
+            grade.postExposure.Override(-1f);
+            var vignette = _underwaterProfile.Add<Vignette>();
+            vignette.intensity.Override(0.5f);
+            vignette.smoothness.Override(0.8f);
+            vignette.color.Override(new Color(0.02f, 0.05f, 0.02f));
+            _underwaterWobble = _underwaterProfile.Add<LensDistortion>();
+            _underwaterWobble.intensity.Override(0f);
+            var go = new GameObject("Underwater Volume");
+            go.transform.SetParent(transform, false);
+            _underwater = go.AddComponent<Volume>();
+            _underwater.isGlobal = true;
+            _underwater.priority = 60f; // over the rooms' grading and the damage vignette
+            _underwater.sharedProfile = _underwaterProfile;
+            _underwater.weight = 0f;
         }
 
         void OnValidate()
@@ -247,9 +304,15 @@ namespace Blink.Puzzles
             if (floaters != null)
             {
                 _floatHome = new float[floaters.Length];
+                _floatTurn = new Quaternion[floaters.Length];
                 for (int i = 0; i < floaters.Length; i++)
-                    if (floaters[i] != null) _floatHome[i] = floaters[i].position.y - FloorY;
+                    if (floaters[i] != null)
+                    {
+                        _floatHome[i] = floaters[i].position.y - FloorY;
+                        _floatTurn[i] = floaters[i].rotation;
+                    }
             }
+            _spill = ripples != null ? ripples.transform.position : tap != null ? tap.position : roomBounds.bounds.center;
             ResetRoom();
         }
 
@@ -509,10 +572,13 @@ namespace Blink.Puzzles
             if (_drown != null) StopCoroutine(_drown);
             _drown = null;
             _flood.Reset();
-            _shown = _lastLevel = 0f;
-            _surgeT = 1f;
+            _shown = _shownVel = _lastLevel = _holdLevel = _surgeWait = 0f;
+            _chop = _drainFlow = _funnel = _waveAmp = 0f;
+            _waveAge = 100f;
+            _wet = 0f;
             _lastJumps = 0;
             _tint = 0f;
+            if (ripples != null) ripples.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             SetTapRunning(false);
             StopSound(ref _gurgle, 0f);
             if (whirlpoolFoam != null) whirlpoolFoam.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -534,34 +600,68 @@ namespace Blink.Puzzles
         void ShowWater(float realDt)
         {
             float level = Level;
-            // A jump (blink, eyes shut) or a blink-drain is a step: ease the surface to it once the eyes open.
+            var state = State;
+            // A jump (blink, eyes shut) or a blink-drain is a step: the surface holds till the eyes open, then springs to
+            // it, overshooting a little and sloshing back. A rise also churns the water and rolls a wave out from the bath.
             if (Mathf.Abs(level - _lastLevel) > 0.05f)
             {
-                _surgeFrom = _shown;
-                _surgeT = 0f;
+                if (_surgeWait <= 0f) _holdLevel = _lastLevel; // two jumps in one blink: hold at the first
                 _surgeWait = surgeDelay;
+                bool rise = level > _lastLevel;
+                _chop = Mathf.Max(_chop, rise ? 1f : 0.5f);
+                if (rise && state == FloodState.Flooding)
+                {
+                    _waveAge = -surgeDelay;
+                    _waveAmp = surgeWaveHeight;
+                }
             }
             _lastLevel = level;
-            if (_surgeT < 1f)
+            float target = level;
+            if (_surgeWait > 0f)
             {
-                if (_surgeWait > 0f) _surgeWait -= realDt;
-                else _surgeT = Mathf.Min(1f, _surgeT + realDt / surgeSeconds);
-                float e = 1f - Mathf.Pow(1f - _surgeT, 3f); // rushes up, settles
-                _shown = Mathf.LerpUnclamped(_surgeFrom, level, e);
+                _surgeWait -= realDt;
+                target = _holdLevel;
             }
-            else _shown = level;
+            Spring(target, realDt);
 
-            float shown = State == FloodState.Drowned ? Mathf.Max(_shown, _drownedSurface) : _shown;
+            float shown = state == FloodState.Drowned ? Mathf.Max(_shown, _drownedSurface) : _shown;
             bool visible = shown > 0.005f;
             if (water.gameObject.activeSelf != visible) water.gameObject.SetActive(visible);
             var p = water.position;
             water.position = new Vector3(p.x, FloorY + shown, p.z);
 
+            // Calm water still stirs while the tap pours in, more while the drain pulls it out.
+            float calm = state == FloodState.Flooding ? 0.12f : state == FloodState.Draining ? 0.3f : 0f;
+            _chop = Mathf.MoveTowards(_chop, calm, realDt / chopSettle);
+            _waveAge += realDt;
+            bool pulling = state == FloodState.Draining;
+            _drainFlow = Mathf.MoveTowards(_drainFlow, pulling ? 1f : 0f, realDt * 1.5f);
+            _funnel = Mathf.MoveTowards(_funnel, pulling ? Mathf.Min(funnelDepth, shown * 0.6f) : 0f, realDt * 0.6f);
+            _funnel = Mathf.Min(_funnel, shown * 0.6f);
+
             if (visible && _waterRenderers != null)
             {
-                Vector2 offset = waterScroll * Time.time;
-                _mpb.SetVector(BaseMapST, new Vector4(_waterST.x, _waterST.y, offset.x % 1f, offset.y % 1f));
+                var d = drain != null ? drain.transform.position : roomBounds.bounds.center;
+                _mpb.SetFloat(LevelId, shown);
+                _mpb.SetVector(DrainPosId, d);
+                _mpb.SetFloat(DrainFlowId, _drainFlow);
+                _mpb.SetFloat(FunnelId, _funnel);
+                _mpb.SetFloat(ChopId, _chop);
+                _mpb.SetVector(WaveOriginId, _spill);
+                _mpb.SetFloat(WaveTimeId, Mathf.Max(0f, _waveAge));
+                _mpb.SetFloat(WaveAmpId, _waveAge >= 0f ? _waveAmp : 0f);
+                _mpb.SetFloat(BreakupId, 1f - Mathf.Clamp01(shown / puddleDepth));
                 foreach (var r in _waterRenderers) if (r != null) r.SetPropertyBlock(_mpb);
+            }
+
+            ShowWet(shown);
+            if (ripples != null)
+            {
+                bool pouring = state == FloodState.Flooding && runningWater != null && runningWater.activeSelf && shown > 0.03f;
+                if (pouring && !ripples.isEmitting) ripples.Play();
+                else if (!pouring && ripples.isEmitting) ripples.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                var rp = ripples.transform.position;
+                ripples.transform.position = new Vector3(rp.x, FloorY + shown + 0.01f, rp.z);
             }
 
             if (whirlpool != null)
@@ -580,14 +680,47 @@ namespace Blink.Puzzles
                 {
                     if (floaters[i] == null) continue;
                     var f = floaters[i].position;
-                    float bob = shown > _floatHome[i] ? Mathf.Sin(Time.time * 1.3f + i * 2.1f) * 0.012f : 0f;
+                    bool afloat = shown > _floatHome[i];
+                    float bob = afloat ? Mathf.Sin(Time.time * 1.3f + i * 2.1f) * (0.012f + 0.035f * _chop) : 0f;
                     floaters[i].position = new Vector3(f.x, FloorY + Mathf.Max(_floatHome[i], shown) + bob, f.z);
+                    float tilt = afloat ? 3f + 12f * _chop : 0f; // rocks, harder after a surge
+                    floaters[i].rotation = Quaternion.Euler(Mathf.Sin(Time.time * 1.7f + i) * tilt, 0f,
+                        Mathf.Cos(Time.time * 1.3f + i * 1.7f) * tilt) * _floatTurn[i];
                 }
             if (whirlpoolFoam != null)
             {
                 var f = whirlpoolFoam.transform.position;
                 whirlpoolFoam.transform.position = new Vector3(f.x, FloorY + Mathf.Max(0.02f, shown), f.z);
             }
+        }
+
+        /// <summary>Damped spring from the surface on screen to <paramref name="target"/> (real time, small fixed steps).</summary>
+        void Spring(float target, float realDt)
+        {
+            float w = 2f * Mathf.PI * surgeFrequency;
+            for (float left = Mathf.Min(realDt, 0.25f); left > 0f; left -= 0.02f)
+            {
+                float dt = Mathf.Min(left, 0.02f);
+                _shownVel += (w * w * (target - _shown) - 2f * surgeDamping * w * _shownVel) * dt;
+                _shown += _shownVel * dt;
+            }
+            if (_shown < 0f) _shown = _shownVel = 0f;
+        }
+
+        /// <summary>Walls and floor dark up to the highest the water's been, drying off once it's gone.</summary>
+        void ShowWet(float shown)
+        {
+            if (shown > 0.01f)
+            {
+                _wetTop = _wet > 0f ? Mathf.Max(_wetTop, FloorY + shown) : FloorY + shown;
+                _wet = 1f;
+            }
+            else if (_wet > 0f) _wet = Mathf.Max(0f, _wet - Time.deltaTime / drySeconds);
+            if (wetMarks == null) return;
+            if (wetMarks.enabled != _wet > 0f) wetMarks.enabled = _wet > 0f;
+            _wetMpb.SetFloat(WetTopId, _wetTop);
+            _wetMpb.SetFloat(WetId, _wet);
+            wetMarks.SetPropertyBlock(_wetMpb);
         }
 
         // ------------------------------------------------------------------ how it feels
@@ -603,6 +736,11 @@ namespace Blink.Puzzles
             // Underwater: tint the view. Near the eyes: muffle the world.
             float targetTint = live && gap < 0f ? 1f : 0f;
             _tint = Mathf.MoveTowards(_tint, targetTint, Time.unscaledDeltaTime * 4f);
+            if (_underwater != null)
+            {
+                _underwater.weight = _tint;
+                if (_tint > 0f) _underwaterWobble.intensity.value = -0.18f + 0.1f * Mathf.Sin(Time.unscaledTime * 2.7f);
+            }
             SetMuffle(!live ? 0f : gap <= 0f ? 1f : 1f - Mathf.Clamp01(gap / Mathf.Max(0.01f, muffleWithin)));
             SetWading(InRoom() && (state == FloodState.Flooding || state == FloodState.Draining) && _shown >= wadeDepth);
         }
