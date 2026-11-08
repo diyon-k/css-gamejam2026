@@ -70,7 +70,7 @@ MonoBehaviour:
   itemId: 
   displayName: Pistol
   givesPistol: 1
-  pistolRounds: 8
+  pistolRounds: 0
   flySeconds: 0.25
   handOffset: {x: 0.05, y: -0.25, z: 0.35}
 --- !u!1 &7687058632608880495

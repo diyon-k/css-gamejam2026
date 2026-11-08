@@ -332,7 +332,8 @@ MonoBehaviour:
   shotLoudness: 35
   dryFireLoudness: 4
   magazineSize: 8
-  reserveAmmo: 32
+  startLoaded: 0
+  reserveAmmo: 0
   reloadSeconds: 2.3333335
   emptyReloadSeconds: 3.0333335
 --- !u!1 &1643118159745657433
