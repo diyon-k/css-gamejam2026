@@ -713,7 +713,7 @@ namespace Blink.Mobs
         {
             Vector3 hips = ragdoll.HipsPosition;
             ragdoll.GetUp(); // captures the lying pose before the root moves under it
-            Vector3 spot = NavMesh.SamplePosition(hips, out var floor, 3f, _agent.areaMask) ? floor.position : _downFrom;
+            Vector3 spot = SameSide(_downFrom, hips, 3f);
             Vector3 face = target != null ? target.position - spot : transform.forward;
             face.y = 0f;
             transform.SetPositionAndRotation(spot, face.sqrMagnitude > 1e-4f ? Quaternion.LookRotation(face) : transform.rotation);
@@ -776,9 +776,20 @@ namespace Blink.Mobs
             _grabbing = false;
             if (animator != null) animator.updateMode = _savedUpdateMode;
             // Leave the body where the grab left it (no snap back to the anchor) and bring the agent to it.
-            if (_agent.enabled) _agent.Warp(transform.position);
+            if (_agent.enabled) _agent.Warp(SameSide(_grabFrom, transform.position, 1.5f));
             _agent.updatePosition = true;
             _agent.updateRotation = true;
+        }
+
+        /// <summary>
+        /// The navmesh point nearest <paramref name="want"/>, but on <paramref name="from"/>'s side of any wall: the
+        /// nearest point alone can be in the next room when a body lands against a wall (or a grab ends with the player
+        /// backed into one), and the clown would stand up through it. <paramref name="from"/> is where it last stood.
+        /// </summary>
+        Vector3 SameSide(Vector3 from, Vector3 want, float radius)
+        {
+            if (!NavMesh.SamplePosition(want, out var near, radius, _agent.areaMask)) return from;
+            return NavMesh.Raycast(from, near.position, out var edge, _agent.areaMask) ? edge.position : near.position;
         }
 
         static float Smooth01(float t)
