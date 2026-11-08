@@ -27,10 +27,20 @@ namespace Blink.EditorTools
         const string FloodClue = "Drain blocked AGAIN. The cover's rusted solid, you'll need a bar to shift it.\n\n— Groundsman";
         const string FloodMats = "Assets/Art/Puzzles/FloodedBasement/Materials/";
         const string FloodTex = "Assets/Art/Puzzles/FloodedBasement/Textures/";
+        const string FloodMeshes = "Assets/Art/Puzzles/FloodedBasement/Meshes/";
         const string WaterSource = "Assets/Art/Environment/Bungalow/Materials/M_Water.mat";
+        const string RippleNormal = "Assets/Art/Environment/Bungalow/Textures/M_Water/M_Water_Normal.png";
         const string ParticleSource = "Assets/Art/VFX/BulletTracer/BulletSmoke.mat";
         const string KeyPrefab = "Assets/Prefabs/Props/KeyPickup.prefab";
         const float DrawerH = 0.26f;
+
+        /// <summary>Batch: Unity -batchmode -quit -projectPath Unity -executeMethod Blink.EditorTools.PuzzleProps.BatchFloodedBasement</summary>
+        public static void BatchFloodedBasement()
+        {
+            var scene = EditorSceneManager.OpenScene("Assets/Scenes/House_Bungalow.unity");
+            PlaceFloodedBasement();
+            EditorSceneManager.SaveScene(scene);
+        }
 
         [MenuItem("BLINK/Place Puzzle: Flooded Basement")]
         public static void PlaceFloodedBasement()
@@ -103,9 +113,9 @@ namespace Blink.EditorTools
             room.crowbar = BuildCrowbar(anchors[crate], mats);
 
             room.water = BuildWaterPlane(root.transform, interior, mats);
-            var (whirl, foam) = BuildWhirlpool(root.transform, drainPos, mats);
-            room.whirlpool = whirl;
-            room.whirlpoolFoam = foam;
+            room.whirlpoolFoam = BuildWhirlpoolFoam(root.transform, drainPos, mats); // the swirl itself is in the water shader
+            room.ripples = BuildRipples(root.transform, bath, mats);
+            room.wetMarks = BuildWetMarks(root.transform, interior, doorCentre, inward, mats);
             room.bulb = BuildBulb(root.transform, frame, interior, mats);
             room.floaters = FindFloaters(interior);
 
@@ -248,15 +258,17 @@ namespace Blink.EditorTools
 
         sealed class FloodMaterials
         {
-            public readonly Material Water, Stream, Whirl, Drop, Wood, DarkWood, Brass, Iron, Rust, Locker, Hole,
+            public readonly Material Water, Stream, Drop, Ring, WetMark, Wood, DarkWood, Brass, Iron, Rust, Locker, Hole,
                 Card, Bulb, Cord, Rag, Glass, Tin;
 
             public FloodMaterials()
             {
-                Water = WaterMat("M_FloodWater", new Color(0.15f, 0.17f, 0.1f, 0.9f), new Vector2(3f, 5f), null);
+                Water = ShaderMat("M_FloodWater", "Blink/FloodWater");
+                if (Water != null) Water.SetTexture("_NormalMap", AssetDatabase.LoadAssetAtPath<Texture2D>(RippleNormal));
+                WetMark = ShaderMat("M_FloodWetMark", "Blink/FloodWetMark");
                 Stream = WaterMat("M_FloodStream", new Color(0.5f, 0.55f, 0.45f, 0.55f), new Vector2(1f, 4f), null);
-                Whirl = WaterMat("M_FloodWhirlpool", new Color(0.62f, 0.6f, 0.5f, 0.85f), Vector2.one, WhirlpoolTexture());
-                Drop = DropMat();
+                Drop = ParticleMat("M_FloodDrop", DotTexture(), new Color(0.78f, 0.82f, 0.74f, 0.85f));
+                Ring = ParticleMat("M_FloodRing", RingTexture(), new Color(0.75f, 0.78f, 0.7f, 0.6f));
                 Wood = MatIn(FloodMats, "Wood", new Color(0.3f, 0.22f, 0.15f), 0.25f);
                 DarkWood = MatIn(FloodMats, "DarkWood", new Color(0.17f, 0.12f, 0.08f), 0.2f);
                 Brass = MatIn(FloodMats, "Brass", new Color(0.6f, 0.45f, 0.22f), 0.6f, 0.7f);
@@ -290,17 +302,44 @@ namespace Blink.EditorTools
                 return m;
             }
 
-            /// <summary>Droplets and foam: the bullet smoke's particle material with a soft round dot.</summary>
-            static Material DropMat()
+            /// <summary>A material on one of our own shaders (Assets/Art/Puzzles/FloodedBasement/Shaders); an old asset of that name is moved onto it.</summary>
+            static Material ShaderMat(string name, string shaderName)
             {
-                string path = FloodMats + "M_FloodDrop.mat";
+                var shader = Shader.Find(shaderName);
+                if (shader == null)
+                {
+                    Debug.LogWarning($"[PuzzleProps] Shader '{shaderName}' not found (did it compile?).");
+                    return null;
+                }
+                string path = FloodMats + name + ".mat";
+                var m = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (m == null)
+                {
+                    System.IO.Directory.CreateDirectory(FloodMats);
+                    m = new Material(shader) { name = name };
+                    AssetDatabase.CreateAsset(m, path);
+                }
+                else if (m.shader != shader) // the old URP Lit copy: start clean on the shader's defaults, same GUID
+                {
+                    var fresh = new Material(shader) { name = name };
+                    EditorUtility.CopySerialized(fresh, m);
+                    Object.DestroyImmediate(fresh);
+                    EditorUtility.SetDirty(m);
+                }
+                return m;
+            }
+
+            /// <summary>Droplets, foam and rings: the bullet smoke's particle material with our own texture.</summary>
+            static Material ParticleMat(string name, Texture2D tex, Color color)
+            {
+                string path = FloodMats + name + ".mat";
                 var m = AssetDatabase.LoadAssetAtPath<Material>(path);
                 if (m != null) return m;
                 var src = AssetDatabase.LoadAssetAtPath<Material>(ParticleSource);
                 m = src != null ? new Material(src) : new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"));
-                m.name = "M_FloodDrop";
-                m.SetTexture("_BaseMap", DotTexture());
-                m.SetColor("_BaseColor", new Color(0.78f, 0.82f, 0.74f, 0.85f));
+                m.name = name;
+                m.SetTexture("_BaseMap", tex);
+                m.SetColor("_BaseColor", color);
                 AssetDatabase.CreateAsset(m, path);
                 return m;
             }
@@ -311,17 +350,12 @@ namespace Blink.EditorTools
                 return new Color(1f, 1f, 1f, Mathf.Clamp01(1f - r) * Mathf.Clamp01(1f - r));
             });
 
-            /// <summary>Foamy spiral arms on clear water, darker in the eye.</summary>
-            static Texture2D WhirlpoolTexture() => SaveTexture("T_Whirlpool", 256, (u, v) =>
+            /// <summary>A thin soft ring, for ripples spreading on the surface.</summary>
+            static Texture2D RingTexture() => SaveTexture("T_FloodRing", 128, (u, v) =>
             {
                 float r = Mathf.Sqrt(u * u + v * v);
-                if (r > 1f) return new Color(1f, 1f, 1f, 0f);
-                float a = Mathf.Atan2(v, u);
-                float arms = Mathf.Pow(0.5f + 0.5f * Mathf.Sin(4f * a + 9f * Mathf.Sqrt(r)), 3f);
-                float edge = Mathf.SmoothStep(1f, 0.6f, r);
-                float eye = Mathf.SmoothStep(0f, 0.25f, r);
-                float shade = Mathf.Lerp(0.15f, 1f, eye);
-                return new Color(shade, shade, shade * 0.92f, Mathf.Clamp01(arms * edge * 0.9f + (1f - eye) * 0.9f));
+                float ring = Mathf.Exp(-Mathf.Pow((r - 0.8f) / 0.07f, 2f)) + 0.35f * Mathf.Exp(-Mathf.Pow((r - 0.6f) / 0.05f, 2f));
+                return new Color(1f, 1f, 1f, Mathf.Clamp01(ring));
             });
 
             /// <summary>Bakes a square texture from <paramref name="f"/>(u, v) with u, v in −1..1 and saves it as a PNG asset.</summary>
@@ -728,17 +762,49 @@ namespace Blink.EditorTools
             if (tin) Part(parent, PrimitiveType.Cylinder, "Tin", local + Vector3.up * 0.05f, Vector3.zero, new Vector3(0.09f, 0.05f, 0.09f), m.Tin);
         }
 
-        /// <summary>A short jemmy (0.45 m): a bar with a bent claw at one end and a flat chisel at the other.</summary>
+        const string CrowbarPrefab = "Assets/Prefabs/Props/Crowbar.prefab";
+
+        /// <summary>
+        /// The house's crowbar model (<see cref="CrowbarPrefab"/>, 0.6 m along its local +y) shrunk to 0.45 m and laid flat
+        /// along x, so it fits every drawer and the crate's tray. Only its mesh: the world crowbar is a <see cref="SwingableProp"/>
+        /// (melee slot, needs the axe in hand), but the drain checks the inventory, so this one stays a <see cref="Pickup"/>.
+        /// Falls back to a primitive jemmy if the prefab is missing.
+        /// </summary>
         static Pickup BuildCrowbar(Transform anchor, FloodMaterials m)
         {
             var bar = new GameObject("Crowbar");
             bar.transform.SetParent(anchor, false);
-            Part(bar.transform, PrimitiveType.Cube, "Shaft", new Vector3(0f, 0.011f, 0f), Vector3.zero, new Vector3(0.4f, 0.022f, 0.022f), m.Rust);
-            Part(bar.transform, PrimitiveType.Cube, "Claw", new Vector3(-0.215f, 0.025f, 0f), new Vector3(0f, 0f, -40f), new Vector3(0.07f, 0.02f, 0.03f), m.Rust);
-            Part(bar.transform, PrimitiveType.Cube, "Chisel", new Vector3(0.215f, 0.011f, 0f), Vector3.zero, new Vector3(0.04f, 0.01f, 0.034f), m.Iron);
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CrowbarPrefab);
+            if (prefab != null)
+            {
+                var model = (GameObject)PrefabUtility.InstantiatePrefab(prefab, bar.transform);
+                PrefabUtility.UnpackPrefabInstance(model, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                // Strip the world crowbar's behaviour (SwingableProp first: it requires the Rigidbody).
+                foreach (var c in model.GetComponents<SwingableProp>()) Object.DestroyImmediate(c);
+                foreach (var c in model.GetComponents<Rigidbody>()) Object.DestroyImmediate(c);
+                foreach (var c in model.GetComponentsInChildren<Collider>(true)) Object.DestroyImmediate(c);
+                model.name = "Model";
+                // HideCrowbar zeroes the bar's own pose on its anchor, so the lie-flat turn lives on this child.
+                model.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.Euler(0f, 0f, -90f)); // length +y -> +x, thin side down
+                model.transform.localScale = Vector3.one * 0.75f;
+                var renderers = model.GetComponentsInChildren<Renderer>();
+                if (renderers.Length > 0) // rest it on the anchor
+                {
+                    var b = renderers[0].bounds;
+                    foreach (var r in renderers) b.Encapsulate(r.bounds);
+                    model.transform.position += Vector3.up * (anchor.position.y - b.min.y + 0.001f);
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[PuzzleProps] {CrowbarPrefab} not found; building a primitive crowbar instead.");
+                Part(bar.transform, PrimitiveType.Cube, "Shaft", new Vector3(0f, 0.011f, 0f), Vector3.zero, new Vector3(0.4f, 0.022f, 0.022f), m.Rust);
+                Part(bar.transform, PrimitiveType.Cube, "Claw", new Vector3(-0.215f, 0.025f, 0f), new Vector3(0f, 0f, -40f), new Vector3(0.07f, 0.02f, 0.03f), m.Rust);
+                Part(bar.transform, PrimitiveType.Cube, "Chisel", new Vector3(0.215f, 0.011f, 0f), Vector3.zero, new Vector3(0.04f, 0.01f, 0.034f), m.Iron);
+            }
             var hit = bar.AddComponent<BoxCollider>(); // generous: it's what you're hunting for
             hit.center = new Vector3(0f, 0.03f, 0f);
-            hit.size = new Vector3(0.5f, 0.07f, 0.1f);
+            hit.size = new Vector3(0.55f, 0.07f, 0.14f);
             var pickup = bar.AddComponent<Pickup>();
             pickup.itemId = FloodedBasement.CrowbarId;
             pickup.displayName = "Crowbar";
@@ -749,35 +815,152 @@ namespace Blink.EditorTools
 
         // ------------------------------------------------------------------ water, whirlpool, light
 
+        /// <summary>
+        /// The surface: a flat grid (about 12 cm cells, so the shader can slosh it and pull a funnel over the drain) wall
+        /// to wall, no collider (the look ray passes through), hidden until there's water.
+        /// </summary>
         static Transform BuildWaterPlane(Transform root, Bounds interior, FloodMaterials m)
         {
-            var w = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            w.name = "FloodWater";
-            Object.DestroyImmediate(w.GetComponent<Collider>()); // no collider: the look ray passes through
+            float sx = interior.size.x - 0.01f, sz = interior.size.z - 0.01f;
+            int nx = Mathf.Clamp(Mathf.CeilToInt(sx / 0.12f), 8, 120), nz = Mathf.Clamp(Mathf.CeilToInt(sz / 0.12f), 8, 120);
+            var v = new List<Vector3>();
+            var uv = new List<Vector2>();
+            var t = new List<int>();
+            for (int z = 0; z <= nz; z++)
+            for (int x = 0; x <= nx; x++)
+            {
+                v.Add(new Vector3((x / (float)nx - 0.5f) * sx, 0f, (z / (float)nz - 0.5f) * sz));
+                uv.Add(new Vector2(x / (float)nx, z / (float)nz));
+            }
+            for (int z = 0; z < nz; z++)
+            for (int x = 0; x < nx; x++)
+            {
+                int i = z * (nx + 1) + x;
+                t.AddRange(new[] { i, i + nx + 1, i + 1, i + 1, i + nx + 1, i + nx + 2 });
+            }
+            var mesh = NewMesh("FloodWaterGrid", v, t);
+            mesh.SetUVs(0, uv);
+            mesh.bounds = new Bounds(Vector3.zero, new Vector3(sx, 2f, sz)); // the shader moves it up and down
+            mesh = SaveMesh(mesh);
+
+            var w = new GameObject("FloodWater", typeof(MeshFilter), typeof(MeshRenderer));
             w.transform.SetParent(root, false);
-            w.transform.SetPositionAndRotation(new Vector3(interior.center.x, interior.min.y, interior.center.z), Quaternion.Euler(90f, 0f, 0f));
-            w.transform.localScale = new Vector3(interior.size.x - 0.01f, interior.size.z - 0.01f, 1f);
-            var r = w.GetComponent<Renderer>();
+            w.transform.SetPositionAndRotation(new Vector3(interior.center.x, interior.min.y, interior.center.z), Quaternion.identity);
+            w.GetComponent<MeshFilter>().sharedMesh = mesh;
+            var r = w.GetComponent<MeshRenderer>();
             r.sharedMaterial = m.Water;
             r.shadowCastingMode = ShadowCastingMode.Off;
-            GameObjectUtility.SetStaticEditorFlags(w, (StaticEditorFlags)0);
+            r.receiveShadows = true;
             w.SetActive(false); // shown once there's water
             return w.transform;
         }
 
-        static (Transform whirl, ParticleSystem foam) BuildWhirlpool(Transform root, Vector3 drain, FloodMaterials m)
+        /// <summary>Rings spreading where the bath spills onto the water: along the front of the tub, flat on the surface.</summary>
+        static ParticleSystem BuildRipples(Transform root, Transform bath, FloodMaterials m)
         {
-            var w = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            w.name = "Whirlpool";
-            Object.DestroyImmediate(w.GetComponent<Collider>());
-            w.transform.SetParent(root, false);
-            w.transform.SetPositionAndRotation(drain + Vector3.up * 0.02f, Quaternion.Euler(90f, 0f, 0f));
-            w.transform.localScale = new Vector3(1.6f, 1.6f, 1f);
-            var r = w.GetComponent<Renderer>();
-            r.sharedMaterial = m.Whirl;
-            r.shadowCastingMode = ShadowCastingMode.Off;
-            w.SetActive(false);
+            var ps = NewParticles(root, "Ripples", m.Ring);
+            ps.transform.SetPositionAndRotation(bath.TransformPoint(new Vector3(0f, 0.01f, 0.5f)), bath.rotation);
+            var main = ps.main;
+            main.loop = true;
+            main.playOnAwake = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.Local; // they ride the surface up
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.9f, 1.5f);
+            main.startSpeed = 0f;
+            main.startSize = new ParticleSystem.MinMaxCurve(0.12f, 0.25f);
+            main.maxParticles = 60;
+            var em = ps.emission;
+            em.rateOverTime = 9f;
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Box;
+            shape.scale = new Vector3(1.0f, 0.001f, 0.12f);
+            var size = ps.sizeOverLifetime;
+            size.enabled = true;
+            size.size = new ParticleSystem.MinMaxCurve(1f, AnimationCurve.EaseInOut(0f, 0.4f, 1f, 3.2f));
+            var colour = ps.colorOverLifetime;
+            colour.enabled = true;
+            var fade = new Gradient();
+            fade.SetKeys(new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                new[] { new GradientAlphaKey(0f, 0f), new GradientAlphaKey(0.9f, 0.12f), new GradientAlphaKey(0f, 1f) });
+            colour.color = fade;
+            var r = ps.GetComponent<ParticleSystemRenderer>();
+            r.renderMode = ParticleSystemRenderMode.HorizontalBillboard;
+            return ps;
+        }
 
+        /// <summary>
+        /// Thin strips 4 mm in front of each wall (a gap at the doorway), drawn with Blink/FloodWetMark: dark up to the
+        /// high-water mark once there's been water, drying off after. No floor sheet: it z-fought the papers on the floor.
+        /// </summary>
+        static Renderer BuildWetMarks(Transform root, Bounds interior, Vector3 doorCentre, Vector3 inward, FloodMaterials m)
+        {
+            const float inset = 0.004f, doorHalf = 0.6f;
+            float y0 = interior.min.y, h = interior.size.y;
+            Vector3 lo = interior.min + new Vector3(inset, 0f, inset), hi = interior.max - new Vector3(inset, 0f, inset);
+            var corners = new[] { new Vector3(lo.x, y0, lo.z), new Vector3(hi.x, y0, lo.z), new Vector3(hi.x, y0, hi.z), new Vector3(lo.x, y0, hi.z) };
+            var v = new List<Vector3>();
+            var t = new List<int>();
+            void Quad(Vector3 a, Vector3 b, Vector3 c, Vector3 d)
+            {
+                int i = v.Count;
+                v.Add(a - root.position); v.Add(b - root.position); v.Add(c - root.position); v.Add(d - root.position);
+                t.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3 });
+            }
+            void Wall(Vector3 a, Vector3 b) => Quad(a, b, b + Vector3.up * h, a + Vector3.up * h);
+
+            var door = new Vector3(doorCentre.x, y0, doorCentre.z);
+            for (int k = 0; k < 4; k++)
+            {
+                Vector3 a = corners[k], b = corners[(k + 1) % 4], along = (b - a).normalized;
+                bool doorWall = Mathf.Abs(Vector3.Dot(along, inward)) < 0.1f && Mathf.Abs(Vector3.Dot(door - a, inward)) < 0.3f;
+                if (!doorWall)
+                {
+                    Wall(a, b);
+                    continue;
+                }
+                float s = Vector3.Dot(door - a, along), len = Vector3.Distance(a, b);
+                if (s - doorHalf > 0f) Wall(a, a + along * (s - doorHalf));
+                if (s + doorHalf < len) Wall(a + along * (s + doorHalf), b);
+            }
+            var mesh = SaveMesh(NewMesh("FloodWetMarks", v, t));
+            var g = new GameObject("WetMarks", typeof(MeshFilter), typeof(MeshRenderer));
+            g.transform.SetParent(root, false);
+            g.GetComponent<MeshFilter>().sharedMesh = mesh;
+            var r = g.GetComponent<MeshRenderer>();
+            r.sharedMaterial = m.WetMark;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.receiveShadows = false;
+            r.enabled = false; // on once there's been water
+            return r;
+        }
+
+        static Mesh NewMesh(string name, List<Vector3> v, List<int> t)
+        {
+            var mesh = new Mesh { name = name, indexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16 };
+            mesh.SetVertices(v);
+            mesh.SetTriangles(t, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        /// <summary>Saves <paramref name="mesh"/> under Meshes/ by its name, overwriting the last placement's.</summary>
+        static Mesh SaveMesh(Mesh mesh)
+        {
+            string path = FloodMeshes + mesh.name + ".asset";
+            var old = AssetDatabase.LoadAssetAtPath<Mesh>(path);
+            if (old != null)
+            {
+                EditorUtility.CopySerialized(mesh, old);
+                Object.DestroyImmediate(mesh);
+                return old;
+            }
+            System.IO.Directory.CreateDirectory(FloodMeshes);
+            AssetDatabase.CreateAsset(mesh, path);
+            return mesh;
+        }
+
+        static ParticleSystem BuildWhirlpoolFoam(Transform root, Vector3 drain, FloodMaterials m)
+        {
             var foam = NewParticles(root, "WhirlpoolFoam", m.Drop);
             foam.transform.SetPositionAndRotation(drain + Vector3.up * 0.02f, Quaternion.identity);
             var main = foam.main;
@@ -800,7 +983,7 @@ namespace Blink.EditorTools
             vel.orbitalY = 3.5f;
             vel.radial = -0.35f;
             vel.x = vel.y = vel.z = 0f;
-            return (w.transform, foam);
+            return foam;
         }
 
         /// <summary>A bare bulb on a flex over the room, off to one side so the drain's lit but not under it.</summary>

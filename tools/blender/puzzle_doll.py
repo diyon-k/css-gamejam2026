@@ -190,7 +190,7 @@ def hermite(pts, n):
     return out
 
 
-def sphere_part(M, centre, radii, rect_fn, rings=6, seg=10, polar_max=math.pi, front=Vector((0, -1, 0))):
+def sphere_part(M, centre, radii, rect_fn, rings=6, seg=10, polar_max=math.pi, front=Vector((0, -1, 0)), rot=None):
     """UV sphere (front pole towards -Y), uv by planar front projection through rect_fn(x_local, z_local)."""
     verts = {}
     cx, cy, cz = radii
@@ -202,7 +202,8 @@ def sphere_part(M, centre, radii, rect_fn, rings=6, seg=10, polar_max=math.pi, f
         x = math.sin(th) * math.cos(ph)
         z = math.sin(th) * math.sin(ph)
         y = -math.cos(th)
-        return Vector((x * cx, y * cy, z * cz))
+        q = Vector((x * cx, y * cy, z * cz))
+        return rot @ q if rot is not None else q
     rows = [[None] * seg for _ in range(rings + 1)]
     for k in range(rings + 1):
         for i in range(seg):
@@ -562,50 +563,101 @@ def build_hair(M):
             i2 = (i + 1) % seg
             M.face_out([verts[k][i], verts[k][i2], verts[k + 1][i2], verts[k + 1][i]],
                    [uvh(i / seg, (k + 1) / K), uvh((i + 1) / seg, (k + 1) / K), uvh((i + 1) / seg, (k + 2) / K), uvh(i / seg, (k + 2) / K)], P_(HC))
-    # ringlets
-    rl = rect_uv(T.sub("ringlet"))
-    specs = [(66, 1.0, 0.00), (96, 1.0, 0.012), (130, 0.95, 0.0)]
+    # ringlets: tight tapering corkscrews hanging from under the hairline, three a side
+    specs = [(80, 1.0, 0.00), (106, 0.9, 0.35), (132, 1.05, 0.70)]
     for sgn in (-1, 1):
         for deg, length, phase in specs:
             phi = math.radians(deg) * sgn
             th0 = hairline(phi) - 0.10
             s0 = head_surface(dirv(th0, phi)) + Vector(dirv(th0, phi)) * 0.004
-            L = 0.135 * length
-            n = 14
+            L = 0.125 * length
+            n = 40
             pts = []
             for q in range(n):
                 u = q / (n - 1)
                 z = s0.z - L * u
-                rad = 0.012 * (1 - 0.5 * u)
-                ang = 2 * math.pi * (1.5 * u + phase * 10 + (0.3 if sgn > 0 else 0.6))
-                outx = s0.x * (1 + 0.22 * u) + rad * math.cos(ang) * 0.9
+                rad = 0.0095 * (1 - 0.35 * u) * min(1.0, u * 6 + 0.25)
+                ang = 2 * math.pi * (4.5 * u + phase + (0.3 if sgn > 0 else 0.6))
+                outx = s0.x * (1 + 0.20 * u) + rad * math.cos(ang) * 0.9
                 outf = s0.y * (1 - 0.10 * u) + rad * math.sin(ang) - 0.004 * u
                 pts.append(P_(Vector((outx, outf, z))))
-            rr = [lerp(0.0085, 0.0034, (q / (n - 1)) ** 0.8) for q in range(n)]
+            rr = [lerp(0.0040, 0.0019, (q / (n - 1)) ** 0.9) for q in range(n)]
             tube(M, pts, rr, rr, seg=5, ref=Vector((0, 1, 0)), rect=T.sub("ringlet"), caps=(False, True))
+    build_hair_band(M)
+
+
+def build_hair_band(M):
+    """A velvet Alice band over the crown (same red cloth as the dress), ear to ear just behind the fringe, with a
+    bow and two tails at the +x side."""
+    P_ = lambda v: Vector((v.x, -v.y, v.z))
+    cloth = T.sub("sleeve")
+    pts = []
+    n = 26
+    for q in range(n):
+        a = math.radians(lerp(-98, 98, q / (n - 1)))
+        d = Vector((math.sin(a), 0.20, math.cos(a))).normalized()     # (x, f, z): a touch forward of the crown
+        s = head_surface(tuple(d))
+        pts.append(P_(s + d * 0.0078))
+    wid = [0.0085] * n
+    thk = [0.0016] * n
+    tube(M, pts, wid, thk, seg=6, ref=Vector((0, 1, 0)), rect=cloth, caps=(True, True))
+    # the bow sits on the band at a = +52 degrees
+    a = math.radians(52)
+    d = Vector((math.sin(a), 0.20, math.cos(a))).normalized()
+    c = P_(head_surface(tuple(d)) + d * 0.0098)
+    nrm = P_(d).normalized()
+    tan = Vector((math.cos(a), 0, -math.sin(a))).normalized()          # along the band, towards the ear (blender)
+    wdir = nrm.cross(tan).normalized()
+    for sgn in (-1, 1):
+        zaxis = tan * sgn
+        yaxis = wdir
+        xaxis = nrm
+        # loop: long along the band, thin along the normal; tipped up a little
+        rot = Matrix(((zaxis.x, yaxis.x, xaxis.x), (zaxis.y, yaxis.y, xaxis.y), (zaxis.z, yaxis.z, xaxis.z)))
+        sphere_part(M, c + zaxis * 0.0125 + nrm * 0.0035, (0.0135, 0.0072, 0.0038), lambda q: T.sub_uv_cloth(q), rings=5, seg=10, rot=rot)
+    sphere_part(M, c + nrm * 0.0048, (0.0050, 0.0050, 0.0042), lambda q: T.sub_uv_cloth(q), rings=4, seg=8)
+    # two tails
+    for k, tilt in enumerate((0.55, 1.15)):
+        td = (tan * math.cos(tilt) + Vector((0, 0, -1)) * math.sin(tilt)).normalized()
+        k0 = c + nrm * 0.004
+        path = [k0, k0 + td * 0.016 + nrm * 0.006, k0 + td * 0.030 + nrm * 0.010 + Vector((0, 0, -0.004 * (k + 1))),
+                k0 + td * 0.040 + nrm * 0.011 + Vector((0, 0, -0.016 - 0.01 * k))]
+        sp = hermite(path, 6)
+        wl = [lerp(0.0062, 0.0050, i / 5) for i in range(6)]
+        tube(M, sp, wl, [0.0014] * 6, seg=4, ref=nrm, rect=cloth, caps=(True, True))
 
 
 def build_strand(M, anchor_y_front):
-    """A single stray strand across the face, laid on the skull and over the left eye (BVH ray cast)."""
+    """One stray strand: falls from the fringe down the -x cheek (BVH ray cast onto hair and skull), then lifts off the
+    face and finishes in a small curl."""
     me = bpy.data.meshes.new("tmp_head")
     M.bm.to_mesh(me)
     bm2 = bmesh.new()
     bm2.from_mesh(me)
     tree = BVHTree.FromBMesh(bm2)
     pts = []
-    n = 20
+    n = 22
     for q in range(n):
         u = q / (n - 1)
-        x = 0.022 - 0.092 * u + 0.006 * math.sin(u * 9)
-        z = 0.150 - 0.100 * u + 0.004 * math.sin(u * 7 + 1)
+        x = -0.030 - 0.034 * u + 0.007 * math.sin(u * 8.0)
+        z = 0.158 - 0.105 * u + 0.003 * math.sin(u * 6 + 1)
         hit = tree.ray_cast(Vector((x, -0.3, z)), Vector((0, 1, 0)))
         if hit[0] is None:
             continue
-        pts.append(hit[0] + hit[1] * 0.0013)
+        pts.append(hit[0] + hit[1] * (0.0016 + 0.0016 * u))
     bm2.free()
     bpy.data.meshes.remove(me)
-    rr = [0.00095] * len(pts)
-    tube(M, pts, rr, rr, seg=4, ref=Vector((0, 0, 1)), rect=T.sub("ringlet"), caps=(True, True))
+    # flyaway curl at the end, lifting off the cheek
+    last = pts[-1]
+    ctr = last + Vector((-0.002, -0.006, -0.008))
+    for q in range(1, 13):
+        ang = 0.5 + q * 0.55
+        r = 0.0085 * (1 - q / 16)
+        pts.append(ctr + Vector((-r * math.sin(ang) * 0.8, -0.0035 * q, r * math.cos(ang)))
+                   - Vector((0, 0, r)) * 0.0 - Vector((0, 0, 0.0004 * q)))
+    m = len(pts)
+    rr = [lerp(0.0016, 0.0006, (i / (m - 1)) ** 0.8) for i in range(m)]
+    tube(M, pts, rr, rr, seg=5, ref=Vector((0, 0, 1)), rect=T.sub("ringlet"), caps=(True, True))
 
 
 # ------------------------------------------------------------------------------------------------ the key

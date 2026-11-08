@@ -165,16 +165,16 @@ Don't put zombie patrol routes or spawns in or next to this room: a zombie forci
 
 ### Doll art
 
-There's no doll model in the repo. Start with a primitive placeholder built by the editor script (white porcelain material: sphere head, tapered capsule body in a dress-coloured material, thin cylinder limbs, two black glossy sphere eyes, red mouth dot), sitting with legs out. Keep the `face` / `head` / `lap` anchors as named children so a real model can be dropped in later (Blender pipeline in `tools/blender/` or a CC0 asset, credited in `CREDITS.md`).
+There's no doll model in the repo. Start with a primitive placeholder built by the editor script (white porcelain material: sphere head, tapered capsule body in a dress-coloured material, thin cylinder limbs, two black glossy sphere eyes, red mouth dot), sitting with legs out. Keep the `face` / `head` / `lap` anchors as named children so a real model can be dropped in later (Blender pipeline in `tools/blender/` or a CC0 asset, credited in the README).
 
 ### Audio
 
 `SoundCue` assets in `Assets/Art/Audio/Cues/` (an empty cue is a silent placeholder, so code can land before the clips):
-- `Doll_MusicBox` — looping 3D nursery-tune music box via `AudioService.PlayLoop(cue, doll)`. Short range, audible in the corridor.
+- `Doll_MusicBox` — looping 3D nursery-tune music box via `AudioService.PlayLoop(cue, doll)`, with a robotic voice ("Look at Lily... don't close your eyes") mixed in twice per loop (Windows SAPI TTS, processed in `tools/audio/doll_sounds.py`). Short range, audible in the corridor.
 - `Doll_Giggle` — on the warning lurch.
 - `Doll_Scream` — on the leap.
 - `Doll_Scratch` — loop while on your face. `Grab_Sting` can stand in for the scream until there's a real one.
-Any third-party clip goes in `CREDITS.md`. Use an out-of-copyright tune (e.g. a traditional nursery rhyme) for the music box.
+Any CC-BY clip goes in the README credits. Use an out-of-copyright tune (e.g. a traditional nursery rhyme) for the music box.
 
 ---
 

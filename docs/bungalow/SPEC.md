@@ -205,6 +205,7 @@ Data: `bungalow_layout.VENTS` (checked by `check()`); runtime `Blink.Interaction
 | **Vent_B** | B1 cellar wall grate at the stair foot (9.0, 14.7) | Parlour floor grate (9.0, 18.7) | `VB1` opening low in `Wall_B_N`, a duct x 8.7–9.3, 0.5 high, north under the corridor to z 19.0, then a shaft up to the parlour floor (grate clear of D7's swing). **Not B2**: B2 is the flooded-basement puzzle room. |
 
 - **Geometry:** a floor end is a 0.6 m `floor_holes` entry cut through the slab; a wall end is a `kind="vent"` opening with the grate stood upright on the wall. A duct is a list of boxes, built by `build_ducts` (`M_Concrete`, inside faces only, open where boxes, openings and holes meet, no collider). `FloorGrate` is a cast-iron prop (`castiron` cell, 0.68 m square, 0.025 m high, box collider), so the floor stays walkable and the navmesh is unchanged.
+- **Facing Lily:** the Bathroom is Lily's doll room (`Puzzle_LilysDoll`), so climbing out of Vent_A there turns you to face the doll (`Vent.lookAt`, filled at runtime by `LilysDollRoom` for any vent exit inside its room box). You're in her room the moment the fade lifts, and coming out facing north would have been an instant look-away leap.
 - **Lighting:** the duct is lightmapped with the shell, and the lighting builder lays light probes down `layout.ducts`. Light only gets in through the grates; inside, the flashlight is the light.
 - **Play:** interacting at an end dips the screen to black and puts you in the duct. Forward / back crawls along the path. At an end, Interact peeks out through the grate and again climbs out. Getting in or out clanks the grate (`Noise`, 8 m). While you're inside, zombies lose sight of you and nobody follows.
 
@@ -313,7 +314,7 @@ Built by script, re-runnable:
 - **Import:** max 1024, mipmaps on, trilinear, aniso 8 (decals 2), Standalone override **BC7**, CompressedHQ. Repeat wrap; the decal atlas uses Clamp.
 - **Grading:** done in linear (per-channel gain to a target mean, then saturation and contrast about the mean). Albedo is clamped to sRGB ≈ 0.1–0.94.
 
-**Sources (all CC0 1.0; Poly Haven and ambientCG need no credit, but the coordinator lists them in CREDITS.md):**
+**Sources (all CC0 1.0; Poly Haven and ambientCG need no credit, so they are not listed):**
 - Poly Haven: dark_wooden_planks (Amal Kumar), herringbone_parquet (Jenelle van Heerden, Sergej Majboroda), old_linoleum_flooring_01 (Charlotte Baglioni), concrete_floor_damaged_01 (Rob Tuytel), decrepit_wallpaper (Rob Tuytel), white_plaster_02 (Rob Tuytel), whitewashed_brick (Charlotte Baglioni).
 - ambientCG: Wallpaper002C, Tiles133D, Fabric032, Leaking013A, Leaking017B.
 - The decal atlas, the three wallpaper patterns, the glass smudge and the water ripple are self-authored (seeded numpy and PIL).
@@ -392,7 +393,7 @@ The renders are in the session scratch folder `bungalow/phase4/`.
 
 ### 3.1 Reuse from `Unity/Assets/Art/Mansion/PolyHaven/`
 
-Triangle counts were read by importing every FBX in headless Blender 5.1.2. The folder's LICENSE.txt confirms CC0 with Poly Haven links; these assets are **not yet in CREDITS.md** and will be added.
+Triangle counts were read by importing every FBX in headless Blender 5.1.2. The folder's LICENSE.txt confirms CC0 with Poly Haven links; these assets need no credit.
 
 | Asset | Tris (file) | Use | Target tris |
 |---|---|---|---|
@@ -531,6 +532,7 @@ The emitters in `fixtures.json` are authoritative for the lighting pass. The two
   - A look that misses everything gets a 6 cm aim-assist sphere. It only finds things nearer than the solid surface the look landed on, and only where the eye can see them.
 - **Highlight:** `InteractHighlight` (added by the `Interactor`) outlines the current target with a warm outline and rim, `Blink/InteractHighlight` (`Art/VFX/InteractHighlight`, material `Resources/InteractHighlight`). It draws an overlay copy of each of the target's meshes, leaving out things inside it. Nothing is outlined while a prop is carried or a note is held up.
 - **The bedroom key (`key_bedroom`) is in `Bed_Dresser`'s top drawer.** It's parented to the drawer, 0.22 m behind the front, so it slides out with it; `BungalowStartBedroom.PlaceKeyInDrawer`, also run by Set Up Start Bedroom. While the drawer is shut, the body blocks the look ray; once it's open, the key is the target from 0.35–0.9 m and twinkles like other pickups.
+- **The pistol and its ammo are found, not carried in** (`BLINK/Bungalow/Place Pickups`, `Editor/BungalowPickups.cs`, which also turns the Player's `startsWithPistol` off). The pistol lies on the parlour sideboard. Four `AmmoBox`es of 4 rounds each (the reserve holds 8) are on the cellar barrel `B1_Barrel` and in drawers they slide out with: `Kit_Cabinet2`'s left drawer, `Liv_Sideboard`'s bottom drawer and `Mbr_Dresser`'s top drawer, behind the axe barricade. None are in the puzzle rooms (Bathroom, B2).
 - **The start-bedroom note** uses the bungalow's own `Materials/M_NotePaper` (created by Set Up Start Bedroom). `Art/Story/Materials/Paper.mat` isn't in every checkout, and without it the note rendered pink.
 - Covered by `Tests/EditMode/DrawerPrefabTests.cs` and `InteractTargetingTests.cs`. Design: `docs/superpowers/specs/2026-11-07-openable-drawers-design.md`.
 

@@ -48,6 +48,8 @@ namespace Blink.Interaction
 
         /// <summary>Fired on every toggle with the new state.</summary>
         public event Action<bool> Toggled;
+        /// <summary>Fired when a locked one is tried and knocks against its latch.</summary>
+        public event Action Rattled;
         public bool IsOpen { get; private set; }
         public bool IsLocked => !string.IsNullOrEmpty(requiredItemId);
 
@@ -108,6 +110,7 @@ namespace Blink.Interaction
             _rattle = rattleSeconds;
             _wait = handDelay;
             enabled = true;
+            Rattled?.Invoke();
         }
 
         void Update()

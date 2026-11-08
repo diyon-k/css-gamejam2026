@@ -1,12 +1,15 @@
 """Synthesised sounds for Lily's doll (docs/puzzles/LILYS_DOLL_ROOM.md). Original, made from sine waves and noise.
 
-  Doll_MusicBox.wav   Brahms' "Wiegenlied" (Lullaby, 1868, public domain) on a slightly worn music box, a seamless loop.
+  Doll_MusicBox.wav   Brahms' "Wiegenlied" (Lullaby, 1868, public domain) on a slightly worn music box, a seamless loop,
+                      with a robotic voice over it twice per loop: "Look at Lily... don't close your eyes."
   Doll_Scratch.wav    porcelain scraping on bone, a seamless loop for while she's on your face.
 
-Run from the repo root (needs numpy; the webcam venv has it):
-    blink_server/.venv/bin/python -I tools/audio/doll_sounds.py
+Run from the repo root (needs numpy; the webcam venv has it; Windows only, the voice is Windows SAPI via PowerShell):
+    blink_server/.venv/Scripts/python -I tools/audio/doll_sounds.py
 """
 import os
+import subprocess
+import tempfile
 import wave
 
 import numpy as np
@@ -82,6 +85,70 @@ def music_box():
     return buf / np.max(np.abs(buf)) * 0.8
 
 
+VOICE_LINES = ["Look at Lily", "don't close your eyes"]  # spoken with a long pause between
+VOICE_AT = [3.0, 22.0]  # seconds into the loop where she speaks
+
+
+def sapi_voice():
+    """The two lines from Windows' built-in TTS (System.Speech, Zira), slow, as a float array at RATE."""
+    path = os.path.join(tempfile.mkdtemp(), "voice.wav")
+    ps = f"""
+Add-Type -AssemblyName System.Speech
+$s = New-Object System.Speech.Synthesis.SpeechSynthesizer
+try {{ $s.SelectVoice('Microsoft Zira Desktop') }} catch {{}}
+$s.Rate = -3
+$fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo({RATE}, 'Sixteen', 'Mono')
+$s.SetOutputToWaveFile('{path}', $fmt)
+$p = New-Object System.Speech.Synthesis.PromptBuilder
+$p.AppendText('{VOICE_LINES[0]}')
+$p.AppendBreak([TimeSpan]::FromMilliseconds(900))
+$p.AppendText('{VOICE_LINES[1].replace("'", "''")}')
+$s.Speak($p)
+$s.Dispose()
+"""
+    subprocess.run(["powershell", "-NoProfile", "-Command", ps], check=True)
+    with wave.open(path) as w:
+        return np.frombuffer(w.readframes(w.getnframes()), "<i2") / 32768.0
+
+
+def robot(v):
+    """Pitch down and slow (tape-style), ring-mod, bitcrush, a short metallic echo. Something wrong inside the doll."""
+    v = v / np.max(np.abs(v))
+    v = np.interp(np.arange(0, len(v) - 1, 0.82), np.arange(len(v)), v)  # 18% slower and lower
+    t = np.arange(len(v)) / RATE
+    v = v * (0.45 + 0.55 * np.sin(2 * np.pi * 55 * t))  # ring mod: the buzzy Dalek edge
+    v = np.repeat(v[::5], 5)[:len(v)]  # sample-and-hold down to ~8.8 kHz
+    v = np.round(v * 24) / 24  # ~5-bit grit
+    v = np.convolve(v, np.ones(3) / 3, mode="same")  # take the harshest fizz off the crush
+    out = np.zeros(len(v) + int(0.5 * RATE))
+    for delay, gain in [(0.0, 1.0), (0.023, 0.45), (0.19, 0.3), (0.38, 0.15)]:  # comb + tin-can echo
+        d = int(delay * RATE)
+        out[d:d + len(v)] += v * gain
+    return out / np.max(np.abs(out))
+
+
+def smooth(x, seconds):
+    """Centred moving average (cumsum, so long windows stay fast)."""
+    n = int(seconds * RATE)
+    c = np.concatenate([[0], np.cumsum(np.pad(x, (n // 2, n - n // 2), mode="edge"))])
+    return (c[n:] - c[:-n])[:len(x)] / n
+
+
+def music_box_with_voice():
+    box = music_box()
+    voice = robot(sapi_voice())
+    track = np.zeros(len(box))  # the voice, placed in the loop
+    for at in VOICE_AT:
+        start = int(at * RATE)
+        seg = voice[:len(box) - start]
+        track[start:start + len(seg)] += seg
+    # Duck the box under her (to ~45%) so the words read from the doorway; smoothed so it breathes, not pumps.
+    speaking = smooth((np.abs(track) > 0.02).astype(float), 0.3) > 0
+    duck = smooth(np.where(speaking, 0.45, 1.0), 0.25)
+    mix = box * duck + track
+    return mix / np.max(np.abs(mix)) * 0.89
+
+
 def scratch():
     rng = np.random.default_rng(6)
     seconds = 2.4
@@ -119,5 +186,5 @@ def write(name, samples):
 
 
 if __name__ == "__main__":
-    write("Doll_MusicBox.wav", music_box())
+    write("Doll_MusicBox.wav", music_box_with_voice())
     write("Doll_Scratch.wav", scratch())
