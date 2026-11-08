@@ -44,6 +44,12 @@ namespace Blink.Player
         [SerializeField] float maxPitch = 85f;
         [SerializeField] bool lockCursor = true;
 
+        [Header("Health regen")]
+        [Tooltip("Seconds without taking damage before regen starts.")]
+        [SerializeField, Min(0f)] float regenDelay = 15f;
+        [SerializeField, Min(0.1f)] float regenInterval = 5f;
+        [SerializeField, Min(0f)] float regenAmount = 25f;
+
         public Vector3 Velocity => _velocity;
         public bool InputEnabled { get; set; } = true;
         public bool IsCrawling => _controller.height < (crouchHeight + crawlHeight) * 0.5f;
@@ -59,6 +65,7 @@ namespace Blink.Player
         Vector3 _velocity;
         float _pitch;
         float _standHeight, _feetY, _standPivotY;
+        float _nextRegenAt;
 
         void Awake()
         {
@@ -89,12 +96,21 @@ namespace Blink.Player
             _jump?.Enable();
             _crouch?.Enable();
             _crawl?.Enable();
-            if (_health != null) _health.Died += OnDied;
+            if (_health != null) { _health.Died += OnDied; _health.Damaged += OnDamaged; }
         }
 
         void OnDisable()
         {
-            if (_health != null) _health.Died -= OnDied;
+            if (_health != null) { _health.Died -= OnDied; _health.Damaged -= OnDamaged; }
+        }
+
+        void OnDamaged(float amount, Vector3 point) => _nextRegenAt = Time.time + regenDelay;
+
+        void Regen()
+        {
+            if (_health == null || _health.Current >= _health.Max || Time.time < _nextRegenAt) return;
+            _health.Heal(regenAmount);
+            _nextRegenAt = Time.time + regenInterval;
         }
 
         void Start()
@@ -105,6 +121,7 @@ namespace Blink.Player
         void Update()
         {
             HandleCursor();
+            Regen();
             if (!InputEnabled) return;
             Look();
             Move();
